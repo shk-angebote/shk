@@ -594,9 +594,9 @@
             <div class="mt-6 flex items-center justify-between text-xs text-slate-400">
                 <div>
                     <span id="authToggleText">Noch kein Konto?</span>
-                    <button onclick="toggleAuthMode()" id="authToggleBtn" class="text-emerald-400 font-semibold ml-1 hover:underline">Registrieren</button>
+                    <button type="button" onclick="toggleAuthMode()" id="authToggleBtn" class="text-emerald-400 font-semibold ml-1 hover:underline">Registrieren</button>
                 </div>
-                <button onclick="openForgotPasswordMode()" id="forgotPasswordBtn" class="text-slate-400 hover:text-emerald-400 transition">Passwort vergessen?</button>
+                <button type="button" onclick="openForgotPasswordMode()" id="forgotPasswordBtn" class="text-slate-400 hover:text-emerald-400 transition">Passwort vergessen?</button>
             </div>
         </div>
     </div>
@@ -749,7 +749,7 @@
                     notes: notes,
                     fileName: file.name,
                     fileData: fileBase64,
-                    additionalFiles: [], // Zusätzliche Unterlagen
+                    additionalFiles: [],
                     status: 1, 
                     paymentStatus: 'unpaid',
                     isArchived: false,
@@ -818,7 +818,7 @@
         function renderClientOrdersList() {
             const container = document.getElementById('clientOrdersList');
             if (userOrders.length === 0) {
-                container.innerHTML = `<p class="text-xs text-slate-500">Keine Aufträge vorhanden.</p>";
+                container.innerHTML = `<p class="text-xs text-slate-500">Keine Aufträge vorhanden.</p>`;
                 return;
             }
 
@@ -872,14 +872,12 @@
             const reportDownloadBtn = document.getElementById('clientReportDownloadBtn');
             const uploadSection = document.getElementById('clientUploadSection');
 
-            // Wenn abgelehnt oder abgeschlossen, kein Upload mehr nötig/möglich
             if (order.status == 5 || order.status == 4) {
                 uploadSection.classList.add('hidden');
             } else {
                 uploadSection.classList.remove('hidden');
             }
 
-            // Dateien auflisten (Hauptdatei + zusätzliche)
             const fileListContainer = document.getElementById('clientFileList');
             let filesHtml = `<div class="flex items-center justify-between bg-slate-950 p-2.5 rounded-lg border border-slate-800">
                 <span><i class="fa-solid fa-file-pdf text-emerald-400 mr-2"></i>${order.fileName} (Hauptangebot)</span>
@@ -887,7 +885,7 @@
             </div>`;
 
             if (order.additionalFiles && order.additionalFiles.length > 0) {
-                order.additionalFiles.forEach((af, idx) => {
+                order.additionalFiles.forEach((af) => {
                     filesHtml += `<div class="flex items-center justify-between bg-slate-950 p-2.5 rounded-lg border border-slate-800">
                         <span><i class="fa-solid fa-file-lines text-teal-400 mr-2"></i>${af.name} (Zusatzdokument)</span>
                         <a href="${af.data}" download="${af.name}" class="text-emerald-400 hover:underline"><i class="fa-solid fa-download"></i></a>
@@ -942,7 +940,6 @@
             `).join('');
         }
 
-        // Kunde lädt nachträglich Unterlagen hoch
         async function uploadAdditionalClientFile() {
             if (!activeOrderId) return;
             const order = userOrders.find(o => o.id === activeOrderId);
@@ -977,7 +974,6 @@
             };
         }
 
-        // Admin Functions (Aus Firestore)
         async function loadAdminOrders() {
             adminOrders = [];
             if (db) {
@@ -1102,7 +1098,7 @@
                 let html = `
                     <div class="flex flex-wrap gap-2 mb-4">
                         ${availableYears.map(y => `
-                            <button onclick="switchAdminTab('archive', '${y}')" class="px-3 py-1.5 rounded-lg text-xs font-bold transition ${activeArchiveYear == y ? 'bg-emerald-500 text-slate-950' : 'bg-slate-800 text-slate-300 hover:bg-slate-700'}">
+                            <button type="button" onclick="switchAdminTab('archive', '${y}')" class="px-3 py-1.5 rounded-lg text-xs font-bold transition ${activeArchiveYear == y ? 'bg-emerald-500 text-slate-950' : 'bg-slate-800 text-slate-300 hover:bg-slate-700'}">
                                 <i class="fa-solid fa-folder mr-1"></i>Jahr ${y} (${yearsMap[y].length})
                             </button>
                         `).join('')}
@@ -1211,7 +1207,6 @@
             }
         }
 
-        // Unterlagen vom Admin anfordern (öffnet E-Mail)
         function requestDocumentsEmail() {
             if (!selectedAdminOrderId) return;
             const order = adminOrders.find(o => o.id === selectedAdminOrderId);
@@ -1236,7 +1231,6 @@
             window.location.href = `mailto:${order.email}?subject=${subject}&body=${body}`;
         }
 
-        // Auftrag ablehnen (inkl. automatischer E-Mail Benachrichtigung)
         async function rejectAdminOrder() {
             if (!selectedAdminOrderId) return;
             if (!confirm('Möchten Sie diesen Auftrag wirklich ablehnen?')) return;
@@ -1255,7 +1249,6 @@
                 }
             }
 
-            // E-Mail Entwurf für Ablehnung öffnen
             const subject = encodeURIComponent(`Aktualisierung zu Ihrem Auftrag ${order.id}`);
             const body = encodeURIComponent(`Hallo,\n\nleider mussten wir Ihren Auftrag (${order.packageName}) ablehnen. Bei Fragen wenden Sie sich gerne an unseren Support.\n\nMit freundlichen Grüßen\nSHK Angebotsprüfung`);
             window.open(`mailto:${order.email}?subject=${subject}&body=${body}`);
@@ -1329,7 +1322,6 @@
                 }
             }
 
-            // Wenn sich der Status geändert hat -> E-Mail Benachrichtigung auslösen
             if (oldStatus !== newStatus) {
                 const statusNames = { 1: 'Eingegangen', 2: 'In Fachprüfung', 3: 'Bericht wird erstellt', 4: 'Abgeschlossen', 5: 'Abgelehnt' };
                 const subject = encodeURIComponent(`Statusänderung für Ihren Auftrag ${order.id}`);
