@@ -45,18 +45,18 @@
 
             <div class="flex items-center space-x-4">
                 <div id="authNavArea">
-                    <button onclick="openAuthModal('login')" class="px-4 py-2 text-sm font-medium text-slate-300 hover:text-white transition">Login</button>
-                    <button onclick="openAuthModal('register')" class="bg-emerald-500 hover:bg-emerald-600 text-slate-950 font-semibold px-4 py-2 rounded-xl text-sm shadow-lg shadow-emerald-500/20 transition">Kundenportal</button>
+                    <button type="button" onclick="openAuthModal('login')" class="px-4 py-2 text-sm font-medium text-slate-300 hover:text-white transition">Login</button>
+                    <button type="button" onclick="openAuthModal('register')" class="bg-emerald-500 hover:bg-emerald-600 text-slate-950 font-semibold px-4 py-2 rounded-xl text-sm shadow-lg shadow-emerald-500/20 transition">Kundenportal</button>
                 </div>
                 <div id="userNavArea" class="hidden items-center space-x-3">
                     <span id="navUserEmail" class="text-xs text-slate-400 hidden sm:inline"></span>
-                    <button onclick="openClientPortal()" class="bg-slate-800 hover:bg-slate-700 text-emerald-400 border border-emerald-500/30 px-4 py-2 rounded-xl text-sm font-medium transition">
+                    <button type="button" onclick="openClientPortal()" class="bg-slate-800 hover:bg-slate-700 text-emerald-400 border border-emerald-500/30 px-4 py-2 rounded-xl text-sm font-medium transition">
                         <i class="fa-solid fa-gauge-high mr-2"></i>Dashboard
                     </button>
-                    <button id="adminNavBtn" onclick="openAdminPortal()" class="hidden bg-amber-500 hover:bg-amber-600 text-slate-950 px-3 py-2 rounded-xl text-sm font-bold transition">
+                    <button type="button" id="adminNavBtn" onclick="openAdminPortal()" class="hidden bg-amber-500 hover:bg-amber-600 text-slate-950 px-3 py-2 rounded-xl text-sm font-bold transition">
                         <i class="fa-solid fa-shield-halved mr-1"></i>Admin
                     </button>
-                    <button onclick="logoutUser()" class="text-slate-400 hover:text-red-400 p-2 transition" title="Abmelden">
+                    <button type="button" onclick="logoutUser()" class="text-slate-400 hover:text-red-400 p-2 transition" title="Abmelden">
                         <i class="fa-solid fa-right-from-bracket"></i>
                     </button>
                 </div>
@@ -86,7 +86,7 @@
                         <a href="#rechner" class="bg-emerald-500 hover:bg-emerald-600 text-slate-950 font-bold px-8 py-4 rounded-xl text-lg shadow-xl shadow-emerald-500/20 transition text-center">
                             Jetzt Angebot prüfen lassen <i class="fa-solid fa-arrow-right ml-2"></i>
                         </a>
-                        <button onclick="openAuthModal('register')" class="bg-slate-800 hover:bg-slate-700 text-white font-semibold px-8 py-4 rounded-xl text-lg border border-slate-700 transition">
+                        <button type="button" onclick="openAuthModal('register')" class="bg-slate-800 hover:bg-slate-700 text-white font-semibold px-8 py-4 rounded-xl text-lg border border-slate-700 transition">
                             Zum Kundenportal
                         </button>
                     </div>
@@ -150,7 +150,7 @@
                                     <li class="flex items-center"><i class="fa-solid fa-check text-emerald-400 mr-3"></i>Schriftlicher Prüfbericht als PDF</li>
                                 </ul>
                             </div>
-                            <button onclick="selectPackage('Heizungs-Angebot', 149)" class="mt-8 w-full bg-slate-800 hover:bg-emerald-500 hover:text-slate-950 text-white font-semibold py-3 rounded-xl transition">Paket wählen</button>
+                            <button type="button" onclick="selectPackage('Heizungs-Angebot', 149)" class="mt-8 w-full bg-slate-800 hover:bg-emerald-500 hover:text-slate-950 text-white font-semibold py-3 rounded-xl transition">Paket wählen</button>
                         </div>
 
                         <div class="bg-slate-900 border-2 border-emerald-500 rounded-2xl p-8 shadow-2xl relative flex flex-col justify-between">
@@ -169,7 +169,7 @@
                                     <li class="flex items-center"><i class="fa-solid fa-check text-emerald-400 mr-3"></i>Detaillierter Maßnahmen- & Einsparkatalog</li>
                                 </ul>
                             </div>
-                            <button onclick="selectPackage('Komplettbad / Sanitär', 249)" class="mt-8 w-full bg-emerald-500 hover:bg-emerald-600 text-slate-950 font-bold py-3 rounded-xl transition shadow-lg shadow-emerald-500/20">Paket wählen</button>
+                            <button type="button" onclick="selectPackage('Komplettbad / Sanitär', 249)" class="mt-8 w-full bg-emerald-500 hover:bg-emerald-600 text-slate-950 font-bold py-3 rounded-xl transition shadow-lg shadow-emerald-500/20">Paket wählen</button>
                         </div>
 
                         <div class="bg-slate-900 border border-slate-800 rounded-2xl p-8 shadow-xl flex flex-col justify-between">
@@ -187,7 +187,7 @@
                                     <li class="flex items-center"><i class="fa-solid fa-check text-emerald-400 mr-3"></i>Vergabeempfehlung mit Begründung</li>
                                 </ul>
                             </div>
-                            <button onclick="selectPackage('Angebotsvergleich', 349)" class="mt-8 w-full bg-slate-800 hover:bg-emerald-500 hover:text-slate-950 text-white font-semibold py-3 rounded-xl transition">Paket wählen</button>
+                            <button type="button" onclick="selectPackage('Angebotsvergleich', 349)" class="mt-8 w-full bg-slate-800 hover:bg-emerald-500 hover:text-slate-950 text-white font-semibold py-3 rounded-xl transition">Paket wählen</button>
                         </div>
                     </div>
 
@@ -268,7 +268,7 @@
                     <h1 class="text-3xl font-extrabold text-white">Mein Kundenportal</h1>
                     <p class="text-slate-400 text-sm mt-1">Übersicht Ihrer eingereichten Angebote und Bearbeitungsstatus in Echtzeit.</p>
                 </div>
-                <button onclick="switchView('landing')" class="bg-slate-800 hover:bg-slate-700 text-white px-4 py-2 rounded-xl text-sm font-medium transition">
+                <button type="button" onclick="switchView('landing')" class="bg-slate-800 hover:bg-slate-700 text-white px-4 py-2 rounded-xl text-sm font-medium transition">
                     <i class="fa-solid fa-plus mr-2"></i>Weiteres Angebot prüfen lassen
                 </button>
             </div>
@@ -315,8 +315,17 @@
                             </div>
                         </div>
 
+                        <!-- Storniert Hinweis Box -->
+                        <div id="orderCancelledBanner" class="hidden bg-amber-500/10 border border-amber-500/30 rounded-2xl p-6 shadow-xl flex items-start space-x-4">
+                            <i class="fa-solid fa-ban text-amber-400 text-2xl mt-1"></i>
+                            <div>
+                                <h3 class="text-lg font-bold text-amber-400">Auftrag storniert</h3>
+                                <p class="text-xs text-slate-300 mt-1">Dieser Auftrag wurde von Ihnen erfolgreich storniert.</p>
+                            </div>
+                        </div>
+
                         <!-- Status Tracker Card -->
-                        <div id="orderTrackerCard" class="bg-slate-900 border border-slate-800 rounded-2xl p-6 shadow-xl">
+                        <div id="orderTrackerCard" class="bg-slate-900 border border-slate-800 rounded-2xl p-6 shadow-xl space-y-4">
                             <div class="flex justify-between items-center mb-6">
                                 <div>
                                     <span id="detailOrderPackage" class="text-xs font-bold uppercase tracking-wider text-emerald-400 bg-emerald-500/10 px-3 py-1 rounded-full">Heizung</span>
@@ -336,6 +345,13 @@
                                     <div id="step3Label" class="">3. Bericht</div>
                                     <div id="step4Label" class="">4. Fertig</div>
                                 </div>
+                            </div>
+
+                            <!-- Stornieren Button (Nur in Status Phase 1 sichtbar) -->
+                            <div id="clientCancelButtonContainer" class="hidden pt-4 border-t border-slate-800 text-right">
+                                <button type="button" onclick="cancelOrderAsClient()" class="bg-rose-500/10 hover:bg-rose-500/20 text-rose-400 border border-rose-500/30 font-bold px-4 py-2 rounded-xl text-xs transition">
+                                    <i class="fa-solid fa-ban mr-1"></i>Auftrag stornieren
+                                </button>
                             </div>
                         </div>
 
@@ -401,7 +417,7 @@
                     <h1 class="text-3xl font-extrabold text-white"><i class="fa-solid fa-shield-halved text-amber-400 mr-3"></i>Admin-Konsole (Prüfer-Dashboard)</h1>
                     <p class="text-slate-400 text-sm mt-1">Auftragsverwaltung, Statusänderung und Erstellung von Prüfberichten.</p>
                 </div>
-                <button onclick="switchView('clientPortal')" class="bg-slate-800 hover:bg-slate-700 text-white px-4 py-2 rounded-xl text-sm font-medium transition">
+                <button type="button" onclick="switchView('clientPortal')" class="bg-slate-800 hover:bg-slate-700 text-white px-4 py-2 rounded-xl text-sm font-medium transition">
                     Zum Kundenportal
                 </button>
             </div>
@@ -443,12 +459,15 @@
             </div>
 
             <!-- Admin Reiter Navigation -->
-            <div class="flex space-x-2 border-b border-slate-800 mb-6">
+            <div class="flex flex-wrap gap-2 border-b border-slate-800 mb-6">
                 <button type="button" onclick="switchAdminTab('active')" id="tabBtnActive" class="px-5 py-3 text-sm font-bold border-b-2 border-emerald-500 text-emerald-400 transition">
                     <i class="fa-solid fa-list-check mr-2"></i>Aktive Aufträge
                 </button>
                 <button type="button" onclick="switchAdminTab('rejected')" id="tabBtnRejected" class="px-5 py-3 text-sm font-bold border-b-2 border-transparent text-slate-400 hover:text-white transition">
                     <i class="fa-solid fa-ban mr-2"></i>Abgelehnt
+                </button>
+                <button type="button" onclick="switchAdminTab('cancelled')" id="tabBtnCancelled" class="px-5 py-3 text-sm font-bold border-b-2 border-transparent text-slate-400 hover:text-white transition">
+                    <i class="fa-solid fa-circle-xmark mr-2"></i>Storniert
                 </button>
                 <button type="button" onclick="switchAdminTab('archive')" id="tabBtnArchive" class="px-5 py-3 text-sm font-bold border-b-2 border-transparent text-slate-400 hover:text-white transition">
                     <i class="fa-solid fa-box-archive mr-2"></i>Archiv
@@ -485,6 +504,7 @@
                                     <option value="3">3. Bericht wird erstellt</option>
                                     <option value="4">4. Abgeschlossen</option>
                                     <option value="5">5. Abgelehnt</option>
+                                    <option value="6">6. Storniert</option>
                                 </select>
                             </div>
                         </div>
@@ -660,7 +680,7 @@
         let activeOrderId = null;
         let adminOrders = [];
         let selectedAdminOrderId = null;
-        let currentAdminTab = 'active';
+        let currentAdminTab = 'active'; // 'active', 'rejected', 'cancelled', 'archive'
         let activeArchiveYear = null;
 
         const ADMIN_EMAIL = "admin@shk-angebote-pruefen.web.app";
@@ -881,6 +901,9 @@
                 } else if (o.status == 5) {
                     statusBadgeText = 'Abgelehnt';
                     statusBadgeClass = 'bg-rose-500/10 text-rose-400';
+                } else if (o.status == 6) {
+                    statusBadgeText = 'Storniert';
+                    statusBadgeClass = 'bg-rose-500/10 text-rose-400';
                 }
 
                 return `
@@ -916,12 +939,21 @@
             document.getElementById('detailOrderId').textContent = `Auftrag ${order.id}`;
 
             const rejectedBanner = document.getElementById('orderRejectedBanner');
+            const cancelledBanner = document.getElementById('orderCancelledBanner');
             const trackerCard = document.getElementById('orderTrackerCard');
             const reportCard = document.getElementById('completedReportCard');
             const reportDownloadBtn = document.getElementById('clientReportDownloadBtn');
             const uploadSection = document.getElementById('clientUploadSection');
+            const cancelBtnContainer = document.getElementById('clientCancelButtonContainer');
 
-            if (order.status == 5 || order.status == 4) {
+            // Stornieren-Button nur in Status 1 (Eingegangen) sichtbar
+            if (order.status == 1) {
+                cancelBtnContainer.classList.remove('hidden');
+            } else {
+                cancelBtnContainer.classList.add('hidden');
+            }
+
+            if (order.status == 5 || order.status == 4 || order.status == 6) {
                 uploadSection.classList.add('hidden');
             } else {
                 uploadSection.classList.remove('hidden');
@@ -945,10 +977,17 @@
 
             if (order.status == 5) {
                 rejectedBanner.classList.remove('hidden');
+                cancelledBanner.classList.add('hidden');
+                trackerCard.classList.add('hidden');
+                reportCard.classList.add('hidden');
+            } else if (order.status == 6) {
+                rejectedBanner.classList.add('hidden');
+                cancelledBanner.classList.remove('hidden');
                 trackerCard.classList.add('hidden');
                 reportCard.classList.add('hidden');
             } else {
                 rejectedBanner.classList.add('hidden');
+                cancelledBanner.classList.add('hidden');
                 trackerCard.classList.remove('hidden');
 
                 const statusTexts = ['Eingegangen', 'Fachprüfung', 'Bericht', 'Abgeschlossen'];
@@ -987,6 +1026,28 @@
                     <span>${d}</span>
                 </div>
             `).join('');
+        }
+
+        // Kunde storniert seinen eigenen Auftrag (in Status 1)
+        async function cancelOrderAsClient() {
+            if (!activeOrderId) return;
+            if (!confirm('Möchten Sie diesen Auftrag wirklich stornieren?')) return;
+
+            const order = userOrders.find(o => o.id === activeOrderId);
+            if (!order || !order.idDoc) return;
+
+            order.status = 6; // Storniert
+
+            if (db) {
+                try {
+                    await db.collection('orders').doc(order.idDoc).update({ status: 6 });
+                    alert('Auftrag wurde storniert.');
+                    loadUserOrders();
+                    selectClientOrder(order.id);
+                } catch(e) {
+                    alert('Fehler beim Stornieren: ' + e.message);
+                }
+            }
         }
 
         async function uploadAdditionalClientFile() {
@@ -1044,6 +1105,7 @@
 
             document.getElementById('tabBtnActive').className = "px-5 py-3 text-sm font-bold border-b-2 " + (tabName === 'active' ? "border-emerald-500 text-emerald-400" : "border-transparent text-slate-400 hover:text-white") + " transition";
             document.getElementById('tabBtnRejected').className = "px-5 py-3 text-sm font-bold border-b-2 " + (tabName === 'rejected' ? "border-emerald-500 text-emerald-400" : "border-transparent text-slate-400 hover:text-white") + " transition";
+            document.getElementById('tabBtnCancelled').className = "px-5 py-3 text-sm font-bold border-b-2 " + (tabName === 'cancelled' ? "border-emerald-500 text-emerald-400" : "border-transparent text-slate-400 hover:text-white") + " transition";
             document.getElementById('tabBtnArchive').className = "px-5 py-3 text-sm font-bold border-b-2 " + (tabName === 'archive' ? "border-emerald-500 text-emerald-400" : "border-transparent text-slate-400 hover:text-white") + " transition";
 
             renderAdminDashboard();
@@ -1059,7 +1121,8 @@
             let openRevenue = 0;
 
             adminOrders.forEach(o => {
-                if (o.status == 5) return;
+                // Abgelehnte (5) und Stornierte (6) fließen nicht in den Umsatz ein
+                if (o.status == 5 || o.status == 6) return;
 
                 const basePrice = o.price || 149;
                 const manualDiscount = parseFloat(o.manualDiscount) || 0;
@@ -1083,7 +1146,7 @@
 
             let totalSavingsNum = 0;
             adminOrders.forEach(o => {
-                if (o.savings && o.status != 5) {
+                if (o.savings && o.status != 5 && o.status != 6) {
                     const num = parseInt(o.savings.replace(/[^0-9]/g, '')) || 0;
                     totalSavingsNum += num;
                 }
@@ -1108,7 +1171,7 @@
 
             if (currentAdminTab === 'active') {
                 listTitle.textContent = "Aktive Aufträge";
-                const activeOrders = adminOrders.filter(o => !o.isArchived && o.status != 5);
+                const activeOrders = adminOrders.filter(o => !o.isArchived && o.status != 5 && o.status != 6);
                 
                 if (activeOrders.length === 0) {
                     container.innerHTML = `<p class="text-xs text-slate-500">Keine aktiven Aufträge vorhanden.</p>`;
@@ -1126,6 +1189,16 @@
                 }
 
                 container.innerHTML = rejectedOrders.map(o => renderOrderCard(o, emailCounts)).join('');
+            } else if (currentAdminTab === 'cancelled') {
+                listTitle.textContent = "Stornierte Aufträge";
+                const cancelledOrders = adminOrders.filter(o => !o.isArchived && o.status == 6);
+
+                if (cancelledOrders.length === 0) {
+                    container.innerHTML = `<p class="text-xs text-slate-500">Keine stornierten Aufträge vorhanden.</p>`;
+                    return;
+                }
+
+                container.innerHTML = cancelledOrders.map(o => renderOrderCard(o, emailCounts)).join('');
             } else if (currentAdminTab === 'archive') {
                 const archiveOrders = adminOrders.filter(o => o.isArchived);
                 const yearsMap = {};
@@ -1174,6 +1247,7 @@
             const isNewCustomer = o.email && emailCounts[o.email.toLowerCase().trim()] === 1;
             let statusLabel = `Status ${o.status}/4`;
             if (o.status == 5) statusLabel = 'Abgelehnt';
+            if (o.status == 6) statusLabel = 'Storniert';
             if (o.isArchived) statusLabel = 'Archiviert';
 
             const basePrice = o.price || 149;
@@ -1191,7 +1265,7 @@
                         <i class="fa-solid fa-box mr-1"></i>${o.packageName || 'Heizungs-Angebot'} (${displayPrice} €) ${manualDiscount > 0 ? `<span class="text-xs text-amber-400">(inkl. ${manualDiscount}€ Rabatt)</span>` : ''}
                     </div>
                     <div class="flex justify-between items-center mt-2 text-xs text-slate-400">
-                        <span class="${o.status == 5 ? 'text-rose-400 font-bold' : ''}">${statusLabel}</span>
+                        <span class="${o.status == 5 || o.status == 6 ? 'text-rose-400 font-bold' : ''}">${statusLabel}</span>
                         <span>${o.paymentStatus === 'paid' ? 'Bezahlt' : (o.paymentStatus === 'partial' ? 'Angezahlt' : 'Offen')}</span>
                     </div>
                 </div>
@@ -1388,7 +1462,7 @@
             }
 
             if (oldStatus !== newStatus) {
-                const statusNames = { 1: 'Eingegangen', 2: 'In Fachprüfung', 3: 'Bericht wird erstellt', 4: 'Abgeschlossen', 5: 'Abgelehnt' };
+                const statusNames = { 1: 'Eingegangen', 2: 'In Fachprüfung', 3: 'Bericht wird erstellt', 4: 'Abgeschlossen', 5: 'Abgelehnt', 6: 'Storniert' };
                 const subject = encodeURIComponent(`Statusänderung für Ihren Auftrag ${order.id}`);
                 const body = encodeURIComponent(`Hallo,\n\nder Bearbeitungsstand Ihres Auftrags (${order.packageName}) hat sich geändert.\n\nNeuer Status: ${statusNames[newStatus] || 'In Bearbeitung'}\n\nSie können Ihr Kundenportal einsehen, um Details abzurufen.\n\nMit freundlichen Grüßen\nSHK Angebotsprüfung`);
                 window.open(`mailto:${order.email}?subject=${subject}&body=${body}`);
