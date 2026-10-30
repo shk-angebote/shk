@@ -501,6 +501,13 @@
                             <span id="adminDepositAmount" class="text-sm font-black text-emerald-400">0 € Anzahlung</span>
                         </div>
 
+                        <!-- Manueller Preisnachlass (Euro) -->
+                        <div class="bg-slate-950 p-4 rounded-xl border border-slate-800 space-y-2">
+                            <label class="block text-xs font-semibold text-white">Manueller Preisnachlass (€)</label>
+                            <input type="number" id="adminManualPriceInput" class="w-full bg-slate-900 border border-slate-700 rounded-xl px-4 py-2.5 text-sm text-white focus:border-emerald-500 focus:outline-none" placeholder="z. B. 20 (Rabattbetrag in €)">
+                            <span class="text-[11px] text-slate-400 block">Der Betrag wird vom ursprünglichen Paketpreis abgezogen.</span>
+                        </div>
+
                         <!-- Zusätzliche Unterlagen anfordern Button -->
                         <div class="bg-slate-950 p-4 rounded-xl border border-slate-800 flex items-center justify-between">
                             <div>
@@ -786,6 +793,7 @@
                     price: finalCalculatedPrice,
                     originalPrice: selectedPackagePrice,
                     discountApplied: appliedDiscountPercent > 0 ? 'Angebot10' : null,
+                    manualDiscount: 0,
                     email: email,
                     notes: notes,
                     fileName: file.name,
@@ -1053,14 +1061,17 @@
             adminOrders.forEach(o => {
                 if (o.status == 5) return;
 
-                const price = o.price || 149;
+                const basePrice = o.price || 149;
+                const manualDiscount = parseFloat(o.manualDiscount) || 0;
+                const finalPrice = Math.max(0, basePrice - manualDiscount);
+
                 if (o.paymentStatus === 'paid') {
-                    currentRevenue += price;
+                    currentRevenue += finalPrice;
                 } else if (o.paymentStatus === 'partial') {
-                    currentRevenue += (price / 2);
-                    openRevenue += (price / 2);
+                    currentRevenue += (finalPrice / 2);
+                    openRevenue += (finalPrice / 2);
                 } else {
-                    openRevenue += price;
+                    openRevenue += finalPrice;
                 }
             });
 
@@ -1165,6 +1176,10 @@
             if (o.status == 5) statusLabel = 'Abgelehnt';
             if (o.isArchived) statusLabel = 'Archiviert';
 
+            const basePrice = o.price || 149;
+            const manualDiscount = parseFloat(o.manualDiscount) || 0;
+            const displayPrice = Math.max(0, basePrice - manualDiscount);
+
             return `
                 <div onclick="selectAdminOrder('${o.id}')" class="bg-slate-900 border ${selectedAdminOrderId === o.id ? 'border-amber-500' : 'border-slate-800'} hover:border-slate-700 rounded-xl p-4 cursor-pointer transition mb-3">
                     <div class="flex justify-between items-center mb-1">
@@ -1173,7 +1188,7 @@
                     </div>
                     <h4 class="text-white font-semibold text-sm truncate">${o.email}</h4>
                     <div class="mt-2 text-xs text-emerald-400 font-medium">
-                        <i class="fa-solid fa-box mr-1"></i>${o.packageName || 'Heizungs-Angebot'} (${o.price || 149} €)
+                        <i class="fa-solid fa-box mr-1"></i>${o.packageName || 'Heizungs-Angebot'} (${displayPrice} €) ${manualDiscount > 0 ? `<span class="text-xs text-amber-400">(inkl. ${manualDiscount}€ Rabatt)</span>` : ''}
                     </div>
                     <div class="flex justify-between items-center mt-2 text-xs text-slate-400">
                         <span class="${o.status == 5 ? 'text-rose-400 font-bold' : ''}">${statusLabel}</span>
@@ -1193,10 +1208,15 @@
             document.getElementById('adminSelectPrompt').classList.add('hidden');
             document.getElementById('adminEditorPanel').classList.remove('hidden');
 
-            document.getElementById('adminEditOrderId').textContent = `Auftrag ${order.id} — ${order.packageName || 'Paket'} (${order.price || 149} €)`;
+            const basePrice = order.price || 149;
+            const manualDiscount = parseFloat(order.manualDiscount) || 0;
+            const displayPrice = Math.max(0, basePrice - manualDiscount);
+
+            document.getElementById('adminEditOrderId').textContent = `Auftrag ${order.id} — ${order.packageName || 'Paket'} (${displayPrice} €)`;
             document.getElementById('adminEditCustomerEmail').textContent = order.email;
             document.getElementById('adminStatusSelect').value = order.status || 1;
             document.getElementById('adminPaymentSelect').value = order.paymentStatus || 'unpaid';
+            document.getElementById('adminManualPriceInput').value = order.manualDiscount || '';
             document.getElementById('adminSavingsInput').value = order.savings || '';
             document.getElementById('adminSummaryInput').value = order.summary || '';
             document.getElementById('adminDefectsInput').value = (order.defects || []).join('\n');
@@ -1222,8 +1242,7 @@
             
             if (isNewCustomer) {
                 noticeBox.classList.remove('hidden');
-                const priceNum = order.price || 149;
-                const depositNum = (priceNum / 2).toFixed(2);
+                const depositNum = (displayPrice / 2).toFixed(2);
                 document.getElementById('adminDepositAmount').textContent = `${depositNum} € Anzahlung (50%)`;
             } else {
                 noticeBox.classList.add('hidden');
@@ -1264,8 +1283,11 @@
             const order = adminOrders.find(o => o.id === selectedAdminOrderId);
             if (!order) return;
 
-            const price = order.price || 149;
-            const amount = type === '50' ? (price / 2).toFixed(2) + ' € (50% Anzahlung)' : price.toFixed(2) + ' € (100% Gesamtbetrag)';
+            const basePrice = order.price || 149;
+            const manualDiscount = parseFloat(order.manualDiscount) || 0;
+            const finalPrice = Math.max(0, basePrice - manualDiscount);
+
+            const amount = type === '50' ? (finalPrice / 2).toFixed(2) + ' € (50% Anzahlung)' : finalPrice.toFixed(2) + ' € (100% Gesamtbetrag)';
             const subject = encodeURIComponent(`Ihre Rechnung (${type === '50' ? 'Anzahlung' : 'Gesamt'}) für Auftrag ${order.id}`);
             const body = encodeURIComponent(`Hallo,\n\nanbei erhalten Sie die Rechnung für Ihren gebuchten Service (${order.packageName}).\n\nBetrag: ${amount}\n\nVielen Dank für Ihr Vertrauen!\n\nMit freundlichen Grüßen\nSHK Angebotsprüfung`);
 
@@ -1327,6 +1349,7 @@
 
             order.status = newStatus;
             order.paymentStatus = document.getElementById('adminPaymentSelect').value;
+            order.manualDiscount = parseFloat(document.getElementById('adminManualPriceInput').value) || 0;
             order.savings = document.getElementById('adminSavingsInput').value;
             order.summary = document.getElementById('adminSummaryInput').value;
             order.defects = document.getElementById('adminDefectsInput').value.split('\n').filter(Boolean);
@@ -1351,6 +1374,7 @@
                     await db.collection('orders').doc(order.idDoc).update({
                         status: order.status,
                         paymentStatus: order.paymentStatus,
+                        manualDiscount: order.manualDiscount,
                         savings: order.savings,
                         summary: order.summary,
                         defects: order.defects,
