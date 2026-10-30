@@ -207,6 +207,17 @@
                                     <input type="email" id="orderEmail" required placeholder="name@beispiel.de" class="w-full bg-slate-950 border border-slate-700 rounded-xl px-4 py-3 text-sm text-white focus:border-emerald-500 focus:outline-none">
                                 </div>
                             </div>
+
+                            <!-- Rabattcode Bereich -->
+                            <div>
+                                <label class="block text-xs font-medium text-slate-300 mb-1">Rabattcode (optional)</label>
+                                <div class="flex gap-2">
+                                    <input type="text" id="discountCodeInput" placeholder="z. B. Angebot10" class="w-full bg-slate-950 border border-slate-700 rounded-xl px-4 py-2.5 text-sm text-white focus:border-emerald-500 focus:outline-none uppercase">
+                                    <button type="button" onclick="applyDiscountCode()" class="bg-slate-800 hover:bg-slate-700 text-emerald-400 border border-emerald-500/30 font-semibold px-4 py-2.5 rounded-xl text-xs transition whitespace-nowrap">Code anwenden</button>
+                                </div>
+                                <span id="discountFeedback" class="text-xs mt-1 block"></span>
+                            </div>
+
                             <div>
                                 <label class="block text-xs font-medium text-slate-300 mb-1">Angebotsdatei (PDF, JPG, PNG)</label>
                                 <div class="border-2 border-dashed border-slate-700 hover:border-emerald-500 rounded-xl p-6 text-center cursor-pointer transition bg-slate-950/50">
@@ -433,13 +444,13 @@
 
             <!-- Admin Reiter Navigation -->
             <div class="flex space-x-2 border-b border-slate-800 mb-6">
-                <button onclick="switchAdminTab('active')" id="tabBtnActive" class="px-5 py-3 text-sm font-bold border-b-2 border-emerald-500 text-emerald-400 transition">
+                <button type="button" onclick="switchAdminTab('active')" id="tabBtnActive" class="px-5 py-3 text-sm font-bold border-b-2 border-emerald-500 text-emerald-400 transition">
                     <i class="fa-solid fa-list-check mr-2"></i>Aktive Aufträge
                 </button>
-                <button onclick="switchAdminTab('rejected')" id="tabBtnRejected" class="px-5 py-3 text-sm font-bold border-b-2 border-transparent text-slate-400 hover:text-white transition">
+                <button type="button" onclick="switchAdminTab('rejected')" id="tabBtnRejected" class="px-5 py-3 text-sm font-bold border-b-2 border-transparent text-slate-400 hover:text-white transition">
                     <i class="fa-solid fa-ban mr-2"></i>Abgelehnt
                 </button>
-                <button onclick="switchAdminTab('archive')" id="tabBtnArchive" class="px-5 py-3 text-sm font-bold border-b-2 border-transparent text-slate-400 hover:text-white transition">
+                <button type="button" onclick="switchAdminTab('archive')" id="tabBtnArchive" class="px-5 py-3 text-sm font-bold border-b-2 border-transparent text-slate-400 hover:text-white transition">
                     <i class="fa-solid fa-box-archive mr-2"></i>Archiv
                 </button>
             </div>
@@ -572,7 +583,7 @@
     <!-- AUTH MODAL (Login / Register / Passwort vergessen) -->
     <div id="authModal" class="fixed inset-0 z-50 flex items-center justify-center bg-slate-950/80 backdrop-blur-sm hidden">
         <div class="bg-slate-900 border border-slate-800 rounded-2xl p-8 max-w-md w-full mx-4 shadow-2xl relative">
-            <button onclick="closeAuthModal()" class="absolute top-4 right-4 text-slate-400 hover:text-white"><i class="fa-solid fa-xmark text-lg"></i></button>
+            <button type="button" onclick="closeAuthModal()" class="absolute top-4 right-4 text-slate-400 hover:text-white"><i class="fa-solid fa-xmark text-lg"></i></button>
             
             <h3 id="authModalTitle" class="text-2xl font-bold text-white mb-2">Kundenportal Login</h3>
             <p id="authModalSubtitle" class="text-slate-400 text-sm mb-6">Geben Sie Ihre Zugangsdaten ein, um Ihre Aufträge einzusehen.</p>
@@ -637,6 +648,7 @@
         let isForgotPasswordMode = false;
         let selectedPackageName = "Heizungs-Angebot";
         let selectedPackagePrice = 149;
+        let appliedDiscountPercent = 0;
         let userOrders = [];
         let activeOrderId = null;
         let adminOrders = [];
@@ -711,8 +723,34 @@
         function selectPackage(name, price) {
             selectedPackageName = name;
             selectedPackagePrice = price;
-            document.getElementById('selectedPackageInput').value = `${name} (${price} €)`;
+            updatePackageInputDisplay();
             document.getElementById('rechner').scrollIntoView({ behavior: 'smooth' });
+        }
+
+        function updatePackageInputDisplay() {
+            const finalPrice = selectedPackagePrice * (1 - appliedDiscountPercent);
+            let text = `${selectedPackageName} (${finalPrice.toFixed(0)} €`;
+            if (appliedDiscountPercent > 0) {
+                text += ` inkl. ${appliedDiscountPercent * 100}% Rabatt`;
+            }
+            text += `)`;
+            document.getElementById('selectedPackageInput').value = text;
+        }
+
+        function applyDiscountCode() {
+            const code = document.getElementById('discountCodeInput').value.trim().toUpperCase();
+            const feedback = document.getElementById('discountFeedback');
+
+            if (code === 'ANGEBOT10') {
+                appliedDiscountPercent = 0.10;
+                feedback.textContent = "Rabattcode 'Angebot10' erfolgreich angewendet (10% Rabatt)!";
+                feedback.className = "text-xs mt-1 block text-emerald-400 font-semibold";
+            } else {
+                appliedDiscountPercent = 0;
+                feedback.textContent = "Ungültiger Rabattcode.";
+                feedback.className = "text-xs mt-1 block text-rose-400";
+            }
+            updatePackageInputDisplay();
         }
 
         function handleFileSelect(event) {
@@ -740,11 +778,14 @@
             reader.onload = async function () {
                 const fileBase64 = reader.result;
                 const orderId = 'SHK-' + Math.floor(100000 + Math.random() * 900000);
+                const finalCalculatedPrice = selectedPackagePrice * (1 - appliedDiscountPercent);
 
                 const newOrder = {
                     id: orderId,
                     packageName: selectedPackageName,
-                    price: selectedPackagePrice,
+                    price: finalCalculatedPrice,
+                    originalPrice: selectedPackagePrice,
+                    discountApplied: appliedDiscountPercent > 0 ? 'Angebot10' : null,
                     email: email,
                     notes: notes,
                     fileName: file.name,
