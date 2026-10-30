@@ -680,7 +680,7 @@
         let activeOrderId = null;
         let adminOrders = [];
         let selectedAdminOrderId = null;
-        let currentAdminTab = 'active'; // 'active', 'rejected', 'cancelled', 'archive'
+        let currentAdminTab = 'active';
         let activeArchiveYear = null;
 
         const ADMIN_EMAIL = "admin@shk-angebote-pruefen.web.app";
@@ -876,7 +876,7 @@
 
         function renderClientPortalKPIs() {
             const totalOrders = userOrders.length;
-            const unpaidOrders = userOrders.filter(o => !o.paymentStatus || o.paymentStatus === 'unpaid').length;
+            const unpaidOrders = userOrders.filter(o => o.status != 6 && (!o.paymentStatus || o.paymentStatus === 'unpaid')).length;
             const completedOrders = userOrders.filter(o => o.status == 4).length;
 
             document.getElementById('clientStatTotal').textContent = totalOrders;
@@ -1035,10 +1035,14 @@
             if (!order || !order.idDoc) return;
 
             order.status = 6;
+            order.paymentStatus = 'paid'; // Automatisch auf bezahlt gestellt bei Stornierung
 
             if (db) {
                 try {
-                    await db.collection('orders').doc(order.idDoc).update({ status: 6 });
+                    await db.collection('orders').doc(order.idDoc).update({ 
+                        status: 6,
+                        paymentStatus: 'paid'
+                    });
                     alert('Auftrag wurde storniert.');
                     loadUserOrders();
                     selectClientOrder(order.id);
@@ -1420,6 +1424,13 @@
 
             order.status = newStatus;
             order.paymentStatus = document.getElementById('adminPaymentSelect').value;
+            
+            // Wenn im Admin-Panel Status auf Storniert (6) gesetzt wird -> automatisch paymentStatus auf 'paid' setzen
+            if (newStatus === 6) {
+                order.paymentStatus = 'paid';
+                document.getElementById('adminPaymentSelect').value = 'paid';
+            }
+
             order.manualDiscount = parseFloat(document.getElementById('adminManualPriceInput').value) || 0;
             order.savings = document.getElementById('adminSavingsInput').value;
             order.summary = document.getElementById('adminSummaryInput').value;
@@ -1516,7 +1527,7 @@
                 document.getElementById('authPassword').required = true;
                 toggleText.textContent = "Bereits ein Konto?";
                 toggleBtn.textContent = "Anmelden";
-                forgotBtn.classList.remove('hidden');
+                forgotBtn.classList.add('hidden');
             } else {
                 title.textContent = "Kundenportal Login";
                 subtitle.textContent = "Geben Sie Ihre Zugangsdaten ein, um Ihre Aufträge einzusehen.";
