@@ -482,8 +482,14 @@
                 <div class="lg:col-span-1 space-y-4">
                     <div id="adminListHeaderContainer" class="space-y-3">
                         <h2 id="adminListTitle" class="text-lg font-bold text-white mb-2">Aktive Aufträge</h2>
-                        <div id="adminSearchContainer" class="hidden">
+                        <div id="adminSearchContainer" class="hidden space-y-2">
                             <input type="text" id="marketPriceSearchInput" oninput="renderMarketPricesTable()" placeholder="🔍 Nach Position suchen (z.B. Hahn)..." class="w-full bg-slate-950 border border-slate-700 rounded-xl px-4 py-2.5 text-xs text-white focus:border-emerald-500 focus:outline-none">
+                            <div class="flex gap-1">
+                                <button type="button" onclick="filterMarketPricesCategory('Alle')" id="catBtnAlle" class="flex-1 bg-emerald-500 text-slate-950 font-bold py-1.5 rounded-lg text-[11px] transition">Alle</button>
+                                <button type="button" onclick="filterMarketPricesCategory('Heizung')" id="catBtnHeizung" class="flex-1 bg-slate-800 text-slate-300 hover:bg-slate-700 font-semibold py-1.5 rounded-lg text-[11px] transition">Heizung</button>
+                                <button type="button" onclick="filterMarketPricesCategory('Sanitär')" id="catBtnSanitaer" class="flex-1 bg-slate-800 text-slate-300 hover:bg-slate-700 font-semibold py-1.5 rounded-lg text-[11px] transition">Sanitär</button>
+                                <button type="button" onclick="filterMarketPricesCategory('Allgemein')" id="catBtnAllgemein" class="flex-1 bg-slate-800 text-slate-300 hover:bg-slate-700 font-semibold py-1.5 rounded-lg text-[11px] transition">Allgem.</button>
+                            </div>
                         </div>
                     </div>
                     <div id="adminOrdersList" class="space-y-3">
@@ -501,26 +507,36 @@
                     <!-- Marktpreise Management Panel -->
                     <div id="adminMarketPricesPanel" class="hidden bg-slate-900 border border-slate-800 rounded-2xl p-6 shadow-xl space-y-6">
                         <h3 class="text-lg font-bold text-white border-b border-slate-800 pb-4"><i class="fa-solid fa-database text-emerald-400 mr-2"></i>Marktpreis-Datenbank & Mittelwert</h3>
-                        <p class="text-xs text-slate-400">Trage hier marktübliche Positionen und verschiedene Vergleichspreise ein. Das System errechnet automatisch den Mittelwert.</p>
+                        <p class="text-xs text-slate-400">Trage hier marktübliche Positionen, Kategorien und Vergleichspreise ein. Das System errechnet automatisch den Mittelwert.</p>
                         
                         <form onsubmit="saveMarketPriceItem(event)" class="space-y-4 bg-slate-950 p-4 rounded-xl border border-slate-800">
                             <input type="hidden" id="marketPriceDocId">
-                            <div>
-                                <label class="block text-xs font-medium text-slate-300 mb-1">Position / Leistungsbeschreibung</label>
-                                <input type="text" id="mpTitle" required placeholder="z. B. Luft-Wasser-Wärmepumpe inkl. Montage" class="w-full bg-slate-900 border border-slate-700 rounded-xl px-4 py-2.5 text-sm text-white focus:border-emerald-500 focus:outline-none">
+                            <div class="grid grid-cols-1 sm:grid-cols-3 gap-3">
+                                <div class="sm:col-span-2">
+                                    <label class="block text-xs font-medium text-slate-300 mb-1">Position / Leistungsbeschreibung</label>
+                                    <input type="text" id="mpTitle" required placeholder="z. B. Wasserhahn / Waschtischarmatur" class="w-full bg-slate-900 border border-slate-700 rounded-xl px-4 py-2.5 text-sm text-white focus:border-emerald-500 focus:outline-none">
+                                </div>
+                                <div>
+                                    <label class="block text-xs font-medium text-slate-300 mb-1">Kategorie</label>
+                                    <select id="mpCategory" class="w-full bg-slate-900 border border-slate-700 rounded-xl px-4 py-2.5 text-sm text-white focus:border-emerald-500 focus:outline-none">
+                                        <option value="Heizung">Heizung</option>
+                                        <option value="Sanitär">Sanitär</option>
+                                        <option value="Allgemein">Allgemein</option>
+                                    </select>
+                                </div>
                             </div>
                             <div class="grid grid-cols-1 sm:grid-cols-3 gap-3">
                                 <div>
                                     <label class="block text-xs font-medium text-slate-300 mb-1">Preis Angebot 1 (€)</label>
-                                    <input type="number" step="0.01" id="mpPrice1" required class="w-full bg-slate-900 border border-slate-700 rounded-xl px-4 py-2 text-sm text-white focus:border-emerald-500 focus:outline-none" placeholder="12000">
+                                    <input type="number" step="0.01" id="mpPrice1" required class="w-full bg-slate-900 border border-slate-700 rounded-xl px-4 py-2 text-sm text-white focus:border-emerald-500 focus:outline-none" placeholder="150">
                                 </div>
                                 <div>
                                     <label class="block text-xs font-medium text-slate-300 mb-1">Preis Angebot 2 (€)</label>
-                                    <input type="number" step="0.01" id="mpPrice2" class="w-full bg-slate-900 border border-slate-700 rounded-xl px-4 py-2 text-sm text-white focus:border-emerald-500 focus:outline-none" placeholder="13500">
+                                    <input type="number" step="0.01" id="mpPrice2" class="w-full bg-slate-900 border border-slate-700 rounded-xl px-4 py-2 text-sm text-white focus:border-emerald-500 focus:outline-none" placeholder="180">
                                 </div>
                                 <div>
                                     <label class="block text-xs font-medium text-slate-300 mb-1">Preis Angebot 3 (€)</label>
-                                    <input type="number" step="0.01" id="mpPrice3" class="w-full bg-slate-900 border border-slate-700 rounded-xl px-4 py-2 text-sm text-white focus:border-emerald-500 focus:outline-none" placeholder="11800">
+                                    <input type="number" step="0.01" id="mpPrice3" class="w-full bg-slate-900 border border-slate-700 rounded-xl px-4 py-2 text-sm text-white focus:border-emerald-500 focus:outline-none" placeholder="165">
                                 </div>
                             </div>
                             <div class="flex gap-3 pt-2">
@@ -732,6 +748,7 @@
         let selectedAdminOrderId = null;
         let currentAdminTab = 'active'; // 'active', 'rejected', 'cancelled', 'archive', 'marketprices'
         let activeArchiveYear = null;
+        let activeMarketPriceCategory = 'Alle';
 
         const ADMIN_EMAIL = "admin@shk-angebote-pruefen.web.app";
 
@@ -1174,6 +1191,7 @@
             event.preventDefault();
             const docId = document.getElementById('marketPriceDocId').value;
             const title = document.getElementById('mpTitle').value;
+            const category = document.getElementById('mpCategory').value;
             const p1 = parseFloat(document.getElementById('mpPrice1').value) || 0;
             const p2 = parseFloat(document.getElementById('mpPrice2').value) || 0;
             const p3 = parseFloat(document.getElementById('mpPrice3').value) || 0;
@@ -1183,6 +1201,7 @@
 
             const itemData = {
                 title: title,
+                category: category,
                 prices: [p1, p2, p3],
                 average: avg,
                 updatedAt: new Date().toISOString()
@@ -1210,6 +1229,7 @@
 
             document.getElementById('marketPriceDocId').value = item.idDoc;
             document.getElementById('mpTitle').value = item.title;
+            document.getElementById('mpCategory').value = item.category || 'Allgemein';
             document.getElementById('mpPrice1').value = item.prices[0] || '';
             document.getElementById('mpPrice2').value = item.prices[1] || '';
             document.getElementById('mpPrice3').value = item.prices[2] || '';
@@ -1230,9 +1250,25 @@
         function resetMarketPriceForm() {
             document.getElementById('marketPriceDocId').value = '';
             document.getElementById('mpTitle').value = '';
+            document.getElementById('mpCategory').value = 'Heizung';
             document.getElementById('mpPrice1').value = '';
             document.getElementById('mpPrice2').value = '';
             document.getElementById('mpPrice3').value = '';
+        }
+
+        function filterMarketPricesCategory(cat) {
+            activeMarketPriceCategory = cat;
+            ['Alle', 'Heizung', 'Sanitär', 'Allgemein'].forEach(c => {
+                const btn = document.getElementById('catBtn' + (c === 'Allgemein' ? 'Allgemein' : c));
+                if (btn) {
+                    if (c === cat) {
+                        btn.className = "flex-1 bg-emerald-500 text-slate-950 font-bold py-1.5 rounded-lg text-[11px] transition";
+                    } else {
+                        btn.className = "flex-1 bg-slate-800 text-slate-300 hover:bg-slate-700 font-semibold py-1.5 rounded-lg text-[11px] transition";
+                    }
+                }
+            });
+            renderMarketPricesTable();
         }
 
         function renderMarketPricesTable() {
@@ -1240,11 +1276,14 @@
             const searchInput = document.getElementById('marketPriceSearchInput');
             const query = searchInput ? searchInput.value.toLowerCase().trim() : '';
 
-            // Fuzzy / Teilwort-Suche
             const filteredPrices = marketPrices.filter(m => {
+                // Kategorie-Filter
+                if (activeMarketPriceCategory !== 'Alle' && m.category !== activeMarketPriceCategory) {
+                    return false;
+                }
+                // Suchwort-Filter
                 if (!query) return true;
                 const titleLower = m.title.toLowerCase();
-                // Prüfen ob jedes Suchwort irgendwo im Titel vorkommt
                 const words = query.split(/\s+/);
                 return words.every(word => titleLower.includes(word));
             });
@@ -1259,6 +1298,7 @@
                     <thead class="bg-slate-950 text-slate-400 uppercase border-b border-slate-800">
                         <tr>
                             <th class="p-3">Position</th>
+                            <th class="p-3">Kategorie</th>
                             <th class="p-3">Preise (€)</th>
                             <th class="p-3 text-emerald-400 font-bold">Mittelwert</th>
                             <th class="p-3 text-right">Aktion</th>
@@ -1268,6 +1308,7 @@
                         ${filteredPrices.map(m => `
                             <tr class="hover:bg-slate-950/50">
                                 <td class="p-3 font-semibold text-white">${m.title}</td>
+                                <td class="p-3"><span class="bg-slate-800 px-2 py-0.5 rounded text-[10px] text-emerald-400">${m.category || 'Allgemein'}</span></td>
                                 <td class="p-3">${m.prices.filter(p => p > 0).join(' € / ')} €</td>
                                 <td class="p-3 text-emerald-400 font-black">${m.average.toLocaleString('de-DE', {minimumFractionDigits: 2, maximumFractionDigits: 2})} €</td>
                                 <td class="p-3 text-right space-x-2">
