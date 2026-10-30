@@ -458,7 +458,7 @@
                 </div>
             </div>
 
-            <!-- Admin Reiter Navigation (inkl. Marktpreise-DB) -->
+            <!-- Admin Reiter Navigation -->
             <div class="flex flex-wrap gap-2 border-b border-slate-800 mb-6">
                 <button type="button" onclick="switchAdminTab('active')" id="tabBtnActive" class="px-5 py-3 text-sm font-bold border-b-2 border-emerald-500 text-emerald-400 transition">
                     <i class="fa-solid fa-list-check mr-2"></i>Aktive Aufträge
@@ -478,9 +478,14 @@
             </div>
 
             <div class="grid grid-cols-1 lg:grid-cols-3 gap-8">
-                <!-- Admin Orders Table / List ODER Marktpreise Liste -->
+                <!-- Admin Orders Table / List ODER Suchleiste für Marktpreise -->
                 <div class="lg:col-span-1 space-y-4">
-                    <h2 id="adminListTitle" class="text-lg font-bold text-white mb-2">Aktive Aufträge</h2>
+                    <div id="adminListHeaderContainer" class="space-y-3">
+                        <h2 id="adminListTitle" class="text-lg font-bold text-white mb-2">Aktive Aufträge</h2>
+                        <div id="adminSearchContainer" class="hidden">
+                            <input type="text" id="marketPriceSearchInput" oninput="renderMarketPricesTable()" placeholder="🔍 Nach Position suchen (z.B. Hahn)..." class="w-full bg-slate-950 border border-slate-700 rounded-xl px-4 py-2.5 text-xs text-white focus:border-emerald-500 focus:outline-none">
+                        </div>
+                    </div>
                     <div id="adminOrdersList" class="space-y-3">
                         <!-- Populated dynamically -->
                     </div>
@@ -1232,8 +1237,20 @@
 
         function renderMarketPricesTable() {
             const container = document.getElementById('marketPricesTableContainer');
-            if (marketPrices.length === 0) {
-                container.innerHTML = `<p class="text-xs text-slate-500">Keine Marktpreise hinterlegt.</p>`;
+            const searchInput = document.getElementById('marketPriceSearchInput');
+            const query = searchInput ? searchInput.value.toLowerCase().trim() : '';
+
+            // Fuzzy / Teilwort-Suche
+            const filteredPrices = marketPrices.filter(m => {
+                if (!query) return true;
+                const titleLower = m.title.toLowerCase();
+                // Prüfen ob jedes Suchwort irgendwo im Titel vorkommt
+                const words = query.split(/\s+/);
+                return words.every(word => titleLower.includes(word));
+            });
+
+            if (filteredPrices.length === 0) {
+                container.innerHTML = `<p class="text-xs text-slate-500 py-4 text-center">Keine passenden Marktpreise gefunden.</p>`;
                 return;
             }
 
@@ -1248,7 +1265,7 @@
                         </tr>
                     </thead>
                     <tbody class="divide-y divide-slate-800">
-                        ${marketPrices.map(m => `
+                        ${filteredPrices.map(m => `
                             <tr class="hover:bg-slate-950/50">
                                 <td class="p-3 font-semibold text-white">${m.title}</td>
                                 <td class="p-3">${m.prices.filter(p => p > 0).join(' € / ')} €</td>
@@ -1277,14 +1294,17 @@
             const selectPrompt = document.getElementById('adminSelectPrompt');
             const editorPanel = document.getElementById('adminEditorPanel');
             const marketPricesPanel = document.getElementById('adminMarketPricesPanel');
+            const searchContainer = document.getElementById('adminSearchContainer');
 
             if (tabName === 'marketprices') {
                 selectPrompt.classList.add('hidden');
                 editorPanel.classList.add('hidden');
                 marketPricesPanel.classList.remove('hidden');
+                searchContainer.classList.remove('hidden');
                 loadMarketPrices();
             } else {
                 marketPricesPanel.classList.add('hidden');
+                searchContainer.classList.add('hidden');
                 if (!selectedAdminOrderId) {
                     selectPrompt.classList.remove('hidden');
                     editorPanel.classList.add('hidden');
