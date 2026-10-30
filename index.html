@@ -362,7 +362,7 @@
                 </button>
             </div>
 
-            <!-- Admin KPIs -->
+            <!-- Admin KPIs (Bezieht nun auch archivierte Aufträge mit ein) -->
             <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 mb-8">
                 <div class="bg-slate-900 border border-slate-800 rounded-2xl p-5">
                     <span class="text-xs text-slate-400 block">Aktueller Umsatz (Eingenommen)</span>
@@ -381,19 +381,19 @@
                     <span id="adminStatSavings" class="text-2xl font-bold text-emerald-400 mt-1 block">0 €</span>
                 </div>
                 <div class="bg-slate-900 border border-slate-800 rounded-2xl p-5">
-                    <span class="text-xs text-slate-400 block">Neue Aufträge</span>
+                    <span class="text-xs text-slate-400 block">Neue Aufträge (Aktiv)</span>
                     <span id="adminStatNew" class="text-xl font-bold text-white mt-1 block">0</span>
                 </div>
                 <div class="bg-slate-900 border border-slate-800 rounded-2xl p-5">
-                    <span class="text-xs text-slate-400 block">Offene Aufträge</span>
+                    <span class="text-xs text-slate-400 block">Offene Aufträge (Aktiv)</span>
                     <span id="adminStatOpen" class="text-xl font-bold text-white mt-1 block">0</span>
                 </div>
                 <div class="bg-slate-900 border border-slate-800 rounded-2xl p-5">
-                    <span class="text-xs text-slate-400 block">In Prüfung</span>
+                    <span class="text-xs text-slate-400 block">In Prüfung (Aktiv)</span>
                     <span id="adminStatReview" class="text-xl font-bold text-amber-400 mt-1 block">0</span>
                 </div>
                 <div class="bg-slate-900 border border-slate-800 rounded-2xl p-5">
-                    <span class="text-xs text-slate-400 block">Abgeschlossen</span>
+                    <span class="text-xs text-slate-400 block">Abgeschlossen (Aktiv)</span>
                     <span id="adminStatDone" class="text-xl font-bold text-emerald-400 mt-1 block">0</span>
                 </div>
             </div>
@@ -910,11 +910,12 @@
             const inReview = adminOrders.filter(o => !o.isArchived && (o.status == 2 || o.status == 3)).length;
             const completed = adminOrders.filter(o => !o.isArchived && o.status == 4).length;
 
+            // Umsatz-Berechnungen (Berücksichtigt nun auch das Archiv, schließt nur Status 5 / Abgelehnt aus)
             let currentRevenue = 0;
             let openRevenue = 0;
 
             adminOrders.forEach(o => {
-                if (o.status == 5 || o.isArchived) return;
+                if (o.status == 5) return; // Abgelehnte Aufträge fließen nicht in den Umsatz
 
                 const price = o.price || 149;
                 if (o.paymentStatus === 'paid') {
@@ -935,7 +936,7 @@
 
             let totalSavingsNum = 0;
             adminOrders.forEach(o => {
-                if (o.savings && o.status != 5 && !o.isArchived) {
+                if (o.savings && o.status != 5) {
                     const num = parseInt(o.savings.replace(/[^0-9]/g, '')) || 0;
                     totalSavingsNum += num;
                 }
@@ -979,7 +980,6 @@
 
                 container.innerHTML = rejectedOrders.map(o => renderOrderCard(o, emailCounts)).join('');
             } else if (currentAdminTab === 'archive') {
-                // Archiv nach Jahren gruppieren
                 const archiveOrders = adminOrders.filter(o => o.isArchived);
                 const yearsMap = {};
 
