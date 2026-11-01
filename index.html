@@ -68,6 +68,7 @@
     <main id="appContainer">
         <!-- LANDING VIEW -->
         <div id="landingView">
+            <!-- Hero Section -->
             <section class="relative pt-20 pb-24 overflow-hidden">
                 <div class="absolute inset-0 bg-[radial-gradient(ellipse_at_top,_var(--tw-gradient-stops))] from-emerald-900/20 via-slate-900 to-slate-900 -z-10"></div>
                 <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 text-center">
@@ -89,18 +90,51 @@
                             Zum Kundenportal
                         </button>
                     </div>
+
+                    <!-- Trust Indicators -->
+                    <div id="vorteile" class="mt-16 pt-12 border-t border-slate-800/80 grid grid-cols-2 md:grid-cols-4 gap-6 text-left max-w-5xl mx-auto">
+                        <div class="flex items-start space-x-3">
+                            <div class="text-emerald-400 text-xl"><i class="fa-solid fa-circle-check"></i></div>
+                            <div>
+                                <h4 class="text-white font-semibold text-sm">100% Unabhängig</h4>
+                                <p class="text-slate-400 text-xs mt-0.5">Keine Provisionen, rein sachlich.</p>
+                            </div>
+                        </div>
+                        <div class="flex items-start space-x-3">
+                            <div class="text-emerald-400 text-xl"><i class="fa-solid fa-user-gear"></i></div>
+                            <div>
+                                <h4 class="text-white font-semibold text-sm">Meister-Kompetenz</h4>
+                                <p class="text-slate-400 text-xs mt-0.5">Geprüft durch erfahrene TGA-Praxis.</p>
+                            </div>
+                        </div>
+                        <div class="flex items-start space-x-3">
+                            <div class="text-emerald-400 text-xl"><i class="fa-solid fa-bolt"></i></div>
+                            <div>
+                                <h4 class="text-white font-semibold text-sm">Schnelle Analyse</h4>
+                                <p class="text-slate-400 text-xs mt-0.5">Ergebnis meist innerhalb von 48h.</p>
+                            </div>
+                        </div>
+                        <div class="flex items-start space-x-3">
+                            <div class="text-emerald-400 text-xl"><i class="fa-solid fa-file-shield"></i></div>
+                            <div>
+                                <h4 class="text-white font-semibold text-sm">Datenschutz</h4>
+                                <p class="text-slate-400 text-xs mt-0.5">Sichere Cloud & DSGVO-konform.</p>
+                            </div>
+                        </div>
+                    </div>
                 </div>
             </section>
 
-            <!-- Pricing & Upload Section -->
+            <!-- Pricing & Interactive Calculator Section -->
             <section id="preise" class="py-20 bg-slate-950/50 border-y border-slate-800/60">
                 <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
                     <div class="text-center max-w-3xl mx-auto mb-16">
                         <h2 class="text-3xl font-bold text-white">Transparente Pakete & Auftrags-Upload</h2>
-                        <p class="text-slate-400 mt-3">Wählen Sie Ihr Gewerk und laden Sie Ihr Angebot direkt hoch.</p>
+                        <p class="text-slate-400 mt-3">Wählen Sie Ihr Gewerk und laden Sie Ihr Angebot direkt hoch, um den Prüfprozess zu starten.</p>
                     </div>
 
                     <div class="grid grid-cols-1 lg:grid-cols-3 gap-8 items-start">
+                        <!-- Package Cards -->
                         <div class="bg-slate-900 border border-slate-800 rounded-2xl p-8 shadow-xl flex flex-col justify-between">
                             <div>
                                 <span class="text-emerald-400 font-semibold text-xs uppercase tracking-wider">Basis Check</span>
@@ -109,9 +143,16 @@
                                     <span class="text-4xl font-extrabold text-white">149 €</span>
                                     <span class="text-slate-400 ml-2 text-sm">inkl. MwSt.</span>
                                 </div>
+                                <p class="text-slate-400 text-sm mt-4">Ideal für den schnellen Plausibilitätscheck von Wärmepumpen- oder Heizungsangeboten.</p>
+                                <ul class="mt-6 space-y-3 text-sm text-slate-300">
+                                    <li class="flex items-center"><i class="fa-solid fa-check text-emerald-400 mr-3"></i>Plausibilitätsprüfung der angebotenen Heizleistung anhand der vorliegenden Unterlagen</li>
+                                    <li class="flex items-center"><i class="fa-solid fa-check text-emerald-400 mr-3"></i>Einheitspreis-Check (Material & Montage)</li>
+                                    <li class="flex items-center"><i class="fa-solid fa-check text-emerald-400 mr-3"></i>Schriftlicher Prüfbericht als PDF</li>
+                                </ul>
                             </div>
                             <button type="button" onclick="selectPackage('Heizungs-Angebot', 149)" class="mt-8 w-full bg-slate-800 hover:bg-emerald-500 hover:text-slate-950 text-white font-semibold py-3 rounded-xl transition">Paket wählen</button>
                         </div>
+
                         <div class="bg-slate-900 border-2 border-emerald-500 rounded-2xl p-8 shadow-2xl relative flex flex-col justify-between">
                             <div class="absolute -top-3.5 left-1/2 transform -translate-x-1/2 bg-emerald-500 text-slate-950 text-xs font-bold uppercase tracking-wider px-3 py-1 rounded-full">Beliebt</div>
                             <div>
@@ -121,9 +162,16 @@
                                     <span class="text-4xl font-extrabold text-white">249 €</span>
                                     <span class="text-slate-400 ml-2 text-sm">inkl. MwSt.</span>
                                 </div>
+                                <p class="text-slate-400 text-sm mt-4">Tiefenprüfung für Badsanierungen inklusive Schnittstellen & Nebenleistungen.</p>
+                                <ul class="mt-6 space-y-3 text-sm text-slate-300">
+                                    <li class="flex items-center"><i class="fa-solid fa-check text-emerald-400 mr-3"></i>Vollständigkeitsprüfung Gewerke</li>
+                                    <li class="flex items-center"><i class="fa-solid fa-check text-emerald-400 mr-3"></i>Identifikation erkennbarer Lücken und möglicher Nachtragsrisiken</li>
+                                    <li class="flex items-center"><i class="fa-solid fa-check text-emerald-400 mr-3"></i>Detaillierter Maßnahmen- & Einsparkatalog</li>
+                                </ul>
                             </div>
                             <button type="button" onclick="selectPackage('Komplettbad / Sanitär', 249)" class="mt-8 w-full bg-emerald-500 hover:bg-emerald-600 text-slate-950 font-bold py-3 rounded-xl transition shadow-lg shadow-emerald-500/20">Paket wählen</button>
                         </div>
+
                         <div class="bg-slate-900 border border-slate-800 rounded-2xl p-8 shadow-xl flex flex-col justify-between">
                             <div>
                                 <span class="text-emerald-400 font-semibold text-xs uppercase tracking-wider">Multi-Angebot</span>
@@ -132,6 +180,12 @@
                                     <span class="text-4xl font-extrabold text-white">349 €</span>
                                     <span class="text-slate-400 ml-2 text-sm">inkl. MwSt.</span>
                                 </div>
+                                <p class="text-slate-400 text-sm mt-4">Gegenüberstellung von bis zu 3 konkurrierenden Installteursangeboten.</p>
+                                <ul class="mt-6 space-y-3 text-sm text-slate-300">
+                                    <li class="flex items-center"><i class="fa-solid fa-check text-emerald-400 mr-3"></i>Direkter Leistungs- & Preisvergleich</li>
+                                    <li class="flex items-center"><i class="fa-solid fa-check text-emerald-400 mr-3"></i>Auswertung technischer Differenzen</li>
+                                    <li class="flex items-center"><i class="fa-solid fa-check text-emerald-400 mr-3"></i>Vergabeempfehlung mit Begründung (unter Angabe von Grenzen und Voraussetzungen)</li>
+                                </ul>
                             </div>
                             <button type="button" onclick="selectPackage('Angebotsvergleich', 349)" class="mt-8 w-full bg-slate-800 hover:bg-emerald-500 hover:text-slate-950 text-white font-semibold py-3 rounded-xl transition">Paket wählen</button>
                         </div>
@@ -140,6 +194,8 @@
                     <!-- Upload & Inquiry Box -->
                     <div id="rechner" class="mt-16 bg-slate-900 border border-slate-800 rounded-2xl p-8 max-w-3xl mx-auto shadow-2xl">
                         <h3 class="text-xl font-bold text-white mb-2"><i class="fa-solid fa-cloud-arrow-up text-emerald-400 mr-2"></i>Auftrag einreichen</h3>
+                        <p class="text-slate-400 text-sm mb-6">Füllen Sie die Eckdaten aus und laden Sie Ihr Angebot (PDF oder Bilder) hoch. Nach dem Absenden wird automatisch Ihr Kundenkonto erstellt bzw. verknüpft.</p>
+                        
                         <form id="orderForm" onsubmit="handleOrderSubmission(event)" class="space-y-4">
                             <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
                                 <div>
@@ -148,39 +204,77 @@
                                 </div>
                                 <div>
                                     <label class="block text-xs font-medium text-slate-300 mb-1">E-Mail-Adresse</label>
-                                    <input type="email" id="orderEmail" required placeholder="name@beispiel.de" class="w-full bg-slate-950 border border-slate-700 rounded-xl px-4 py-3 text-sm text-white focus:outline-none">
+                                    <input type="email" id="orderEmail" required placeholder="name@beispiel.de" class="w-full bg-slate-950 border border-slate-700 rounded-xl px-4 py-3 text-sm text-white focus:border-emerald-500 focus:outline-none">
                                 </div>
                             </div>
+
+                            <!-- NEU: Vor- und Nachname (nur bei Neukunden erforderlich) -->
                             <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
                                 <div>
-                                    <label class="block text-xs font-medium text-slate-300 mb-1">Vorname (Neukunde)</label>
-                                    <input type="text" id="orderFirstName" placeholder="Max" class="w-full bg-slate-950 border border-slate-700 rounded-xl px-4 py-3 text-sm text-white focus:outline-none">
+                                    <label class="block text-xs font-medium text-slate-300 mb-1">Vorname (nur für Neukunden)</label>
+                                    <input type="text" id="orderFirstName" placeholder="Max" class="w-full bg-slate-950 border border-slate-700 rounded-xl px-4 py-3 text-sm text-white focus:border-emerald-500 focus:outline-none">
                                 </div>
                                 <div>
-                                    <label class="block text-xs font-medium text-slate-300 mb-1">Nachname (Neukunde)</label>
-                                    <input type="text" id="orderLastName" placeholder="Mustermann" class="w-full bg-slate-950 border border-slate-700 rounded-xl px-4 py-3 text-sm text-white focus:outline-none">
+                                    <label class="block text-xs font-medium text-slate-300 mb-1">Nachname (nur für Neukunden)</label>
+                                    <input type="text" id="orderLastName" placeholder="Mustermann" class="w-full bg-slate-950 border border-slate-700 rounded-xl px-4 py-3 text-sm text-white focus:border-emerald-500 focus:outline-none">
+                                </div>
+                            </div>
+
+                            <!-- Passwortfeld für Neukunden / optional für Bestandskunden -->
+                            <div>
+                                <label class="block text-xs font-medium text-slate-300 mb-1">Passwort (nur für Neukunden Pflicht)</label>
+                                <input type="password" id="orderPasswordInput" placeholder="Passwort für neues Kundenkonto (min. 6 Zeichen)" class="w-full bg-slate-950 border border-slate-700 rounded-xl px-4 py-3 text-sm text-white focus:border-emerald-500 focus:outline-none">
+                                <span class="text-[11px] text-slate-400 mt-1 block">Bestandskunden können das Feld leer lassen. Neukunden müssen Vorname, Nachname und ein Passwort angeben.</span>
+                            </div>
+
+                            <!-- Rabattcode Bereich -->
+                            <div>
+                                <label class="block text-xs font-medium text-slate-300 mb-1">Rabattcode (optional)</label>
+                                <div class="flex gap-2">
+                                    <input type="text" id="discountCodeInput" placeholder="z. B. Angebot10" class="w-full bg-slate-950 border border-slate-700 rounded-xl px-4 py-2.5 text-sm text-white focus:border-emerald-500 focus:outline-none uppercase">
+                                    <button type="button" onclick="applyDiscountCode()" class="bg-slate-800 hover:bg-slate-700 text-emerald-400 border border-emerald-500/30 font-semibold px-4 py-2.5 rounded-xl text-xs transition whitespace-nowrap">Code anwenden</button>
+                                </div>
+                                <span id="discountFeedback" class="text-xs mt-1 block"></span>
+                            </div>
+
+                            <div>
+                                <label class="block text-xs font-medium text-slate-300 mb-1">Angebotsdatei (PDF, JPG, PNG)</label>
+                                <div class="border-2 border-dashed border-slate-700 hover:border-emerald-500 rounded-xl p-6 text-center cursor-pointer transition bg-slate-950/50">
+                                    <input type="file" id="offerFile" class="hidden" onchange="handleFileSelect(event)">
+                                    <label for="offerFile" class="cursor-pointer">
+                                        <i class="fa-solid fa-file-arrow-up text-3xl text-emerald-400 mb-2"></i>
+                                        <p id="fileNameDisplay" class="text-sm text-slate-300 font-medium">Klicken zum Hochladen oder Datei hierher ziehen</p>
+                                        <span class="text-xs text-slate-500 mt-1 block">Max. Dateigröße 25 MB</span>
+                                    </label>
                                 </div>
                             </div>
                             <div>
-                                <label class="block text-xs font-medium text-slate-300 mb-1">Bauvorhaben / Projekt</label>
-                                <input type="text" id="orderProjectName" placeholder="z. B. EFH Hauptstraße 12" class="w-full bg-slate-950 border border-slate-700 rounded-xl px-4 py-3 text-sm text-white focus:outline-none" value="Standard Projekt">
+                                <label class="block text-xs font-medium text-slate-300 mb-1">Zusätzliche Hinweise / Fragen an den Prüfer</label>
+                                <textarea id="orderNotes" rows="3" placeholder="z. B. Unser Haus ist von 1995, Fußbodenheizung im Erdgeschoss..." class="w-full bg-slate-950 border border-slate-700 rounded-xl px-4 py-3 text-sm text-white focus:border-emerald-500 focus:outline-none"></textarea>
                             </div>
-                            <div>
-                                <label class="block text-xs font-medium text-slate-300 mb-1">Passwort (nur Neukunden Pflicht)</label>
-                                <input type="password" id="orderPasswordInput" placeholder="Min. 6 Zeichen" class="w-full bg-slate-950 border border-slate-700 rounded-xl px-4 py-3 text-sm text-white focus:outline-none">
-                            </div>
-                            <div>
-                                <label class="block text-xs font-medium text-slate-300 mb-1">Angebotsdatei (PDF, JPG, PNG)</label>
-                                <input type="file" id="offerFile" required class="w-full text-xs text-slate-400 bg-slate-950 rounded-xl border border-slate-700 p-2 cursor-pointer">
-                            </div>
-                            <div>
-                                <label class="block text-xs font-medium text-slate-300 mb-1">Zusätzliche Hinweise</label>
-                                <textarea id="orderNotes" rows="2" placeholder="Hinweise..." class="w-full bg-slate-950 border border-slate-700 rounded-xl px-4 py-3 text-sm text-white focus:outline-none"></textarea>
-                            </div>
-                            <button type="submit" class="w-full bg-emerald-500 hover:bg-emerald-600 text-slate-950 font-bold py-4 rounded-xl text-base transition">
-                                <i class="fa-solid fa-paper-plane mr-2"></i>Verbindlich anfragen
+                            <button type="submit" class="w-full bg-emerald-500 hover:bg-emerald-600 text-slate-950 font-bold py-4 rounded-xl text-base shadow-lg shadow-emerald-500/20 transition">
+                                <i class="fa-solid fa-paper-plane mr-2"></i>Verbindlich anfragen & Kundenportal öffnen
                             </button>
                         </form>
+                    </div>
+                </div>
+            </section>
+
+            <!-- FAQ Section -->
+            <section id="faq" class="py-20 max-w-4xl mx-auto px-4 sm:px-6 lg:px-8">
+                <h2 class="text-3xl font-bold text-white text-center mb-12">Häufig gestellte Fragen (FAQ)</h2>
+                <div class="space-y-4">
+                    <div class="bg-slate-900 border border-slate-800 rounded-xl p-6">
+                        <h4 class="text-white font-semibold mb-2">Welche Angebote können geprüft werden?</h4>
+                        <p class="text-slate-400 text-sm">Heizungsanlagen (Wärmepumpen, Gas, Öl), Komplette Badsanierungen, Lüftungsanlagen sowie gewerkeübergreifende TGA-Installationen.</p>
+                    </div>
+                    <div class="bg-slate-900 border border-slate-800 rounded-xl p-6">
+                        <h4 class="text-white font-semibold mb-2">Erhalte ich eine offizielle Fördermittel-Beratung (BAFA/KfW)?</h4>
+                        <p class="text-slate-400 text-sm">Nein, der Fokus liegt rein auf der technischen und kaufmännischen Wirtschaftlichkeits- und Plausibilitätsprüfung des Installateursangebots.</p>
+                    </div>
+                    <div class="bg-slate-900 border border-slate-800 rounded-xl p-6">
+                        <h4 class="text-white font-semibold mb-2">Wie erhalte ich den Prüfbericht?</h4>
+                        <p class="text-slate-400 text-sm">Sobald der Status im Kundenportal auf „Abgeschlossen“ wechselt, können Sie den Bericht direkt im Portal einsehen und als PDF herunterladen.</p>
                     </div>
                 </div>
             </section>
@@ -188,48 +282,147 @@
 
         <!-- CLIENT PORTAL VIEW -->
         <div id="clientPortalView" class="hidden py-12 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-            <div class="flex justify-between items-center mb-8 pb-6 border-b border-slate-800">
-                <h1 class="text-3xl font-extrabold text-white">Mein Kundenportal</h1>
-                <button type="button" onclick="switchView('landing')" class="bg-slate-800 hover:bg-slate-700 text-white px-4 py-2 rounded-xl text-sm font-medium">Zur Startseite</button>
+            <div class="flex flex-col md:flex-row justify-between items-start md:items-center mb-8 pb-6 border-b border-slate-800 gap-4">
+                <div>
+                    <h1 class="text-3xl font-extrabold text-white">Mein Kundenportal</h1>
+                    <p class="text-slate-400 text-sm mt-1">Übersicht Ihrer eingereichten Angebote und Bearbeitungsstatus in Echtzeit.</p>
+                </div>
+                <button type="button" onclick="switchView('landing')" class="bg-slate-800 hover:bg-slate-700 text-white px-4 py-2 rounded-xl text-sm font-medium transition">
+                    <i class="fa-solid fa-plus mr-2"></i>Weiteres Angebot prüfen lassen
+                </button>
             </div>
 
-            <!-- Portal Direkt-Upload -->
-            <div class="bg-slate-900 border border-slate-800 rounded-2xl p-6 shadow-xl mb-8">
-                <h3 class="text-lg font-bold text-white mb-2"><i class="fa-solid fa-file-circle-plus text-emerald-400 mr-2"></i>Weiteres Angebot hochladen</h3>
-                <form onsubmit="handlePortalOrderSubmission(event)" class="space-y-4">
-                    <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                        <select id="portalPackageSelect" class="w-full bg-slate-950 border border-slate-700 rounded-xl px-4 py-2.5 text-sm text-emerald-400 font-semibold focus:outline-none">
-                            <option value="Heizungs-Angebot|149">Heizungs-Angebot (149 €)</option>
-                            <option value="Komplettbad / Sanitär|249">Komplettbad / Sanitär (249 €)</option>
-                            <option value="Angebotsvergleich|349">Angebotsvergleich (349 €)</option>
-                        </select>
-                        <select id="portalProjectSelect" onchange="checkNewProjectInput(this)" class="w-full bg-slate-950 border border-slate-700 rounded-xl px-4 py-2.5 text-sm text-white focus:outline-none">
-                            <option value="">-- Neues Bauvorhaben anlegen --</option>
-                        </select>
-                    </div>
-                    <div id="newProjectNameContainer" class="hidden">
-                        <input type="text" id="portalNewProjectInput" placeholder="Name des neuen Bauvorhabens" class="w-full bg-slate-950 border border-slate-700 rounded-xl px-4 py-2.5 text-sm text-white focus:outline-none">
-                    </div>
-                    <input type="file" id="portalOfferFile" required class="w-full text-xs text-slate-400 bg-slate-950 rounded-xl border border-slate-700 p-2 cursor-pointer">
-                    <button type="submit" class="bg-emerald-500 hover:bg-emerald-600 text-slate-950 font-bold px-6 py-2.5 rounded-xl text-xs transition">Hochladen</button>
-                </form>
+            <!-- Kunden KPIs -->
+            <div class="grid grid-cols-1 sm:grid-cols-3 gap-4 mb-8">
+                <div class="bg-slate-900 border border-slate-800 rounded-2xl p-5">
+                    <span class="text-xs text-slate-400 block">Anzahl der Angebote</span>
+                    <span id="clientStatTotal" class="text-2xl font-bold text-white mt-1 block">0</span>
+                </div>
+                <div class="bg-slate-900 border border-slate-800 rounded-2xl p-5">
+                    <span class="text-xs text-slate-400 block">Offene Rechnung</span>
+                    <span id="clientStatUnpaid" class="text-2xl font-bold text-rose-400 mt-1 block">0</span>
+                </div>
+                <div class="bg-slate-900 border border-slate-800 rounded-2xl p-5">
+                    <span class="text-xs text-slate-400 block">Abgeschlossene Aufträge</span>
+                    <span id="clientStatDone" class="text-2xl font-bold text-emerald-400 mt-1 block">0</span>
+                </div>
             </div>
 
             <div class="grid grid-cols-1 lg:grid-cols-3 gap-8">
+                <!-- Orders List -->
                 <div class="lg:col-span-1 space-y-4">
                     <h2 class="text-lg font-bold text-white mb-2">Ihre Aufträge</h2>
-                    <div id="clientOrdersList" class="space-y-3"></div>
+                    <div id="clientOrdersList" class="space-y-3">
+                        <!-- Dynamically populated -->
+                    </div>
                 </div>
+
+                <!-- Order Details & Status Tracker -->
                 <div class="lg:col-span-2 space-y-6">
                     <div id="noActiveOrderPrompt" class="bg-slate-900 border border-slate-800 rounded-2xl p-12 text-center text-slate-400">
-                        <p>Wählen Sie links einen Auftrag aus.</p>
+                        <i class="fa-solid fa-folder-open text-4xl text-slate-600 mb-3"></i>
+                        <p>Wählen Sie links einen Auftrag aus oder reichen Sie ein neues Angebot ein.</p>
                     </div>
-                    <div id="activeOrderDetailsPanel" class="hidden bg-slate-900 border border-slate-800 rounded-2xl p-6 shadow-xl space-y-4">
-                        <h3 id="detailOrderId" class="text-xl font-bold text-white">Auftrag</h3>
-                        <p id="detailOrderPackage" class="text-sm text-emerald-400"></p>
-                        <div id="completedReportCard" class="hidden pt-4 border-t border-slate-800 space-y-3">
-                            <a id="clientReportDownloadBtn" href="#" target="_blank" class="hidden inline-block bg-emerald-500 hover:bg-emerald-600 text-slate-950 font-bold px-4 py-2 rounded-xl text-xs">Bericht herunterladen (PDF)</a>
-                            <p id="reportSummaryText" class="text-sm text-slate-300 bg-slate-950 p-3 rounded-xl"></p>
+
+                    <div id="activeOrderDetailsPanel" class="hidden space-y-6">
+                        <!-- Abgelehnt Hinweis Box -->
+                        <div id="orderRejectedBanner" class="hidden bg-rose-500/10 border border-rose-500/30 rounded-2xl p-6 shadow-xl flex items-start space-x-4">
+                            <i class="fa-solid fa-circle-xmark text-rose-400 text-2xl mt-1"></i>
+                            <div>
+                                <h3 class="text-lg font-bold text-rose-400">Auftrag abgelehnt</h3>
+                                <p class="text-xs text-slate-300 mt-1">Leider konnte dieser Auftrag nicht angenommen oder geprüft werden. Bei Fragen wenden Sie sich bitte direkt per E-Mail an den Support.</p>
+                            </div>
+                        </div>
+
+                        <!-- Storniert Hinweis Box -->
+                        <div id="orderCancelledBanner" class="hidden bg-amber-500/10 border border-amber-500/30 rounded-2xl p-6 shadow-xl flex items-start space-x-4">
+                            <i class="fa-solid fa-ban text-amber-400 text-2xl mt-1"></i>
+                            <div>
+                                <h3 class="text-lg font-bold text-amber-400">Auftrag storniert</h3>
+                                <p class="text-xs text-slate-300 mt-1">Dieser Auftrag wurde von Ihnen erfolgreich storniert.</p>
+                            </div>
+                        </div>
+
+                        <!-- Status Tracker Card -->
+                        <div id="orderTrackerCard" class="bg-slate-900 border border-slate-800 rounded-2xl p-6 shadow-xl space-y-4">
+                            <div class="flex justify-between items-center mb-6">
+                                <div>
+                                    <span id="detailOrderPackage" class="text-xs font-bold uppercase tracking-wider text-emerald-400 bg-emerald-500/10 px-3 py-1 rounded-full">Heizung</span>
+                                    <h3 id="detailOrderId" class="text-xl font-bold text-white mt-2">Auftrag #---</h3>
+                                </div>
+                                <span id="detailOrderStatusBadge" class="px-3 py-1 rounded-full text-xs font-semibold bg-amber-500/10 text-amber-400 border border-amber-500/20">In Fachprüfung</span>
+                            </div>
+
+                            <!-- 4-Stage Progress Tracker -->
+                            <div class="relative py-4">
+                                <div class="overflow-hidden h-2 mb-4 text-xs flex rounded bg-slate-800">
+                                    <div id="trackerProgressBar" style="width: 25%" class="shadow-none flex flex-col text-center whitespace-nowrap text-white justify-center bg-emerald-500 transition-all duration-500"></div>
+                                </div>
+                                <div class="grid grid-cols-4 text-center text-xs font-medium text-slate-400">
+                                    <div id="step1Label" class="text-emerald-400">1. Eingegangen</div>
+                                    <div id="step2Label" class="">2. Fachprüfung</div>
+                                    <div id="step3Label" class="">3. Bericht</div>
+                                    <div id="step4Label" class="">4. Fertig</div>
+                                </div>
+                            </div>
+
+                            <!-- Stornieren Button -->
+                            <div id="clientCancelButtonContainer" class="hidden pt-4 border-t border-slate-800 text-right">
+                                <button type="button" onclick="cancelOrderAsClient()" class="bg-rose-500/10 hover:bg-rose-500/20 text-rose-400 border border-rose-500/30 font-bold px-4 py-2 rounded-xl text-xs transition">
+                                    <i class="fa-solid fa-ban mr-1"></i>Auftrag stornieren
+                                </button>
+                            </div>
+                        </div>
+
+                        <!-- Eingereichte & zusätzliche Unterlagen -->
+                        <div class="bg-slate-900 border border-slate-800 rounded-2xl p-6 shadow-xl space-y-4">
+                            <h3 class="text-sm font-bold text-white"><i class="fa-solid fa-folder-open text-emerald-400 mr-2"></i>Angebots- & Zusatzunterlagen</h3>
+                            <div id="clientFileList" class="space-y-2 text-xs text-slate-300">
+                                <!-- Dynamisch befüllt -->
+                            </div>
+
+                            <!-- Nachträglich Unterlagen hochladen -->
+                            <div id="clientUploadSection" class="pt-4 border-t border-slate-800 space-y-2">
+                                <label class="block text-xs font-semibold text-white">Weitere Unterlagen zum Auftrag hochladen</label>
+                                <div class="flex gap-2">
+                                    <input type="file" id="clientAdditionalFileInput" class="w-full text-xs text-slate-400 file:mr-4 file:py-2 file:px-4 file:rounded-lg file:border-0 file:text-xs file:font-semibold file:bg-emerald-500 file:text-slate-950 hover:file:bg-emerald-600 cursor-pointer">
+                                    <button type="button" onclick="uploadAdditionalClientFile()" class="bg-emerald-500 hover:bg-emerald-600 text-slate-950 font-bold px-4 py-2 rounded-lg text-xs transition">Hochladen</button>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Completed Report Card -->
+                        <div id="completedReportCard" class="hidden bg-slate-900 border border-emerald-500/50 rounded-2xl p-6 shadow-2xl space-y-6">
+                            <div class="flex justify-between items-center">
+                                <h3 class="text-lg font-bold text-white"><i class="fa-solid fa-file-contract text-emerald-400 mr-2"></i>Ihr technischer Prüfbericht</h3>
+                                <a id="clientReportDownloadBtn" href="#" target="_blank" class="hidden bg-emerald-500 hover:bg-emerald-600 text-slate-950 font-bold px-4 py-2 rounded-xl text-xs transition shadow-lg shadow-emerald-500/20">
+                                    <i class="fa-solid fa-download mr-2"></i>Bericht herunterladen (PDF)
+                                </a>
+                            </div>
+                            
+                            <div class="bg-emerald-500/10 border border-emerald-500/20 rounded-xl p-4 flex items-center justify-between">
+                                <div>
+                                    <span class="text-xs text-slate-300 block">Identifiziertes Einsparpotenzial</span>
+                                    <span id="reportSavingsAmount" class="text-2xl font-black text-emerald-400">3.400 €</span>
+                                </div>
+                                <div class="text-right">
+                                    <span class="text-xs text-slate-300 block">Prüfstatus</span>
+                                    <span class="text-sm font-bold text-white">Erfolgreich abgeschlossen</span>
+                                </div>
+                            </div>
+
+                            <div class="space-y-4 text-sm">
+                                <div>
+                                    <h4 class="font-semibold text-white mb-1">Zusammenfassung & Fazit</h4>
+                                    <p id="reportSummaryText" class="text-slate-300 bg-slate-950 p-4 rounded-xl border border-slate-800">Das Angebot weist solide Grundkomponenten auf, jedoch wurden im Bereich hydraulischer Abgleich unnötige Zusatzpuffer eingepreist.</p>
+                                </div>
+                                <div>
+                                    <h4 class="font-semibold text-white mb-2">Erkannte Mängel & Abweichungen</h4>
+                                    <div id="reportDefectsList" class="space-y-2">
+                                        <!-- Dynamically populated defects -->
+                                    </div>
+                                </div>
+                            </div>
                         </div>
                     </div>
                 </div>
@@ -240,71 +433,170 @@
         <div id="adminPortalView" class="hidden py-12 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
             <div class="flex justify-between items-center mb-8 pb-6 border-b border-slate-800">
                 <div>
-                    <h1 class="text-3xl font-extrabold text-white"><i class="fa-solid fa-shield-halved text-amber-400 mr-3"></i>Admin-Konsole</h1>
-                    <p class="text-slate-400 text-sm mt-1">Auftragsverwaltung, Kunden, Ränge & Marktpreise.</p>
+                    <h1 class="text-3xl font-extrabold text-white"><i class="fa-solid fa-shield-halved text-amber-400 mr-3"></i>Admin-Konsole (Prüfer-Dashboard)</h1>
+                    <p class="text-slate-400 text-sm mt-1">Auftragsverwaltung, Statusänderung, Kundenübersicht und Marktpreise.</p>
                 </div>
-                <button type="button" onclick="switchView('clientPortal')" class="bg-slate-800 hover:bg-slate-700 text-white px-4 py-2 rounded-xl text-sm font-medium">Zum Kundenportal</button>
+                <button type="button" onclick="switchView('clientPortal')" class="bg-slate-800 hover:bg-slate-700 text-white px-4 py-2 rounded-xl text-sm font-medium transition">
+                    Zum Kundenportal
+                </button>
             </div>
 
-            <!-- KPIs -->
+            <!-- Admin KPIs -->
             <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 mb-8">
                 <div class="bg-slate-900 border border-slate-800 rounded-2xl p-5">
-                    <span class="text-xs text-slate-400 block">Umsatz (Eingenommen)</span>
+                    <span class="text-xs text-slate-400 block">Aktueller Umsatz (Eingenommen)</span>
                     <span id="adminStatCurrentRevenue" class="text-2xl font-bold text-teal-400 mt-1 block">0 €</span>
                 </div>
                 <div class="bg-slate-900 border border-slate-800 rounded-2xl p-5">
-                    <span class="text-xs text-slate-400 block">Offen (Ausstehend)</span>
+                    <span class="text-xs text-slate-400 block">Noch offen (Ausstehend)</span>
                     <span id="adminStatOpenRevenue" class="text-2xl font-bold text-rose-400 mt-1 block">0 €</span>
                 </div>
                 <div class="bg-slate-900 border border-slate-800 rounded-2xl p-5">
-                    <span class="text-xs text-slate-400 block">Jahresumsatz (Prognose)</span>
+                    <span class="text-xs text-slate-400 block">Vorraussichtlicher Jahresumsatz</span>
                     <span id="adminStatProjectedRevenue" class="text-2xl font-bold text-emerald-400 mt-1 block">0 €</span>
                 </div>
                 <div class="bg-slate-900 border border-slate-800 rounded-2xl p-5">
-                    <span class="text-xs text-slate-400 block">Kunden-Ersparnis</span>
+                    <span class="text-xs text-slate-400 block">Kunden-Gesamtersparnis</span>
                     <span id="adminStatSavings" class="text-2xl font-bold text-emerald-400 mt-1 block">0 €</span>
                 </div>
             </div>
 
             <!-- Admin Reiter Navigation -->
             <div class="flex flex-wrap gap-2 border-b border-slate-800 mb-6">
-                <button type="button" onclick="switchAdminTab('active')" id="tabBtnActive" class="px-5 py-3 text-sm font-bold border-b-2 border-emerald-500 text-emerald-400 transition">Aktive Aufträge</button>
-                <button type="button" onclick="switchAdminTab('rejected')" id="tabBtnRejected" class="px-5 py-3 text-sm font-bold border-b-2 border-transparent text-slate-400 hover:text-white transition">Abgelehnt</button>
-                <button type="button" onclick="switchAdminTab('cancelled')" id="tabBtnCancelled" class="px-5 py-3 text-sm font-bold border-b-2 border-transparent text-slate-400 hover:text-white transition">Storniert</button>
-                <button type="button" onclick="switchAdminTab('archive')" id="tabBtnArchive" class="px-5 py-3 text-sm font-bold border-b-2 border-transparent text-slate-400 hover:text-white transition">Archiv</button>
-                <button type="button" onclick="switchAdminTab('customers')" id="tabBtnCustomers" class="px-5 py-3 text-sm font-bold border-b-2 border-transparent text-slate-400 hover:text-white transition">Kunden & Ränge</button>
-                <button type="button" onclick="switchAdminTab('marketprices')" id="tabBtnMarketPrices" class="px-5 py-3 text-sm font-bold border-b-2 border-transparent text-slate-400 hover:text-white transition">Marktpreise-DB</button>
+                <button type="button" onclick="switchAdminTab('active')" id="tabBtnActive" class="px-5 py-3 text-sm font-bold border-b-2 border-emerald-500 text-emerald-400 transition">
+                    <i class="fa-solid fa-list-check mr-2"></i>Aktive Aufträge
+                </button>
+                <button type="button" onclick="switchAdminTab('rejected')" id="tabBtnRejected" class="px-5 py-3 text-sm font-bold border-b-2 border-transparent text-slate-400 hover:text-white transition">
+                    <i class="fa-solid fa-ban mr-2"></i>Abgelehnt
+                </button>
+                <button type="button" onclick="switchAdminTab('cancelled')" id="tabBtnCancelled" class="px-5 py-3 text-sm font-bold border-b-2 border-transparent text-slate-400 hover:text-white transition">
+                    <i class="fa-solid fa-circle-xmark mr-2"></i>Storniert
+                </button>
+                <button type="button" onclick="switchAdminTab('archive')" id="tabBtnArchive" class="px-5 py-3 text-sm font-bold border-b-2 border-transparent text-slate-400 hover:text-white transition">
+                    <i class="fa-solid fa-box-archive mr-2"></i>Archiv
+                </button>
+                <button type="button" onclick="switchAdminTab('customers')" id="tabBtnCustomers" class="px-5 py-3 text-sm font-bold border-b-2 border-transparent text-slate-400 hover:text-white transition">
+                    <i class="fa-solid fa-users mr-2"></i>Kunden
+                </button>
+                <button type="button" onclick="switchAdminTab('marketprices')" id="tabBtnMarketPrices" class="px-5 py-3 text-sm font-bold border-b-2 border-transparent text-slate-400 hover:text-white transition">
+                    <i class="fa-solid fa-database mr-2"></i>Marktpreise-DB
+                </button>
             </div>
 
             <div class="grid grid-cols-1 lg:grid-cols-3 gap-8">
+                <!-- Admin Orders Table / List ODER Suchleiste für Marktpreise / Kundenliste -->
                 <div class="lg:col-span-1 space-y-4">
-                    <h2 id="adminListTitle" class="text-lg font-bold text-white mb-2">Aufträge</h2>
-                    <div id="adminOrdersList" class="space-y-3"></div>
+                    <div id="adminListHeaderContainer" class="space-y-3">
+                        <h2 id="adminListTitle" class="text-lg font-bold text-white mb-2">Aktive Aufträge</h2>
+                        <div id="adminSearchContainer" class="hidden space-y-2">
+                            <input type="text" id="marketPriceSearchInput" oninput="renderMarketPricesTable()" placeholder="🔍 Nach Position suchen (z.B. Hahn)..." class="w-full bg-slate-950 border border-slate-700 rounded-xl px-4 py-2.5 text-xs text-white focus:border-emerald-500 focus:outline-none">
+                            <div class="flex gap-1">
+                                <button type="button" onclick="filterMarketPricesCategory('Alle')" id="catBtnAlle" class="flex-1 bg-emerald-500 text-slate-950 font-bold py-1.5 rounded-lg text-[11px] transition">Alle</button>
+                                <button type="button" onclick="filterMarketPricesCategory('Heizung')" id="catBtnHeizung" class="flex-1 bg-slate-800 text-slate-300 hover:bg-slate-700 font-semibold py-1.5 rounded-lg text-[11px] transition">Heizung</button>
+                                <button type="button" onclick="filterMarketPricesCategory('Sanitär')" id="catBtnSanitaer" class="flex-1 bg-slate-800 text-slate-300 hover:bg-slate-700 font-semibold py-1.5 rounded-lg text-[11px] transition">Sanitär</button>
+                                <button type="button" onclick="filterMarketPricesCategory('Allgemein')" id="catBtnAllgemein" class="flex-1 bg-slate-800 text-slate-300 hover:bg-slate-700 font-semibold py-1.5 rounded-lg text-[11px] transition">Allgem.</button>
+                            </div>
+                        </div>
+                    </div>
+                    <div id="adminOrdersList" class="space-y-3">
+                        <!-- Populated dynamically -->
+                    </div>
                 </div>
 
+                <!-- Admin Editor Panel / Kundenansicht / Marktpreise -->
                 <div class="lg:col-span-2">
                     <div id="adminSelectPrompt" class="bg-slate-900 border border-slate-800 rounded-2xl p-12 text-center text-slate-400">
+                        <i class="fa-solid fa-file-pen text-4xl text-slate-600 mb-3"></i>
                         <p>Wählen Sie links einen Auftrag oder eine Ansicht aus.</p>
                     </div>
 
-                    <!-- Kunden-Panel -->
+                    <!-- NEU: Kunden-Übersichts-Panel -->
                     <div id="adminCustomersPanel" class="hidden bg-slate-900 border border-slate-800 rounded-2xl p-6 shadow-xl space-y-6">
-                        <h3 class="text-lg font-bold text-white border-b border-slate-800 pb-4"><i class="fa-solid fa-users text-emerald-400 mr-2"></i>Kunden & Accountsränge</h3>
-                        <div id="adminCustomersTableContainer" class="overflow-x-auto"></div>
+                        <h3 class="text-lg font-bold text-white border-b border-slate-800 pb-4"><i class="fa-solid fa-users text-emerald-400 mr-2"></i>Alle registrierten Kunden</h3>
+                        <div id="adminCustomersTableContainer" class="overflow-x-auto">
+                            <!-- Dynamische Kundentabelle -->
+                        </div>
                     </div>
 
-                    <!-- Marktpreise Panel -->
+                    <!-- Marktpreise Management & Live-Prüf-Tool -->
                     <div id="adminMarketPricesPanel" class="hidden space-y-6">
                         <div class="bg-slate-900 border border-slate-800 rounded-2xl p-6 shadow-xl space-y-4">
-                            <h3 class="text-lg font-bold text-white border-b border-slate-800 pb-4">Marktpreise-DB & Import</h3>
-                            <form onsubmit="saveMarketPriceItem(event)" class="space-y-4 bg-slate-950 p-4 rounded-xl border border-slate-800">
-                                <input type="text" id="mpTitle" required placeholder="Position / Beschreibung" class="w-full bg-slate-900 border border-slate-700 rounded-xl px-4 py-2.5 text-sm text-white focus:outline-none">
-                                <div class="grid grid-cols-3 gap-3">
-                                    <input type="number" step="0.01" id="mpPrice1" required class="bg-slate-900 border border-slate-700 rounded-xl px-4 py-2 text-sm text-white" placeholder="Preis 1">
-                                    <input type="number" step="0.01" id="mpPrice2" required class="bg-slate-900 border border-slate-700 rounded-xl px-4 py-2 text-sm text-white" placeholder="Preis 2">
-                                    <input type="number" step="0.01" id="mpPrice3" required class="bg-slate-900 border border-slate-700 rounded-xl px-4 py-2 text-sm text-white" placeholder="Preis 3">
+                            <h4 class="text-sm font-bold text-white"><i class="fa-solid fa-file-arrow-up text-emerald-400 mr-2"></i>Leistungsverzeichnis / GAEB-Datei importieren</h4>
+                            <p class="text-xs text-slate-400">Lade eine GAEB-Datei (.x83 / .d83 / .xml) oder eine Preisliste (TXT/CSV) hoch, um Positionen und Einheitswerte automatisch zu extrahieren und in die Datenbank zu übernehmen.</p>
+                            
+                            <div class="flex flex-col sm:flex-row gap-3 items-center">
+                                <input type="file" id="importFile" accept=".xml,.d83,.p83,.x83,.txt,.csv" class="w-full text-xs text-slate-400 file:mr-4 file:py-2 file:px-4 file:rounded-xl file:border-0 file:text-xs file:font-semibold file:bg-emerald-500 file:text-slate-950 hover:file:bg-emerald-600 cursor-pointer bg-slate-950 rounded-xl border border-slate-700 p-2">
+                                <button type="button" onclick="handleFileImport()" class="w-full sm:w-auto bg-emerald-500 hover:bg-emerald-600 text-slate-950 font-bold px-6 py-2.5 rounded-xl text-xs transition whitespace-nowrap shadow-lg shadow-emerald-500/20">
+                                    <i class="fa-solid fa-cogs mr-1"></i>Importieren & Speichern
+                                </button>
+                            </div>
+                            <span id="importFeedback" class="text-xs block"></span>
+                        </div>
+
+                        <div class="bg-slate-900 border border-slate-800 rounded-2xl p-6 shadow-xl space-y-4">
+                            <h3 class="text-lg font-bold text-white border-b border-slate-800 pb-3"><i class="fa-solid fa-calculator text-emerald-400 mr-2"></i>Position schnell auf Plausibilität prüfen</h3>
+                            <div class="grid grid-cols-1 sm:grid-cols-3 gap-3">
+                                <div>
+                                    <label class="block text-xs font-medium text-slate-300 mb-1">Bauteil / Position</label>
+                                    <select id="selectBauteil" class="w-full bg-slate-950 border border-slate-700 rounded-xl px-3 py-2.5 text-xs text-white focus:outline-none focus:border-emerald-500">
+                                        <option value="">-- Bitte wählen --</option>
+                                    </select>
                                 </div>
-                                <button type="submit" class="bg-emerald-500 hover:bg-emerald-600 text-slate-950 font-bold px-5 py-2.5 rounded-xl text-xs transition">Speichern</button>
+                                <div>
+                                    <label class="block text-xs font-medium text-slate-300 mb-1">Angebotener Preis (€ netto)</label>
+                                    <input type="number" id="inputAngebotspreis" step="0.01" placeholder="z. B. 150.00" class="w-full bg-slate-950 border border-slate-700 rounded-xl px-3 py-2.5 text-xs text-white focus:outline-none focus:border-emerald-500">
+                                </div>
+                                <div class="flex items-end">
+                                    <button type="button" onclick="pruefePositionGegenMarktwert()" class="w-full bg-emerald-500 hover:bg-emerald-600 text-slate-950 font-bold py-2.5 px-4 rounded-xl text-xs transition shadow-lg shadow-emerald-500/20">
+                                        Prüfen
+                                    </button>
+                                </div>
+                            </div>
+                            <div id="ergebnisBox" class="hidden p-3 rounded-xl border text-xs text-center font-bold">
+                                <!-- Ergebnis / Ampel -->
+                            </div>
+                        </div>
+
+                        <div class="bg-slate-900 border border-slate-800 rounded-2xl p-6 shadow-xl space-y-6">
+                            <h3 class="text-lg font-bold text-white border-b border-slate-800 pb-4"><i class="fa-solid fa-database text-emerald-400 mr-2"></i>Marktpreis-Datenbank & Mittelwert</h3>
+                            <form onsubmit="saveMarketPriceItem(event)" class="space-y-4 bg-slate-950 p-4 rounded-xl border border-slate-800">
+                                <input type="hidden" id="marketPriceDocId">
+                                <div class="grid grid-cols-1 sm:grid-cols-3 gap-3">
+                                    <div class="sm:col-span-2">
+                                        <label class="block text-xs font-medium text-slate-300 mb-1">Position / Leistungsbeschreibung</label>
+                                        <input type="text" id="mpTitle" required placeholder="z. B. Wasserhahn / Waschtischarmatur" class="w-full bg-slate-900 border border-slate-700 rounded-xl px-4 py-2.5 text-sm text-white focus:border-emerald-500 focus:outline-none">
+                                    </div>
+                                    <div>
+                                        <label class="block text-xs font-medium text-slate-300 mb-1">Kategorie</label>
+                                        <select id="mpCategory" class="w-full bg-slate-900 border border-slate-700 rounded-xl px-4 py-2.5 text-sm text-white focus:border-emerald-500 focus:outline-none">
+                                            <option value="Heizung">Heizung</option>
+                                            <option value="Sanitär">Sanitär</option>
+                                            <option value="Allgemein">Allgemein</option>
+                                        </select>
+                                    </div>
+                                </div>
+                                <div class="grid grid-cols-1 sm:grid-cols-3 gap-3">
+                                    <div>
+                                        <label class="block text-xs font-medium text-slate-300 mb-1">Preis Angebot 1 (€)</label>
+                                        <input type="number" step="0.01" id="mpPrice1" required class="w-full bg-slate-900 border border-slate-700 rounded-xl px-4 py-2 text-sm text-white focus:border-emerald-500 focus:outline-none" placeholder="150">
+                                    </div>
+                                    <div>
+                                        <label class="block text-xs font-medium text-slate-300 mb-1">Preis Angebot 2 (€)</label>
+                                        <input type="number" step="0.01" id="mpPrice2" class="w-full bg-slate-900 border border-slate-700 rounded-xl px-4 py-2 text-sm text-white focus:border-emerald-500 focus:outline-none" placeholder="180">
+                                    </div>
+                                    <div>
+                                        <label class="block text-xs font-medium text-slate-300 mb-1">Preis Angebot 3 (€)</label>
+                                        <input type="number" step="0.01" id="mpPrice3" class="w-full bg-slate-900 border border-slate-700 rounded-xl px-4 py-2 text-sm text-white focus:border-emerald-500 focus:outline-none" placeholder="165">
+                                    </div>
+                                </div>
+                                <div class="flex gap-3 pt-2">
+                                    <button type="submit" class="bg-emerald-500 hover:bg-emerald-600 text-slate-950 font-bold px-5 py-2.5 rounded-xl text-xs transition">
+                                        <i class="fa-solid fa-floppy-disk mr-1"></i>Marktpreis speichern
+                                    </button>
+                                    <button type="button" onclick="resetMarketPriceForm()" class="bg-slate-800 hover:bg-slate-700 text-slate-300 font-semibold px-4 py-2.5 rounded-xl text-xs transition">
+                                        Formular leeren
+                                    </button>
+                                </div>
                             </form>
                             <div id="marketPricesTableContainer" class="overflow-x-auto"></div>
                         </div>
@@ -314,50 +606,104 @@
                     <div id="adminEditorPanel" class="hidden bg-slate-900 border border-slate-800 rounded-2xl p-6 shadow-xl space-y-6">
                         <div class="flex justify-between items-center border-b border-slate-800 pb-4">
                             <div>
-                                <span id="adminEditOrderId" class="text-xs text-emerald-400 font-bold uppercase">Auftrag</span>
+                                <span id="adminEditOrderId" class="text-xs text-emerald-400 font-bold uppercase">Auftrag #---</span>
                                 <h3 id="adminEditCustomerEmail" class="text-lg font-bold text-white">kunde@beispiel.de</h3>
                             </div>
-                            <select id="adminStatusSelect" class="bg-slate-950 border border-slate-700 text-white text-xs rounded-lg px-3 py-2">
-                                <option value="1">1. Eingegangen</option>
-                                <option value="2">2. In Fachprüfung</option>
-                                <option value="3">3. Bericht wird erstellt</option>
-                                <option value="4">4. Abgeschlossen</option>
-                                <option value="5" id="optionStatusRejected">5. Abgelehnt</option>
-                                <option value="6">6. Storniert</option>
-                                <option value="7">7. Prüfung auf Ablehnung</option>
+                            <div class="flex items-center space-x-2">
+                                <label class="text-xs text-slate-400">Status:</label>
+                                <select id="adminStatusSelect" class="bg-slate-950 border border-slate-700 text-white text-xs rounded-lg px-3 py-2 focus:outline-none">
+                                    <option value="1">1. Eingegangen</option>
+                                    <option value="2">2. In Fachprüfung</option>
+                                    <option value="3">3. Bericht wird erstellt</option>
+                                    <option value="4">4. Abgeschlossen</option>
+                                    <option value="5">5. Abgelehnt</option>
+                                    <option value="6">6. Storniert</option>
+                                </select>
+                            </div>
+                        </div>
+
+                        <div id="adminNewCustomerNotice" class="hidden bg-emerald-500/10 border border-emerald-500/30 rounded-xl p-4 flex items-center justify-between">
+                            <div class="flex items-center space-x-3">
+                                <i class="fa-solid fa-user-plus text-emerald-400 text-xl"></i>
+                                <div>
+                                    <span class="text-emerald-400 font-bold text-xs uppercase tracking-wider block">NEUKUNDE</span>
+                                    <span id="adminCustomerNameBadge" class="text-xs text-slate-300">Name: ---</span>
+                                </div>
+                            </div>
+                            <span id="adminDepositAmount" class="text-sm font-black text-emerald-400">0 € Anzahlung</span>
+                        </div>
+
+                        <div class="bg-slate-950 p-4 rounded-xl border border-slate-800 space-y-2">
+                            <label class="block text-xs font-semibold text-white">Manueller Preisnachlass (€)</label>
+                            <input type="number" id="adminManualPriceInput" class="w-full bg-slate-900 border border-slate-700 rounded-xl px-4 py-2.5 text-sm text-white focus:border-emerald-500 focus:outline-none" placeholder="z. B. 20 (Rabattbetrag in €)">
+                        </div>
+
+                        <div class="bg-slate-950 p-4 rounded-xl border border-slate-800 flex items-center justify-between">
+                            <div>
+                                <span class="text-xs font-semibold text-white block">Zusätzliche Unterlagen anfordern</span>
+                                <span class="text-xs text-slate-400">Sendet eine E-Mail an den Kunden</span>
+                            </div>
+                            <button type="button" onclick="requestDocumentsEmail()" class="bg-amber-500 hover:bg-amber-600 text-slate-950 font-bold px-4 py-2 rounded-lg text-xs transition">
+                                <i class="fa-solid fa-paper-plane mr-1"></i>Unterlagen anfordern
+                            </button>
+                        </div>
+
+                        <div class="bg-slate-950 p-4 rounded-xl border border-slate-800 space-y-3">
+                            <span class="text-xs font-semibold text-white block"><i class="fa-solid fa-file-invoice-dollar text-emerald-400 mr-2"></i>Rechnung an Kunden senden</span>
+                            <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                                <button type="button" onclick="sendInvoiceEmail('50')" class="bg-slate-900 hover:bg-slate-800 border border-emerald-500/40 text-emerald-400 text-xs font-semibold py-2.5 px-3 rounded-lg transition text-left flex items-center justify-between">
+                                    <span>50% Anzahlung senden</span>
+                                    <i class="fa-solid fa-paper-plane"></i>
+                                </button>
+                                <button type="button" onclick="sendInvoiceEmail('100')" class="bg-slate-900 hover:bg-slate-800 border border-slate-700 text-white text-xs font-semibold py-2.5 px-3 rounded-lg transition text-left flex items-center justify-between">
+                                    <span>100% Gesamtrechnung senden</span>
+                                    <i class="fa-solid fa-paper-plane"></i>
+                                </button>
+                            </div>
+                        </div>
+
+                        <div class="flex items-center justify-between bg-slate-950 p-4 rounded-xl border border-slate-800">
+                            <div>
+                                <span class="text-xs font-semibold text-white block">Bezahlstatus</span>
+                            </div>
+                            <select id="adminPaymentSelect" class="bg-slate-900 border border-slate-700 text-white text-xs rounded-lg px-3 py-2 focus:outline-none">
+                                <option value="unpaid">Offene Rechnung</option>
+                                <option value="partial">Angezahlt (50%)</option>
+                                <option value="paid">Bezahlt</option>
                             </select>
                         </div>
 
-                        <!-- Sachbearbeiter Ablehnungs-Anfrage Button -->
-                        <div id="sachbearbeiterRejectContainer" class="hidden bg-amber-500/10 border border-amber-500/30 rounded-xl p-4 flex items-center justify-between">
-                            <div>
-                                <span class="text-xs font-bold text-amber-400 uppercase block">Sachbearbeiter-Option</span>
-                                <span class="text-xs text-slate-300">Diesen Auftrag zur admin-seitigen Ablehnung vorschlagen.</span>
-                            </div>
-                            <button type="button" onclick="requestAdminRejection()" class="bg-amber-500 hover:bg-amber-600 text-slate-950 font-bold px-4 py-2 rounded-lg transition">Prüfung auf Ablehnung anfordern</button>
-                        </div>
-
-                        <!-- Rechnungsversand -->
-                        <div class="bg-slate-950 p-4 rounded-xl border border-slate-800 space-y-3">
-                            <span class="text-xs font-semibold text-white block"><i class="fa-solid fa-file-invoice-dollar text-emerald-400 mr-2"></i>Rechnung senden</span>
-                            <div class="grid grid-cols-2 gap-2">
-                                <button type="button" onclick="sendInvoiceEmail('50')" class="bg-slate-900 hover:bg-slate-800 border border-emerald-500/40 text-emerald-400 text-xs py-2 px-3 rounded-lg text-left">50% Anzahlung</button>
-                                <button type="button" onclick="sendInvoiceEmail('100')" class="bg-slate-900 hover:bg-slate-800 border border-slate-700 text-white text-xs py-2 px-3 rounded-lg text-left">100% Gesamt</button>
-                            </div>
-                        </div>
-
-                        <!-- Bericht Upload -->
                         <div class="bg-slate-950 p-4 rounded-xl border border-slate-800 space-y-2">
-                            <label class="block text-xs font-semibold text-white">Prüfbericht hochladen (PDF)</label>
-                            <input type="file" id="adminReportFileInput" accept="application/pdf" class="w-full text-xs text-slate-400 file:mr-4 file:py-2 file:px-4 file:rounded-lg file:bg-emerald-500 file:text-slate-950 cursor-pointer">
+                            <label class="block text-xs font-semibold text-white">Fertigen Prüfbericht hochladen (PDF)</label>
+                            <input type="file" id="adminReportFileInput" accept="application/pdf" class="w-full text-xs text-slate-400 file:mr-4 file:py-2 file:px-4 file:rounded-lg file:border-0 file:text-xs file:font-semibold file:bg-emerald-500 file:text-slate-950 hover:file:bg-emerald-600 cursor-pointer">
                             <span id="adminReportFileStatus" class="text-[11px] text-slate-500 block">Noch kein Bericht hochgeladen.</span>
                         </div>
 
                         <div class="space-y-4">
-                            <input type="text" id="adminSavingsInput" class="w-full bg-slate-950 border border-slate-700 rounded-xl px-4 py-2.5 text-sm text-white" placeholder="Einsparpotenzial">
-                            <textarea id="adminSummaryInput" rows="3" class="w-full bg-slate-950 border border-slate-700 rounded-xl px-4 py-2.5 text-sm text-white" placeholder="Zusammenfassung"></textarea>
-                            <textarea id="adminDefectsInput" rows="3" class="w-full bg-slate-950 border border-slate-700 rounded-xl px-4 py-2.5 text-sm text-white" placeholder="Mängel"></textarea>
-                            <button type="button" onclick="saveAdminOrderChanges()" class="w-full bg-emerald-500 hover:bg-emerald-600 text-slate-950 font-bold py-3 rounded-xl text-sm transition">Änderungen speichern</button>
+                            <div>
+                                <label class="block text-xs font-medium text-slate-300 mb-1">Identifiziertes Einsparpotenzial (€)</label>
+                                <input type="text" id="adminSavingsInput" class="w-full bg-slate-950 border border-slate-700 rounded-xl px-4 py-2.5 text-sm text-white focus:border-emerald-500 focus:outline-none">
+                            </div>
+                            <div>
+                                <label class="block text-xs font-medium text-slate-300 mb-1">Prüffazit / Zusammenfassung</label>
+                                <textarea id="adminSummaryInput" rows="3" class="w-full bg-slate-950 border border-slate-700 rounded-xl px-4 py-2.5 text-sm text-white focus:border-emerald-500 focus:outline-none"></textarea>
+                            </div>
+                            <div>
+                                <label class="block text-xs font-medium text-slate-300 mb-1">Erkannte Mängel</label>
+                                <textarea id="adminDefectsInput" rows="3" class="w-full bg-slate-950 border border-slate-700 rounded-xl px-4 py-2.5 text-sm text-white focus:border-emerald-500 focus:outline-none"></textarea>
+                            </div>
+                            
+                            <div class="grid grid-cols-1 sm:grid-cols-3 gap-3">
+                                <button type="button" onclick="archiveAdminOrder()" class="bg-amber-500/10 hover:bg-amber-500/20 text-amber-400 border border-amber-500/30 font-bold py-3 rounded-xl text-sm transition">
+                                    <i class="fa-solid fa-box-archive mr-1"></i>Archivieren
+                                </button>
+                                <button type="button" onclick="rejectAdminOrder()" class="bg-rose-500/10 hover:bg-rose-500/20 text-rose-400 border border-rose-500/30 font-bold py-3 rounded-xl text-sm transition">
+                                    <i class="fa-solid fa-ban mr-1"></i>Ablehnen
+                                </button>
+                                <button type="button" onclick="saveAdminOrderChanges()" class="bg-emerald-500 hover:bg-emerald-600 text-slate-950 font-bold py-3 rounded-xl text-sm transition shadow-lg shadow-emerald-500/20">
+                                    <i class="fa-solid fa-floppy-disk mr-1"></i>Speichern
+                                </button>
+                            </div>
                         </div>
                     </div>
                 </div>
@@ -369,12 +715,31 @@
     <div id="authModal" class="fixed inset-0 z-50 flex items-center justify-center bg-slate-950/80 backdrop-blur-sm hidden">
         <div class="bg-slate-900 border border-slate-800 rounded-2xl p-8 max-w-md w-full mx-4 shadow-2xl relative">
             <button type="button" onclick="closeAuthModal()" class="absolute top-4 right-4 text-slate-400 hover:text-white"><i class="fa-solid fa-xmark text-lg"></i></button>
-            <h3 class="text-2xl font-bold text-white mb-2">Login</h3>
+            
+            <h3 id="authModalTitle" class="text-2xl font-bold text-white mb-2">Kundenportal Login</h3>
+            <p id="authModalSubtitle" class="text-slate-400 text-sm mb-6">Geben Sie Ihre Zugangsdaten ein, um Ihre Aufträge einzusehen.</p>
+
             <form id="authForm" onsubmit="handleAuthSubmit(event)" class="space-y-4">
-                <input type="email" id="authEmail" required placeholder="E-Mail" class="w-full bg-slate-950 border border-slate-700 rounded-xl px-4 py-3 text-sm text-white focus:outline-none">
-                <input type="password" id="authPassword" placeholder="Passwort" class="w-full bg-slate-950 border border-slate-700 rounded-xl px-4 py-3 text-sm text-white focus:outline-none">
-                <button type="submit" class="w-full bg-emerald-500 hover:bg-emerald-600 text-slate-950 font-bold py-3.5 rounded-xl text-sm transition">Anmelden</button>
+                <div>
+                    <label class="block text-xs font-medium text-slate-300 mb-1">E-Mail-Adresse</label>
+                    <input type="email" id="authEmail" required class="w-full bg-slate-950 border border-slate-700 rounded-xl px-4 py-3 text-sm text-white focus:border-emerald-500 focus:outline-none">
+                </div>
+                <div id="passwordFieldContainer">
+                    <label class="block text-xs font-medium text-slate-300 mb-1">Passwort</label>
+                    <input type="password" id="authPassword" class="w-full bg-slate-950 border border-slate-700 rounded-xl px-4 py-3 text-sm text-white focus:border-emerald-500 focus:outline-none">
+                </div>
+                <button type="submit" id="authSubmitBtn" class="w-full bg-emerald-500 hover:bg-emerald-600 text-slate-950 font-bold py-3.5 rounded-xl text-sm transition shadow-lg shadow-emerald-500/20">
+                    Anmelden
+                </button>
             </form>
+
+            <div class="mt-6 flex items-center justify-between text-xs text-slate-400">
+                <div>
+                    <span id="authToggleText">Noch kein Konto?</span>
+                    <button type="button" onclick="toggleAuthMode()" id="authToggleBtn" class="text-emerald-400 font-semibold ml-1 hover:underline">Registrieren</button>
+                </div>
+                <button type="button" onclick="openForgotPasswordMode()" id="forgotPasswordBtn" class="text-slate-400 hover:text-emerald-400 transition">Passwort vergessen?</button>
+            </div>
         </div>
     </div>
 
@@ -397,12 +762,21 @@
 
         let db, auth;
         try {
-            if (!firebase.apps.length) firebase.initializeApp(firebaseConfig);
+            if (!firebase.apps.length) {
+                firebase.initializeApp(firebaseConfig);
+            }
             auth = firebase.auth();
             db = firebase.firestore();
-        } catch (e) { console.warn("Firebase Init Error:", e); }
+        } catch (e) {
+            console.warn("Firebase-Konfiguration Fehler:", e);
+        }
 
         let currentUser = null;
+        let isRegisterMode = false;
+        let isForgotPasswordMode = false;
+        let selectedPackageName = "Heizungs-Angebot";
+        let selectedPackagePrice = 149;
+        let appliedDiscountPercent = 0;
         let userOrders = [];
         let activeOrderId = null;
         let adminOrders = [];
@@ -410,6 +784,8 @@
         let customersList = [];
         let selectedAdminOrderId = null;
         let currentAdminTab = 'active'; 
+        let activeArchiveYear = null;
+        let activeMarketPriceCategory = 'Alle';
 
         const ADMIN_EMAIL = "admin@shk-angebote-pruefen.web.app";
 
@@ -419,7 +795,7 @@
                 updateNavbarUI();
                 if (user) {
                     loadUserOrders();
-                    if (user.email === ADMIN_EMAIL || isTeamMember(user.email)) {
+                    if (user.email === ADMIN_EMAIL) {
                         loadAdminOrders();
                         loadMarketPrices();
                         loadCustomers();
@@ -428,32 +804,20 @@
             });
         }
 
-        function getCurrentUserRank() {
-            if (!currentUser) return 'Kunde';
-            if (currentUser.email === ADMIN_EMAIL) return 'Admin';
-            const found = customersList.find(c => c.email && c.email.toLowerCase() === currentUser.email.toLowerCase());
-            return found ? (found.rank || 'Kunde') : 'Kunde';
-        }
-
-        function isTeamMember(email) {
-            const found = customersList.find(c => c.email && c.email.toLowerCase() === email.toLowerCase());
-            return found && (found.rank === 'Sachbearbeiter' || found.rank === 'Admin');
-        }
-
         function updateNavbarUI() {
             const authNav = document.getElementById('authNavArea');
             const userNav = document.getElementById('userNavArea');
             const adminBtn = document.getElementById('adminNavBtn');
             const emailSpan = document.getElementById('navUserEmail');
 
-            if (!authNav || !userNav) return;
             if (currentUser) {
                 authNav.classList.add('hidden');
                 userNav.classList.remove('hidden');
-                if (emailSpan) emailSpan.textContent = currentUser.email;
-                if (adminBtn) {
-                    if (currentUser.email === ADMIN_EMAIL || isTeamMember(currentUser.email)) adminBtn.classList.remove('hidden');
-                    else adminBtn.classList.add('hidden');
+                emailSpan.textContent = currentUser.email;
+                if (currentUser.email === ADMIN_EMAIL) {
+                    adminBtn.classList.remove('hidden');
+                } else {
+                    adminBtn.classList.add('hidden');
                 }
             } else {
                 authNav.classList.remove('hidden');
@@ -470,12 +834,16 @@
                 document.getElementById('landingView').classList.remove('hidden');
                 window.scrollTo({ top: 0, behavior: 'smooth' });
             } else if (viewName === 'clientPortal') {
-                if (!currentUser) { openAuthModal(); return; }
+                if (!currentUser) {
+                    openAuthModal('login');
+                    return;
+                }
                 document.getElementById('clientPortalView').classList.remove('hidden');
                 loadUserOrders();
             } else if (viewName === 'adminPortal') {
-                if (!currentUser || (currentUser.email !== ADMIN_EMAIL && !isTeamMember(currentUser.email))) { 
-                    alert('Nur für Administratoren / Sachbearbeiter.'); return; 
+                if (!currentUser || currentUser.email !== ADMIN_EMAIL) {
+                    alert('Nur für Administratoren zugänglich.');
+                    return;
                 }
                 document.getElementById('adminPortalView').classList.remove('hidden');
                 loadAdminOrders();
@@ -488,159 +856,221 @@
         function openAdminPortal() { switchView('adminPortal'); }
 
         function selectPackage(name, price) {
-            document.getElementById('selectedPackageInput').value = `${name} (${price} €)`;
+            selectedPackageName = name;
+            selectedPackagePrice = price;
+            updatePackageInputDisplay();
             document.getElementById('rechner').scrollIntoView({ behavior: 'smooth' });
         }
 
-        function handleFileSelect(e) {
-            if (e.target.files[0]) document.getElementById('fileNameDisplay').textContent = `Ausgewählt: ${e.target.files[0].name}`;
+        function updatePackageInputDisplay() {
+            const finalPrice = selectedPackagePrice * (1 - appliedDiscountPercent);
+            let text = `${selectedPackageName} (${finalPrice.toFixed(0)} €`;
+            if (appliedDiscountPercent > 0) {
+                text += ` inkl. ${appliedDiscountPercent * 100}% Rabatt`;
+            }
+            text += `)`;
+            document.getElementById('selectedPackageInput').value = text;
         }
 
-        // Auftragsabgabe mit Rabatten & Kundenprüfung
-        async function handleOrderSubmission(e) {
-            e.preventDefault();
+        function applyDiscountCode() {
+            const code = document.getElementById('discountCodeInput').value.trim().toUpperCase();
+            const feedback = document.getElementById('discountFeedback');
+
+            if (code === 'ANGEBOT10') {
+                appliedDiscountPercent = 0.10;
+                feedback.textContent = "Rabattcode 'Angebot10' erfolgreich angewendet (10% Rabatt)!";
+                feedback.className = "text-xs mt-1 block text-emerald-400 font-semibold";
+            } else {
+                appliedDiscountPercent = 0;
+                feedback.textContent = "Ungültiger Rabattcode.";
+                feedback.className = "text-xs mt-1 block text-rose-400";
+            }
+            updatePackageInputDisplay();
+        }
+
+        function handleFileSelect(event) {
+            const file = event.target.files[0];
+            if (file) {
+                document.getElementById('fileNameDisplay').textContent = `Ausgewählt: ${file.name}`;
+            }
+        }
+
+        // Auftragsabgabe mit Vorname, Nachname, Passwort-Prüfung für Neukunden
+        async function handleOrderSubmission(event) {
+            event.preventDefault();
             const email = document.getElementById('orderEmail').value.trim();
             const firstName = document.getElementById('orderFirstName').value.trim();
             const lastName = document.getElementById('orderLastName').value.trim();
-            const projectName = document.getElementById('orderProjectName').value.trim() || 'Standard Projekt';
             const password = document.getElementById('orderPasswordInput').value;
-            const file = document.getElementById('offerFile').files[0];
+            const notes = document.getElementById('orderNotes').value;
+            const fileInput = document.getElementById('offerFile');
+            const file = fileInput.files[0];
 
-            if (!file) return alert("Bitte Angebotsdatei wählen.");
+            if (!file) {
+                alert("Bitte wählen Sie eine Angebotsdatei (PDF oder Bild) aus.");
+                return;
+            }
+
+            if (!auth) {
+                alert("Fehler: Firebase Auth ist nicht initialisiert.");
+                return;
+            }
 
             try {
                 const methods = await auth.fetchSignInMethodsForEmail(email);
                 const isExistingUser = methods.length > 0;
 
                 if (!isExistingUser) {
-                    if (!firstName || !lastName || !password || password.length < 6) {
-                        return alert("Neukunden müssen Vorname, Nachname und ein Passwort (min. 6 Zeichen) angeben.");
+                    // Neukunde: Vorname, Nachname und Passwort zwingend erforderlich
+                    if (!firstName || !lastName) {
+                        alert("Bitte geben Sie Ihren Vor- und Nachnamen zur Erstellung Ihres Kundenkontos ein.");
+                        document.getElementById('orderFirstName').focus();
+                        return;
                     }
+                    if (!password || password.length < 6) {
+                        alert("Bitte Passwort eingeben zur Erstellung Ihres Kundenkontos (mind. 6 Zeichen).");
+                        document.getElementById('orderPasswordInput').focus();
+                        return;
+                    }
+                    // Konto anlegen
                     await auth.createUserWithEmailAndPassword(email, password);
-                } else if (password) {
-                    try { await auth.signInWithEmailAndPassword(email, password); } catch(err) {}
+                } else {
+                    // Bestandskunde: Optionaler Login falls Passwort angegeben
+                    if (password && password.length > 0) {
+                        try {
+                            await auth.signInWithEmailAndPassword(email, password);
+                        } catch (pwErr) {
+                            console.warn("Falsches Passwort eingegeben, Fortfahren als Bestandskunde ohne Login:", pwErr);
+                        }
+                    }
                 }
-
-                let customerRank = 'Kunde';
-                if (db) {
-                    const custSnap = await db.collection('customers').where('email', '==', email).get();
-                    if (!custSnap.empty) customerRank = custSnap.docs[0].data().rank || 'Kunde';
-                }
-
-                let basePrice = 149;
-                let discountPercent = customerRank === 'Stammkunde' ? 0.10 : (customerRank === 'Zuverlässiger Kunde' ? 0.05 : 0);
-                let finalPrice = basePrice * (1 - discountPercent);
 
                 const reader = new FileReader();
                 reader.readAsDataURL(file);
+                
                 reader.onload = async function () {
+                    const fileBase64 = reader.result;
+                    const orderId = 'SHK-' + Math.floor(100000 + Math.random() * 900000);
+                    const finalCalculatedPrice = selectedPackagePrice * (1 - appliedDiscountPercent);
+
                     const newOrder = {
-                        id: 'SHK-' + Math.floor(100000 + Math.random() * 900000),
-                        packageName: 'Heizungs-Angebot',
-                        price: finalPrice,
-                        originalPrice: basePrice,
+                        id: orderId,
+                        packageName: selectedPackageName,
+                        price: finalCalculatedPrice,
+                        originalPrice: selectedPackagePrice,
+                        discountApplied: appliedDiscountPercent > 0 ? 'Angebot10' : null,
+                        manualDiscount: 0,
                         email: email,
                         firstName: firstName || '',
                         lastName: lastName || '',
-                        projectName: projectName,
+                        notes: notes,
                         fileName: file.name,
-                        fileData: reader.result,
-                        status: 1,
+                        fileData: fileBase64,
+                        additionalFiles: [],
+                        status: 1, 
                         paymentStatus: 'unpaid',
                         isArchived: false,
+                        savings: '3200 €',
+                        summary: 'Das Angebot wurde technisch erfasst. Die Detailprüfung auf Plausibilität läuft.',
+                        defects: [
+                            'Hydraulischer Abgleich Position unklar (-350 €)',
+                            'Wärmepumpen-Auslegung im Grenzbereich (-1.200 €)'
+                        ],
                         createdAt: new Date().toISOString(),
-                        userId: auth.currentUser ? auth.currentUser.uid : 'anon'
+                        userId: auth.currentUser ? auth.currentUser.uid : 'anon_' + email
                     };
 
                     if (db) {
                         await db.collection('orders').add(newOrder);
+
+                        // Kunde in separater 'customers' Sammlung speichern (falls Neukunde)
                         if (!isExistingUser) {
                             await db.collection('customers').add({
                                 email: email,
                                 firstName: firstName,
                                 lastName: lastName,
-                                rank: 'Kunde',
                                 createdAt: new Date().toISOString()
                             });
                         }
                     }
-                    alert(`Auftrag eingereicht! (Rang: ${customerRank}, Preis: ${finalPrice} €)`);
+
+                    alert('Auftrag erfolgreich eingereicht und Ihrem Kundenkonto zugeordnet!');
                     switchView('clientPortal');
                 };
-            } catch (err) { alert("Fehler: " + err.message); }
-        }
 
-        async function handlePortalOrderSubmission(e) {
-            e.preventDefault();
-            if (!currentUser) return;
-            const file = document.getElementById('portalOfferFile').files[0];
-            const projectName = document.getElementById('portalProjectSelect').value || document.getElementById('portalNewProjectInput').value || 'Projekt';
-            if (!file) return alert("Bitte Datei wählen.");
-
-            let customerRank = 'Kunde';
-            const custSnap = await db.collection('customers').where('email', '==', currentUser.email).get();
-            if (!custSnap.empty) customerRank = custSnap.docs[0].data().rank || 'Kunde';
-
-            let basePrice = 149;
-            let discountPercent = customerRank === 'Stammkunde' ? 0.10 : (customerRank === 'Zuverlässiger Kunde' ? 0.05 : 0);
-            let finalPrice = basePrice * (1 - discountPercent);
-
-            const reader = new FileReader();
-            reader.readAsDataURL(file);
-            reader.onload = async function() {
-                const newOrder = {
-                    id: 'SHK-' + Math.floor(100000 + Math.random() * 900000),
-                    packageName: 'Heizungs-Angebot',
-                    price: finalPrice,
-                    email: currentUser.email,
-                    projectName: projectName,
-                    fileName: file.name,
-                    fileData: reader.result,
-                    status: 1,
-                    paymentStatus: 'unpaid',
-                    isArchived: false,
-                    createdAt: new Date().toISOString(),
-                    userId: currentUser.uid
-                };
-                if (db) {
-                    await db.collection('orders').add(newOrder);
-                    alert("Hochgeladen zu " + projectName);
-                    loadUserOrders();
-                }
-            };
-        }
-
-        function checkNewProjectInput(el) {
-            const container = document.getElementById('newProjectNameContainer');
-            if (el.value === "") container.classList.remove('hidden');
-            else container.classList.add('hidden');
+            } catch (error) {
+                console.error("Fehler bei der Auftragsabgabe:", error);
+                alert("Fehler: " + error.message);
+            }
         }
 
         async function loadUserOrders() {
             userOrders = [];
             if (db && currentUser) {
                 try {
-                    const snap = await db.collection('orders').where('email', '==', currentUser.email).get();
-                    snap.forEach(doc => userOrders.push({ idDoc: doc.id, ...doc.data() }));
-                } catch(e) { console.warn(e); }
+                    const snapshot = await db.collection('orders')
+                        .where('email', '==', currentUser.email)
+                        .get();
+                    
+                    snapshot.forEach(doc => {
+                        userOrders.push({ idDoc: doc.id, ...doc.data() });
+                    });
+                } catch(e) {
+                    console.warn("Fehler beim Laden der Kundenaufträge:", e);
+                }
             }
-            const statTotal = document.getElementById('clientStatTotal');
-            if (statTotal) statTotal.textContent = userOrders.length;
-            
-            const list = document.getElementById('clientOrdersList');
-            if (list) {
-                list.innerHTML = userOrders.map(o => `
-                    <div onclick="selectClientOrder('${o.id}')" class="bg-slate-900 border border-slate-800 rounded-xl p-4 cursor-pointer mb-2">
-                        <span class="text-xs font-bold text-emerald-400">${o.id}</span>
-                        <h4 class="text-white font-semibold text-sm">${o.projectName || 'Projekt'} (${o.price} €)</h4>
+            renderClientPortalKPIs();
+            renderClientOrdersList();
+        }
+
+        function renderClientPortalKPIs() {
+            const totalOrders = userOrders.length;
+            const unpaidOrders = userOrders.filter(o => o.status != 6 && (!o.paymentStatus || o.paymentStatus === 'unpaid')).length;
+            const completedOrders = userOrders.filter(o => o.status == 4).length;
+
+            document.getElementById('clientStatTotal').textContent = totalOrders;
+            document.getElementById('clientStatUnpaid').textContent = unpaidOrders;
+            document.getElementById('clientStatDone').textContent = completedOrders;
+        }
+
+        function renderClientOrdersList() {
+            const container = document.getElementById('clientOrdersList');
+            if (userOrders.length === 0) {
+                container.innerHTML = `<p class="text-xs text-slate-500">Keine Aufträge vorhanden.</p>`;
+                return;
+            }
+
+            container.innerHTML = userOrders.map((o) => {
+                let statusBadgeText = `Status ${o.status}/4`;
+                let statusBadgeClass = 'bg-amber-500/10 text-amber-400';
+                
+                if (o.status == 4) {
+                    statusBadgeText = 'Abgeschlossen';
+                    statusBadgeClass = 'bg-emerald-500/10 text-emerald-400';
+                } else if (o.status == 5) {
+                    statusBadgeText = 'Abgelehnt';
+                    statusBadgeClass = 'bg-rose-500/10 text-rose-400';
+                } else if (o.status == 6) {
+                    statusBadgeText = 'Storniert';
+                    statusBadgeClass = 'bg-rose-500/10 text-rose-400';
+                }
+
+                return `
+                    <div onclick="selectClientOrder('${o.id}')" class="bg-slate-900 border ${activeOrderId === o.id ? 'border-emerald-500' : 'border-slate-800'} hover:border-slate-700 rounded-xl p-4 cursor-pointer transition">
+                        <div class="flex justify-between items-center mb-1">
+                            <span class="text-xs font-bold text-emerald-400">${o.id}</span>
+                            <span class="text-xs px-2 py-0.5 rounded-full ${statusBadgeClass}">${statusBadgeText}</span>
+                        </div>
+                        <h4 class="text-white font-semibold text-sm">${o.packageName || 'Heizungs-Angebot'} (${o.price || 149} €)</h4>
+                        <div class="mt-2 text-xs text-slate-400">
+                            <i class="fa-solid fa-file-pdf mr-1"></i>${o.fileName}
+                        </div>
                     </div>
-                `).join('');
-            }
-            
-            const select = document.getElementById('portalProjectSelect');
-            if (select) {
-                const projs = [...new Set(userOrders.map(o => o.projectName || 'Standard Projekt'))];
-                select.innerHTML = `<option value="">-- Neues Bauvorhaben anlegen --</option>` + projs.map(p => `<option value="${p}">${p}</option>`).join('');
+                `;
+            }).join('');
+
+            if (userOrders.length > 0 && !activeOrderId) {
+                selectClientOrder(userOrders[0].id);
             }
         }
 
@@ -648,233 +1078,847 @@
             activeOrderId = orderId;
             const order = userOrders.find(o => o.id === orderId);
             if (!order) return;
+
+            renderClientOrdersList();
+
             document.getElementById('noActiveOrderPrompt').classList.add('hidden');
             document.getElementById('activeOrderDetailsPanel').classList.remove('hidden');
-            document.getElementById('detailOrderId').textContent = `Auftrag ${order.id} [${order.projectName || ''}]`;
-            document.getElementById('detailOrderPackage').textContent = `${order.packageName} — ${order.price} €`;
 
+            document.getElementById('detailOrderPackage').textContent = `${order.packageName || 'Heizung'} (${order.price || 149} €)`;
+            document.getElementById('detailOrderId').textContent = `Auftrag ${order.id}`;
+
+            const rejectedBanner = document.getElementById('orderRejectedBanner');
+            const cancelledBanner = document.getElementById('orderCancelledBanner');
+            const trackerCard = document.getElementById('orderTrackerCard');
             const reportCard = document.getElementById('completedReportCard');
-            if (order.status == 4) {
-                reportCard.classList.remove('hidden');
-                document.getElementById('reportSummaryText').textContent = order.summary || 'Kein Fazit hinterlegt.';
-                if (order.reportData) {
-                    const btn = document.getElementById('clientReportDownloadBtn');
-                    btn.href = order.reportData;
-                    btn.download = order.reportName || 'Pruefbericht.pdf';
-                    btn.classList.remove('hidden');
-                }
+            const reportDownloadBtn = document.getElementById('clientReportDownloadBtn');
+            const uploadSection = document.getElementById('clientUploadSection');
+            const cancelBtnContainer = document.getElementById('clientCancelButtonContainer');
+
+            if (order.status == 1) {
+                cancelBtnContainer.classList.remove('hidden');
             } else {
-                reportCard.classList.add('hidden');
+                cancelBtnContainer.classList.add('hidden');
             }
+
+            if (order.status == 5 || order.status == 4 || order.status == 6) {
+                uploadSection.classList.add('hidden');
+            } else {
+                uploadSection.classList.remove('hidden');
+            }
+
+            const fileListContainer = document.getElementById('clientFileList');
+            let filesHtml = `<div class="flex items-center justify-between bg-slate-950 p-2.5 rounded-lg border border-slate-800">
+                <span><i class="fa-solid fa-file-pdf text-emerald-400 mr-2"></i>${order.fileName} (Hauptangebot)</span>
+                ${order.fileData ? `<a href="${order.fileData}" download="${order.fileName}" class="text-emerald-400 hover:underline"><i class="fa-solid fa-download"></i></a>` : ''}
+            </div>`;
+
+            if (order.additionalFiles && order.additionalFiles.length > 0) {
+                order.additionalFiles.forEach((af) => {
+                    filesHtml += `<div class="flex items-center justify-between bg-slate-950 p-2.5 rounded-lg border border-slate-800">
+                        <span><i class="fa-solid fa-file-lines text-teal-400 mr-2"></i>${af.name} (Zusatzdokument)</span>
+                        <a href="${af.data}" download="${af.name}" class="text-emerald-400 hover:underline"><i class="fa-solid fa-download"></i></a>
+                    </div>`;
+                });
+            }
+            fileListContainer.innerHTML = filesHtml;
+
+            if (order.status == 5) {
+                rejectedBanner.classList.remove('hidden');
+                cancelledBanner.classList.add('hidden');
+                trackerCard.classList.add('hidden');
+                reportCard.classList.add('hidden');
+            } else if (order.status == 6) {
+                rejectedBanner.classList.add('hidden');
+                cancelledBanner.classList.remove('hidden');
+                trackerCard.classList.add('hidden');
+                reportCard.classList.add('hidden');
+            } else {
+                rejectedBanner.classList.add('hidden');
+                cancelledBanner.classList.add('hidden');
+                trackerCard.classList.remove('hidden');
+
+                const statusTexts = ['Eingegangen', 'Fachprüfung', 'Bericht', 'Abgeschlossen'];
+                const progressBar = document.getElementById('trackerProgressBar');
+                const progressPercent = (order.status / 4) * 100;
+                progressBar.style.width = `${progressPercent}%`;
+
+                const badge = document.getElementById('detailOrderStatusBadge');
+                if (order.status == 4) {
+                    badge.className = "px-3 py-1 rounded-full text-xs font-semibold bg-emerald-500/10 text-emerald-400 border border-emerald-500/20";
+                    badge.textContent = "Abgeschlossen";
+                    reportCard.classList.remove('hidden');
+
+                    if (order.reportData) {
+                        reportDownloadBtn.href = order.reportData;
+                        reportDownloadBtn.download = order.reportName || 'Pruefbericht.pdf';
+                        reportDownloadBtn.classList.remove('hidden');
+                    } else {
+                        reportDownloadBtn.classList.add('hidden');
+                    }
+                } else {
+                    badge.className = "px-3 py-1 rounded-full text-xs font-semibold bg-amber-500/10 text-amber-400 border border-amber-500/20";
+                    badge.textContent = statusTexts[order.status - 1];
+                    reportCard.classList.add('hidden');
+                }
+            }
+
+            document.getElementById('reportSavingsAmount').textContent = order.savings || '2.400 €';
+            document.getElementById('reportSummaryText').textContent = order.summary || 'Prüfung läuft.';
+            
+            const defectsContainer = document.getElementById('reportDefectsList');
+            const defects = order.defects || [];
+            defectsContainer.innerHTML = defects.map(d => `
+                <div class="flex items-start space-x-2 text-slate-300 bg-slate-950 p-3 rounded-lg border border-slate-800">
+                    <i class="fa-solid fa-triangle-exclamation text-amber-400 mt-0.5"></i>
+                    <span>${d}</span>
+                </div>
+            `).join('');
+        }
+
+        async function cancelOrderAsClient() {
+            if (!activeOrderId) return;
+            if (!confirm('Möchten Sie diesen Auftrag wirklich stornieren?')) return;
+
+            const order = userOrders.find(o => o.id === activeOrderId);
+            if (!order || !order.idDoc) return;
+
+            order.status = 6;
+            order.paymentStatus = 'paid';
+
+            if (db) {
+                try {
+                    await db.collection('orders').doc(order.idDoc).update({ 
+                        status: 6,
+                        paymentStatus: 'paid'
+                    });
+                    alert('Auftrag wurde storniert.');
+                    loadUserOrders();
+                    selectClientOrder(order.id);
+                } catch(e) {
+                    alert('Fehler beim Stornieren: ' + e.message);
+                }
+            }
+        }
+
+        async function uploadAdditionalClientFile() {
+            if (!activeOrderId) return;
+            const order = userOrders.find(o => o.id === activeOrderId);
+            if (!order || !order.idDoc) return;
+
+            const fileInput = document.getElementById('clientAdditionalFileInput');
+            const file = fileInput.files[0];
+            if (!file) {
+                alert("Bitte wählen Sie eine Datei aus.");
+                return;
+            }
+
+            const reader = new FileReader();
+            reader.readAsDataURL(file);
+
+            reader.onload = async function() {
+                const fileBase64 = reader.result;
+                if (!order.additionalFiles) order.additionalFiles = [];
+                order.additionalFiles.push({ name: file.name, data: fileBase64 });
+
+                if (db) {
+                    try {
+                        await db.collection('orders').doc(order.idDoc).update({
+                            additionalFiles: order.additionalFiles
+                        });
+                        alert('Zusätzliches Dokument erfolgreich hochgeladen!');
+                        selectClientOrder(order.id);
+                    } catch(e) {
+                        alert('Fehler beim Hochladen: ' + e.message);
+                    }
+                }
+            };
         }
 
         async function loadAdminOrders() {
             adminOrders = [];
             if (db) {
                 try {
-                    const snap = await db.collection('orders').get();
-                    snap.forEach(doc => adminOrders.push({ idDoc: doc.id, ...doc.data() }));
-                } catch(e) { console.warn(e); }
+                    const snapshot = await db.collection('orders').get();
+                    snapshot.forEach(doc => {
+                        adminOrders.push({ idDoc: doc.id, ...doc.data() });
+                    });
+                } catch(e) {
+                    console.warn("Fehler beim Laden der Admin-Aufträge:", e);
+                }
             }
             renderAdminDashboard();
-            updateAdminKPIs();
-        }
-
-        function updateAdminKPIs() {
-            let currentRev = 0;
-            let openRev = 0;
-            let savingsNum = 0;
-
-            adminOrders.forEach(o => {
-                if (o.status == 5 || o.status == 6) return;
-                const p = o.price || 149;
-                currentRev += p;
-                if (o.savings) savingsNum += parseInt(o.savings.replace(/[^0-9]/g, '')) || 0;
-            });
-
-            if (document.getElementById('adminStatCurrentRevenue')) document.getElementById('adminStatCurrentRevenue').textContent = currentRev.toLocaleString('de-DE') + ' €';
-            if (document.getElementById('adminStatProjectedRevenue')) document.getElementById('adminStatProjectedRevenue').textContent = currentRev.toLocaleString('de-DE') + ' €';
-            if (document.getElementById('adminStatSavings')) document.getElementById('adminStatSavings').textContent = savingsNum.toLocaleString('de-DE') + ' €';
         }
 
         async function loadMarketPrices() {
             marketPrices = [];
             if (db) {
                 try {
-                    const snap = await db.collection('market_prices').get();
-                    snap.forEach(doc => marketPrices.push({ idDoc: doc.id, ...doc.data() }));
-                } catch(e) { console.warn(e); }
+                    const snapshot = await db.collection('market_prices').get();
+                    snapshot.forEach(doc => {
+                        marketPrices.push({ idDoc: doc.id, ...doc.data() });
+                    });
+                } catch(e) {
+                    console.warn("Fehler beim Laden der Marktpreise:", e);
+                }
             }
-            if (currentAdminTab === 'marketprices') renderMarketPricesTable();
+            if (currentAdminTab === 'marketprices') {
+                renderMarketPricesTable();
+                populateBauteilDropdown();
+            }
         }
 
+        // NEU: Kunden aus Firestore laden
         async function loadCustomers() {
             customersList = [];
             if (db) {
                 try {
-                    const snap = await db.collection('customers').get();
-                    snap.forEach(doc => customersList.push({ idDoc: doc.id, ...doc.data() }));
-                } catch(e) { console.warn(e); }
-            }
-            if (currentAdminTab === 'customers') renderCustomersTable();
-        }
-
-        async function updateCustomerRank(targetEmail, newRank) {
-            if (!db || !currentUser) return;
-            const myRank = getCurrentUserRank();
-
-            if (myRank === 'Sachbearbeiter') {
-                alert("Sachbearbeiter haben keine Berechtigung, Ränge zu ändern.");
-                loadCustomers();
-                return;
-            }
-            if (targetEmail.toLowerCase() === ADMIN_EMAIL.toLowerCase()) {
-                alert("Der Rang der Haupt-Admin-Adresse kann nicht verändert werden.");
-                loadCustomers();
-                return;
-            }
-
-            try {
-                const snap = await db.collection('customers').where('email', '==', targetEmail).get();
-                if (!snap.empty) {
-                    await db.collection('customers').doc(snap.docs[0].id).update({ rank: newRank });
-                } else {
-                    await db.collection('customers').add({ email: targetEmail, rank: newRank, createdAt: new Date().toISOString() });
+                    const snapshot = await db.collection('customers').get();
+                    snapshot.forEach(doc => {
+                        customersList.push({ idDoc: doc.id, ...doc.data() });
+                    });
+                } catch(e) {
+                    console.warn("Fehler beim Laden der Kunden:", e);
                 }
-                alert(`Rang für ${targetEmail} aktualisiert!`);
-                loadCustomers();
-            } catch (err) { alert("Fehler: " + err.message); }
+            }
+            if (currentAdminTab === 'customers') {
+                renderCustomersTable();
+            }
         }
 
+        // Kunden-Tabelle rendern
         function renderCustomersTable() {
             const container = document.getElementById('adminCustomersTableContainer');
             if (!container) return;
 
-            const ranks = ['Kunde', 'Zuverlässiger Kunde', 'Stammkunde', 'Sachbearbeiter', 'Admin'];
-            const custMap = {};
-
-            customersList.forEach(c => { custMap[c.email.toLowerCase()] = c; });
+            // Auftragsanzahl pro E-Mail berechnen
+            const orderCounts = {};
             adminOrders.forEach(o => {
-                if (o.email && !custMap[o.email.toLowerCase()]) {
-                    custMap[o.email.toLowerCase()] = { email: o.email, firstName: o.firstName || '-', lastName: o.lastName || '-', rank: 'Kunde' };
+                if (o.email) {
+                    const mail = o.email.toLowerCase().trim();
+                    orderCounts[mail] = (orderCounts[mail] || 0) + 1;
                 }
             });
 
-            const arr = Object.values(custMap);
-            const myRank = getCurrentUserRank();
+            // Falls Kunden direkt aus den Aufträgen extrahiert werden müssen (falls customers Sammlung leer)
+            const uniqueCustomers = {};
+            adminOrders.forEach(o => {
+                if (o.email) {
+                    const mail = o.email.toLowerCase().trim();
+                    if (!uniqueCustomers[mail]) {
+                        uniqueCustomers[mail] = {
+                            email: o.email,
+                            firstName: o.firstName || 'Unbekannt',
+                            lastName: o.lastName || '',
+                            createdAt: o.createdAt || ''
+                        };
+                    }
+                }
+            });
+
+            const customerArray = Object.values(uniqueCustomers);
+
+            if (customerArray.length === 0) {
+                container.innerHTML = `<p class="text-xs text-slate-500 py-4 text-center">Keine Kunden gefunden.</p>`;
+                return;
+            }
 
             container.innerHTML = `
                 <table class="w-full text-left text-xs text-slate-300">
                     <thead class="bg-slate-950 text-slate-400 uppercase border-b border-slate-800">
                         <tr>
                             <th class="p-3">Name</th>
-                            <th class="p-3">E-Mail</th>
-                            <th class="p-3">Accountsrang</th>
+                            <th class="p-3">E-Mail-Adresse</th>
+                            <th class="p-3">Anzahl Aufträge</th>
+                            <th class="p-3">Registriert / Erster Auftrag</th>
                         </tr>
                     </thead>
                     <tbody class="divide-y divide-slate-800">
-                        ${arr.map(c => {
-                            const isMainAdmin = c.email.toLowerCase() === ADMIN_EMAIL.toLowerCase();
-                            const isDisabled = (myRank === 'Sachbearbeiter') || isMainAdmin;
-                            return `
-                                <tr class="hover:bg-slate-950/50">
-                                    <td class="p-3 font-semibold text-white">${c.firstName || '-'} ${c.lastName || ''}</td>
-                                    <td class="p-3 text-emerald-400">${c.email}</td>
-                                    <td class="p-3">
-                                        <select ${isDisabled ? 'disabled' : ''} onchange="updateCustomerRank('${c.email}', this.value)" class="bg-slate-950 border border-slate-700 text-white rounded-lg px-2 py-1 focus:outline-none ${isDisabled ? 'opacity-50 cursor-not-allowed' : ''}">
-                                            ${ranks.map(r => `<option value="${r}" ${c.rank === r ? 'selected' : ''}>${r}</option>`).join('')}
-                                        </select>
-                                        ${isMainAdmin ? '<span class="text-[10px] text-amber-400 ml-2">Haupt-Admin</span>' : ''}
-                                    </td>
-                                </tr>
-                            `;
-                        }).join('')}
+                        ${customerArray.map(c => `
+                            <tr class="hover:bg-slate-950/50">
+                                <td class="p-3 font-semibold text-white">${c.firstName} ${c.lastName}</td>
+                                <td class="p-3 text-emerald-400">${c.email}</td>
+                                <td class="p-3">${orderCounts[c.email.toLowerCase().trim()] || 1}</td>
+                                <td class="p-3">${c.createdAt ? new Date(c.createdAt).toLocaleDateString('de-DE') : '-'}</td>
+                            </tr>
+                        `).join('')}
                     </tbody>
                 </table>
             `;
         }
 
-        function switchAdminTab(tabName) {
-            currentAdminTab = tabName;
-            ['active', 'rejected', 'cancelled', 'archive', 'customers', 'marketprices'].forEach(t => {
-                const btn = document.getElementById('tabBtn' + t.charAt(0).toUpperCase() + t.slice(1));
-                if (btn) btn.className = "px-5 py-3 text-sm font-bold border-b-2 " + (t === tabName ? "border-emerald-500 text-emerald-400" : "border-transparent text-slate-400");
+        async function handleFileImport() {
+            const fileInput = document.getElementById('importFile');
+            const feedback = document.getElementById('importFeedback');
+            const file = fileInput.files[0];
+
+            if (!file) {
+                alert("Bitte wählen Sie eine Datei aus.");
+                return;
+            }
+
+            feedback.textContent = "Datei wird analysiert und verarbeitet...";
+            feedback.className = "text-xs block text-amber-400";
+
+            const reader = new FileReader();
+            const fileName = file.name.toLowerCase();
+
+            reader.onload = async function(e) {
+                const content = e.target.result;
+                let importedItems = [];
+
+                try {
+                    if (fileName.endsWith('.xml') || fileName.endsWith('.x83') || fileName.endsWith('.d83')) {
+                        const parser = new DOMParser();
+                        const xmlDoc = parser.parseFromString(content, "text/xml");
+                        const items = xmlDoc.querySelectorAll('Item, BoQItem, LstSatz');
+                        
+                        items.forEach(node => {
+                            const descNode = node.querySelector('Text, ShortDesc, OutlTxt, Description');
+                            const priceNode = node.querySelector('UP, UnitPrice, Price, BiicePrice');
+                            
+                            if (descNode) {
+                                const title = descNode.textContent.trim();
+                                const price = priceNode ? parseFloat(priceNode.textContent) || 0 : 0;
+                                
+                                if (title.length > 3) {
+                                    importedItems.push({
+                                        title: title.substring(0, 100),
+                                        category: 'Heizung',
+                                        prices: [price, price, price],
+                                        average: price > 0 ? price : 100,
+                                        updatedAt: new Date().toISOString()
+                                    });
+                                }
+                            }
+                        });
+                    } else {
+                        const lines = content.split('\n');
+                        lines.forEach(line => {
+                            const parts = line.split(/[\t;]/);
+                            if (parts.length >= 2) {
+                                const title = parts[0].trim();
+                                const price = parseFloat(parts[1].replace(',', '.')) || 0;
+                                
+                                if (title.length > 2) {
+                                    importedItems.push({
+                                        title: title,
+                                        category: 'Sanitär',
+                                        prices: [price, price, price],
+                                        average: price > 0 ? price : 50,
+                                        updatedAt: new Date().toISOString()
+                                    });
+                                }
+                            }
+                        });
+                    }
+
+                    if (importedItems.length === 0) {
+                        throw new Error("Es konnten keine gültigen Positionen in der Datei gefunden werden.");
+                    }
+
+                    let batchCount = 0;
+                    if (db) {
+                        const batch = db.batch();
+                        importedItems.forEach(item => {
+                            const newDocRef = db.collection('market_prices').doc();
+                            batch.set(newDocRef, item);
+                            batchCount++;
+                        });
+                        await batch.commit();
+                    }
+
+                    feedback.textContent = `Erfolgreich! ${batchCount} Positionen wurden in die Marktpreise-DB importiert.`;
+                    feedback.className = "text-xs block text-emerald-400 font-semibold";
+                    fileInput.value = '';
+                    loadMarketPrices();
+
+                } catch (error) {
+                    console.error("Import-Fehler:", error);
+                    feedback.textContent = "Fehler beim Verarbeiten der Datei: " + error.message;
+                    feedback.className = "text-xs block text-rose-400";
+                }
+            };
+
+            reader.readAsText(file, "UTF-8");
+        }
+
+        function populateBauteilDropdown() {
+            const select = document.getElementById('selectBauteil');
+            if (!select) return;
+            select.innerHTML = '<option value="">-- Bitte wählen --</option>';
+            marketPrices.forEach(m => {
+                select.innerHTML += `<option value="${m.idDoc}">${m.title} (Ø ${m.average.toFixed(2)} €)</option>`;
+            });
+        }
+
+        function pruefePositionGegenMarktwert() {
+            const selectId = document.getElementById('selectBauteil').value;
+            const angebotspreis = parseFloat(document.getElementById('inputAngebotspreis').value);
+            const ergebnisBox = document.getElementById('ergebnisBox');
+
+            if (!selectId || isNaN(angebotspreis)) {
+                ergebnisBox.innerHTML = "Bitte Bauteil auswählen und gültigen Preis eingeben.";
+                ergebnisBox.className = "p-3 rounded-xl border text-xs text-center font-bold bg-amber-500/10 border-amber-500/30 text-amber-400";
+                ergebnisBox.classList.remove('hidden');
+                return;
+            }
+
+            const item = marketPrices.find(m => m.idDoc === selectId);
+            if (!item) return;
+
+            const maxErlaubt = item.average * 1.25;
+
+            ergebnisBox.classList.remove('hidden');
+            if (angebotspreis <= item.average) {
+                ergebnisBox.innerHTML = `✓ Plausibel! Der Angebotspreis (${angebotspreis.toFixed(2)} €) liegt unter oder im Bereich des Markt-Mittelwerts (${item.average.toFixed(2)} €).`;
+                ergebnisBox.className = "p-3 rounded-xl border text-xs text-center font-bold bg-emerald-500/10 border-emerald-500/30 text-emerald-400";
+            } else if (angebotspreis <= maxErlaubt) {
+                ergebnisBox.innerHTML = `⚠ Etwas erhöht. (${angebotspreis.toFixed(2)} € vs. Schnitt ${item.average.toFixed(2)} €), liegt aber noch im Toleranzbereich.`;
+                ergebnisBox.className = "p-3 rounded-xl border text-xs text-center font-bold bg-amber-500/10 border-amber-500/30 text-amber-400";
+            } else {
+                ergebnisBox.innerHTML = `✕ Überhöht! Der Angebotspreis (${angebotspreis.toFixed(2)} €) überschreitet den Marktwert (${item.average.toFixed(2)} €) deutlich!`;
+                ergebnisBox.className = "p-3 rounded-xl border text-xs text-center font-bold bg-rose-500/10 border-rose-500/30 text-rose-400";
+            }
+        }
+
+        async function saveMarketPriceItem(event) {
+            event.preventDefault();
+            const docId = document.getElementById('marketPriceDocId').value;
+            const title = document.getElementById('mpTitle').value;
+            const category = document.getElementById('mpCategory').value;
+            const p1 = parseFloat(document.getElementById('mpPrice1').value) || 0;
+            const p2 = parseFloat(document.getElementById('mpPrice2').value) || 0;
+            const p3 = parseFloat(document.getElementById('mpPrice3').value) || 0;
+
+            let validPrices = [p1, p2, p3].filter(p => p > 0);
+            let avg = validPrices.length > 0 ? (validPrices.reduce((a,b) => a+b, 0) / validPrices.length) : 0;
+
+            const itemData = {
+                title: title,
+                category: category,
+                prices: [p1, p2, p3],
+                average: avg,
+                updatedAt: new Date().toISOString()
+            };
+
+            if (db) {
+                try {
+                    if (docId) {
+                        await db.collection('market_prices').doc(docId).update(itemData);
+                    } else {
+                        await db.collection('market_prices').add(itemData);
+                    }
+                    alert('Marktpreis erfolgreich gespeichert!');
+                    resetMarketPriceForm();
+                    loadMarketPrices();
+                } catch(e) {
+                    alert('Fehler beim Speichern: ' + e.message);
+                }
+            }
+        }
+
+        function editMarketPrice(idDoc) {
+            const item = marketPrices.find(m => m.idDoc === idDoc);
+            if (!item) return;
+
+            document.getElementById('marketPriceDocId').value = item.idDoc;
+            document.getElementById('mpTitle').value = item.title;
+            document.getElementById('mpCategory').value = item.category || 'Allgemein';
+            document.getElementById('mpPrice1').value = item.prices[0] || '';
+            document.getElementById('mpPrice2').value = item.prices[1] || '';
+            document.getElementById('mpPrice3').value = item.prices[2] || '';
+        }
+
+        async function deleteMarketPrice(idDoc) {
+            if (!confirm('Möchten Sie diesen Eintrag löschen?')) return;
+            if (db) {
+                try {
+                    await db.collection('market_prices').doc(idDoc).delete();
+                    loadMarketPrices();
+                } catch(e) {
+                    alert('Fehler: ' + e.message);
+                }
+            }
+        }
+
+        function resetMarketPriceForm() {
+            document.getElementById('marketPriceDocId').value = '';
+            document.getElementById('mpTitle').value = '';
+            document.getElementById('mpCategory').value = 'Heizung';
+            document.getElementById('mpPrice1').value = '';
+            document.getElementById('mpPrice2').value = '';
+            document.getElementById('mpPrice3').value = '';
+        }
+
+        function filterMarketPricesCategory(cat) {
+            activeMarketPriceCategory = cat;
+            ['Alle', 'Heizung', 'Sanitär', 'Allgemein'].forEach(c => {
+                const btn = document.getElementById('catBtn' + (c === 'Allgemein' ? 'Allgemein' : c));
+                if (btn) {
+                    if (c === cat) {
+                        btn.className = "flex-1 bg-emerald-500 text-slate-950 font-bold py-1.5 rounded-lg text-[11px] transition";
+                    } else {
+                        btn.className = "flex-1 bg-slate-800 text-slate-300 hover:bg-slate-700 font-semibold py-1.5 rounded-lg text-[11px] transition";
+                    }
+                }
+            });
+            renderMarketPricesTable();
+        }
+
+        function renderMarketPricesTable() {
+            const container = document.getElementById('marketPricesTableContainer');
+            const searchInput = document.getElementById('marketPriceSearchInput');
+            const query = searchInput ? searchInput.value.toLowerCase().trim() : '';
+
+            const filteredPrices = marketPrices.filter(m => {
+                if (activeMarketPriceCategory !== 'Alle' && m.category !== activeMarketPriceCategory) {
+                    return false;
+                }
+                if (!query) return true;
+                const titleLower = m.title.toLowerCase();
+                const words = query.split(/\s+/);
+                return words.every(word => titleLower.includes(word));
             });
 
-            document.getElementById('adminSelectPrompt').classList.add('hidden');
-            document.getElementById('adminEditorPanel').classList.add('hidden');
-            document.getElementById('adminMarketPricesPanel').classList.add('hidden');
-            document.getElementById('adminCustomersPanel').classList.add('hidden');
+            if (filteredPrices.length === 0) {
+                container.innerHTML = `<p class="text-xs text-slate-500 py-4 text-center">Keine passenden Marktpreise gefunden.</p>`;
+                return;
+            }
 
-            if (tabName === 'marketprices') document.getElementById('adminMarketPricesPanel').classList.remove('hidden');
-            else if (tabName === 'customers') { document.getElementById('adminCustomersPanel').classList.remove('hidden'); loadCustomers(); }
-            else document.getElementById('adminSelectPrompt').classList.remove('hidden');
+            container.innerHTML = `
+                <table class="w-full text-left text-xs text-slate-300">
+                    <thead class="bg-slate-950 text-slate-400 uppercase border-b border-slate-800">
+                        <tr>
+                            <th class="p-3">Position</th>
+                            <th class="p-3">Kategorie</th>
+                            <th class="p-3">Preise (€)</th>
+                            <th class="p-3 text-emerald-400 font-bold">Mittelwert</th>
+                            <th class="p-3 text-right">Aktion</th>
+                        </tr>
+                    </thead>
+                    <tbody class="divide-y divide-slate-800">
+                        ${filteredPrices.map(m => `
+                            <tr class="hover:bg-slate-950/50">
+                                <td class="p-3 font-semibold text-white">${m.title}</td>
+                                <td class="p-3"><span class="bg-slate-800 px-2 py-0.5 rounded text-[10px] text-emerald-400">${m.category || 'Allgemein'}</span></td>
+                                <td class="p-3">${m.prices.filter(p => p > 0).join(' € / ')} €</td>
+                                <td class="p-3 text-emerald-400 font-black">${m.average.toLocaleString('de-DE', {minimumFractionDigits: 2, maximumFractionDigits: 2})} €</td>
+                                <td class="p-3 text-right space-x-2">
+                                    <button type="button" onclick="editMarketPrice('${m.idDoc}')" class="text-amber-400 hover:underline"><i class="fa-solid fa-pen"></i></button>
+                                    <button type="button" onclick="deleteMarketPrice('${m.idDoc}')" class="text-rose-400 hover:underline"><i class="fa-solid fa-trash"></i></button>
+                                </td>
+                            </tr>
+                        `).join('')}
+                    </tbody>
+                </table>
+            `;
+            populateBauteilDropdown();
+        }
+
+        function switchAdminTab(tabName, year = null) {
+            currentAdminTab = tabName;
+            activeArchiveYear = year;
+
+            document.getElementById('tabBtnActive').className = "px-5 py-3 text-sm font-bold border-b-2 " + (tabName === 'active' ? "border-emerald-500 text-emerald-400" : "border-transparent text-slate-400 hover:text-white") + " transition";
+            document.getElementById('tabBtnRejected').className = "px-5 py-3 text-sm font-bold border-b-2 " + (tabName === 'rejected' ? "border-emerald-500 text-emerald-400" : "border-transparent text-slate-400 hover:text-white") + " transition";
+            document.getElementById('tabBtnCancelled').className = "px-5 py-3 text-sm font-bold border-b-2 " + (tabName === 'cancelled' ? "border-emerald-500 text-emerald-400" : "border-transparent text-slate-400 hover:text-white") + " transition";
+            document.getElementById('tabBtnArchive').className = "px-5 py-3 text-sm font-bold border-b-2 " + (tabName === 'archive' ? "border-emerald-500 text-emerald-400" : "border-transparent text-slate-400 hover:text-white") + " transition";
+            document.getElementById('tabBtnCustomers').className = "px-5 py-3 text-sm font-bold border-b-2 " + (tabName === 'customers' ? "border-emerald-500 text-emerald-400" : "border-transparent text-slate-400 hover:text-white") + " transition";
+            document.getElementById('tabBtnMarketPrices').className = "px-5 py-3 text-sm font-bold border-b-2 " + (tabName === 'marketprices' ? "border-emerald-500 text-emerald-400" : "border-transparent text-slate-400 hover:text-white") + " transition";
+
+            const selectPrompt = document.getElementById('adminSelectPrompt');
+            const editorPanel = document.getElementById('adminEditorPanel');
+            const marketPricesPanel = document.getElementById('adminMarketPricesPanel');
+            const customersPanel = document.getElementById('adminCustomersPanel');
+            const searchContainer = document.getElementById('adminSearchContainer');
+
+            selectPrompt.classList.add('hidden');
+            editorPanel.classList.add('hidden');
+            marketPricesPanel.classList.add('hidden');
+            customersPanel.classList.add('hidden');
+            searchContainer.classList.add('hidden');
+
+            if (tabName === 'marketprices') {
+                marketPricesPanel.classList.remove('hidden');
+                searchContainer.classList.remove('hidden');
+                loadMarketPrices();
+            } else if (tabName === 'customers') {
+                customersPanel.classList.remove('hidden');
+                loadCustomers();
+            } else {
+                if (!selectedAdminOrderId) {
+                    selectPrompt.classList.remove('hidden');
+                } else {
+                    editorPanel.classList.remove('hidden');
+                }
+            }
 
             renderAdminDashboard();
         }
 
         function renderAdminDashboard() {
-            const container = document.getElementById('adminOrdersList');
-            if (!container) return;
-            if (currentAdminTab === 'active' || currentAdminTab === 'rejected' || currentAdminTab === 'cancelled' || currentAdminTab === 'archive') {
-                let filtered = adminOrders;
-                if (currentAdminTab === 'active') filtered = adminOrders.filter(o => !o.isArchived && o.status != 5 && o.status != 6);
-                if (currentAdminTab === 'rejected') filtered = adminOrders.filter(o => !o.isArchived && o.status == 5);
-                if (currentAdminTab === 'cancelled') filtered = adminOrders.filter(o => !o.isArchived && o.status == 6);
-                if (currentAdminTab === 'archive') filtered = adminOrders.filter(o => o.isArchived);
+            let currentRevenue = 0;
+            let openRevenue = 0;
 
-                container.innerHTML = filtered.length === 0 ? `<p class="text-xs text-slate-500">Keine Aufträge.</p>` : filtered.map(o => `
-                    <div onclick="selectAdminOrder('${o.id}')" class="bg-slate-900 border ${selectedAdminOrderId === o.id ? 'border-amber-500' : 'border-slate-800'} rounded-xl p-4 cursor-pointer mb-2">
-                        <span class="text-xs font-bold text-amber-400">${o.id}</span>
-                        <h4 class="text-white font-semibold text-sm">${o.projectName || 'Projekt'}</h4>
-                        <p class="text-xs text-slate-400">${o.email} ${o.status == 7 ? '<span class="text-amber-400 font-bold">[Prüfung auf Ablehnung]</span>' : ''}</p>
+            adminOrders.forEach(o => {
+                if (o.status == 5 || o.status == 6) return;
+                const basePrice = o.price || 149;
+                const manualDiscount = parseFloat(o.manualDiscount) || 0;
+                const finalPrice = Math.max(0, basePrice - manualDiscount);
+
+                if (o.paymentStatus === 'paid') {
+                    currentRevenue += finalPrice;
+                } else if (o.paymentStatus === 'partial') {
+                    currentRevenue += (finalPrice / 2);
+                    openRevenue += (finalPrice / 2);
+                } else {
+                    openRevenue += finalPrice;
+                }
+            });
+
+            const projectedRevenue = currentRevenue + openRevenue;
+
+            document.getElementById('adminStatCurrentRevenue').textContent = currentRevenue.toLocaleString('de-DE') + ' €';
+            document.getElementById('adminStatOpenRevenue').textContent = openRevenue.toLocaleString('de-DE') + ' €';
+            document.getElementById('adminStatProjectedRevenue').textContent = projectedRevenue.toLocaleString('de-DE') + ' €';
+
+            let totalSavingsNum = 0;
+            adminOrders.forEach(o => {
+                if (o.savings && o.status != 5 && o.status != 6) {
+                    const num = parseInt(o.savings.replace(/[^0-9]/g, '')) || 0;
+                    totalSavingsNum += num;
+                }
+            });
+            document.getElementById('adminStatSavings').textContent = totalSavingsNum.toLocaleString('de-DE') + ' €';
+
+            const container = document.getElementById('adminOrdersList');
+            const listTitle = document.getElementById('adminListTitle');
+
+            if (currentAdminTab === 'active') {
+                listTitle.textContent = "Aktive Aufträge";
+                const activeOrders = adminOrders.filter(o => !o.isArchived && o.status != 5 && o.status != 6);
+                if (activeOrders.length === 0) {
+                    container.innerHTML = `<p class="text-xs text-slate-500">Keine aktiven Aufträge vorhanden.</p>`;
+                    return;
+                }
+                container.innerHTML = activeOrders.map(o => renderOrderCard(o)).join('');
+            } else if (currentAdminTab === 'rejected') {
+                listTitle.textContent = "Abgelehnte Aufträge";
+                const rejectedOrders = adminOrders.filter(o => !o.isArchived && o.status == 5);
+                if (rejectedOrders.length === 0) {
+                    container.innerHTML = `<p class="text-xs text-slate-500">Keine abgelehnten Aufträge vorhanden.</p>`;
+                    return;
+                }
+                container.innerHTML = rejectedOrders.map(o => renderOrderCard(o)).join('');
+            } else if (currentAdminTab === 'cancelled') {
+                listTitle.textContent = "Stornierte Aufträge";
+                const cancelledOrders = adminOrders.filter(o => !o.isArchived && o.status == 6);
+                if (cancelledOrders.length === 0) {
+                    container.innerHTML = `<p class="text-xs text-slate-500">Keine stornierten Aufträge vorhanden.</p>`;
+                    return;
+                }
+                container.innerHTML = cancelledOrders.map(o => renderOrderCard(o)).join('');
+            } else if (currentAdminTab === 'archive') {
+                const archiveOrders = adminOrders.filter(o => o.isArchived);
+                const yearsMap = {};
+                archiveOrders.forEach(o => {
+                    const year = o.createdAt ? new Date(o.createdAt).getFullYear() : 'Unbekannt';
+                    if (!yearsMap[year]) yearsMap[year] = [];
+                    yearsMap[year].push(o);
+                });
+                const availableYears = Object.keys(yearsMap).sort().reverse();
+                if (availableYears.length === 0) {
+                    container.innerHTML = `<p class="text-xs text-slate-500">Das Archiv ist leer.</p>`;
+                    return;
+                }
+                if (!activeArchiveYear || !yearsMap[activeArchiveYear]) {
+                    activeArchiveYear = availableYears[0];
+                }
+                let html = `
+                    <div class="flex flex-wrap gap-2 mb-4">
+                        ${availableYears.map(y => `
+                            <button type="button" onclick="switchAdminTab('archive', '${y}')" class="px-3 py-1.5 rounded-lg text-xs font-bold transition ${activeArchiveYear == y ? 'bg-emerald-500 text-slate-950' : 'bg-slate-800 text-slate-300 hover:bg-slate-700'}">
+                                <i class="fa-solid fa-folder mr-1"></i>Jahr ${y} (${yearsMap[y].length})
+                            </button>
+                        `).join('')}
                     </div>
-                `).join('');
+                `;
+                listTitle.textContent = `Archiv — Jahr ${activeArchiveYear}`;
+                const ordersInYear = yearsMap[activeArchiveYear] || [];
+                html += ordersInYear.length === 0 ? `<p class="text-xs text-slate-500 mt-2">Keine Aufträge in diesem Jahr.</p>` : ordersInYear.map(o => renderOrderCard(o)).join('');
+                container.innerHTML = html;
+            } else if (currentAdminTab === 'customers') {
+                listTitle.textContent = "Kunden-Schnellwahl";
+                container.innerHTML = `<p class="text-xs text-slate-400">Übersicht aller Kunden rechts in der Tabelle.</p>`;
+            } else if (currentAdminTab === 'marketprices') {
+                listTitle.textContent = "Marktpreise-DB";
+                container.innerHTML = `<p class="text-xs text-slate-400">Verwaltung der Marktpreise rechts im Editor.</p>`;
             }
+        }
+
+        function renderOrderCard(o) {
+            let statusLabel = `Status ${o.status}/4`;
+            if (o.status == 5) statusLabel = 'Abgelehnt';
+            if (o.status == 6) statusLabel = 'Storniert';
+            if (o.isArchived) statusLabel = 'Archiviert';
+
+            const basePrice = o.price || 149;
+            const manualDiscount = parseFloat(o.manualDiscount) || 0;
+            const displayPrice = Math.max(0, basePrice - manualDiscount);
+            const customerName = (o.firstName && o.lastName) ? `${o.firstName} ${o.lastName}` : o.email;
+
+            return `
+                <div onclick="selectAdminOrder('${o.id}')" class="bg-slate-900 border ${selectedAdminOrderId === o.id ? 'border-amber-500' : 'border-slate-800'} hover:border-slate-700 rounded-xl p-4 cursor-pointer transition mb-3">
+                    <div class="flex justify-between items-center mb-1">
+                        <span class="text-xs font-bold text-amber-400">${o.id}</span>
+                        <span class="text-xs text-slate-300 font-medium">${customerName}</span>
+                    </div>
+                    <h4 class="text-white font-semibold text-sm truncate">${o.email}</h4>
+                    <div class="mt-2 text-xs text-emerald-400 font-medium">
+                        <i class="fa-solid fa-box mr-1"></i>${o.packageName || 'Heizungs-Angebot'} (${displayPrice} €)
+                    </div>
+                    <div class="flex justify-between items-center mt-2 text-xs text-slate-400">
+                        <span class="${o.status == 5 || o.status == 6 ? 'text-rose-400 font-bold' : ''}">${statusLabel}</span>
+                        <span>${o.paymentStatus === 'paid' ? 'Bezahlt' : (o.paymentStatus === 'partial' ? 'Angezahlt' : 'Offen')}</span>
+                    </div>
+                </div>
+            `;
         }
 
         function selectAdminOrder(orderId) {
+            if (currentAdminTab === 'marketprices' || currentAdminTab === 'customers') return;
             selectedAdminOrderId = orderId;
             const order = adminOrders.find(o => o.id === orderId);
             if (!order) return;
+
             renderAdminDashboard();
+
             document.getElementById('adminSelectPrompt').classList.add('hidden');
+            document.getElementById('adminMarketPricesPanel').classList.add('hidden');
+            document.getElementById('adminCustomersPanel').classList.add('hidden');
             document.getElementById('adminEditorPanel').classList.remove('hidden');
-            document.getElementById('adminEditOrderId').textContent = `Auftrag ${order.id} [${order.projectName || 'Projekt'}]`;
+
+            const basePrice = order.price || 149;
+            const manualDiscount = parseFloat(order.manualDiscount) || 0;
+            const displayPrice = Math.max(0, basePrice - manualDiscount);
+
+            document.getElementById('adminEditOrderId').textContent = `Auftrag ${order.id} — ${order.packageName || 'Paket'} (${displayPrice} €)`;
             document.getElementById('adminEditCustomerEmail').textContent = order.email;
-            
             document.getElementById('adminStatusSelect').value = order.status || 1;
-
-            const myRank = getCurrentUserRank();
-            const optionRejected = document.getElementById('optionStatusRejected');
-            const sbRejectContainer = document.getElementById('sachbearbeiterRejectContainer');
-
-            if (myRank === 'Sachbearbeiter') {
-                optionRejected.disabled = true;
-                if (order.status != 7) sbRejectContainer.classList.remove('hidden');
-                else sbRejectContainer.classList.add('hidden');
-            } else {
-                optionRejected.disabled = false;
-                sbRejectContainer.classList.add('hidden');
-            }
-
+            document.getElementById('adminPaymentSelect').value = order.paymentStatus || 'unpaid';
+            document.getElementById('adminManualPriceInput').value = order.manualDiscount || '';
             document.getElementById('adminSavingsInput').value = order.savings || '';
             document.getElementById('adminSummaryInput').value = order.summary || '';
             document.getElementById('adminDefectsInput').value = (order.defects || []).join('\n');
+
+            const reportStatusSpan = document.getElementById('adminReportFileStatus');
+            if (order.reportName) {
+                reportStatusSpan.textContent = `Aktueller Bericht: ${order.reportName}`;
+                reportStatusSpan.className = "text-[11px] text-emerald-400 block font-medium";
+            } else {
+                reportStatusSpan.textContent = "Noch kein Bericht hochgeladen.";
+                reportStatusSpan.className = "text-[11px] text-slate-500 block";
+            }
+
+            const noticeBox = document.getElementById('adminNewCustomerNotice');
+            if (order.firstName && order.lastName) {
+                noticeBox.classList.remove('hidden');
+                document.getElementById('adminCustomerNameBadge').textContent = `Kunde: ${order.firstName} ${order.lastName}`;
+                document.getElementById('adminDepositAmount').textContent = `${(displayPrice / 2).toFixed(2)} € Anzahlung (50%)`;
+            } else {
+                noticeBox.classList.add('hidden');
+            }
+
+            let downloadBtn = document.getElementById('adminFileDownloadBtn');
+            if (!downloadBtn) {
+                downloadBtn = document.createElement('a');
+                downloadBtn.id = 'adminFileDownloadBtn';
+                downloadBtn.target = '_blank';
+                downloadBtn.className = 'inline-block bg-slate-800 hover:bg-slate-700 text-emerald-400 border border-emerald-500/30 px-4 py-2 rounded-xl text-xs font-semibold mb-4 transition';
+                document.getElementById('adminEditorPanel').insertBefore(downloadBtn, document.getElementById('adminEditorPanel').children[1]);
+            }
+            
+            if (order.fileData) {
+                downloadBtn.href = order.fileData;
+                downloadBtn.download = order.fileName;
+                downloadBtn.innerHTML = `<i class="fa-solid fa-file-arrow-down mr-2"></i>Eingereichte Kundendatei herunterladen (${order.fileName})`;
+                downloadBtn.style.display = 'inline-block';
+            } else {
+                downloadBtn.style.display = 'none';
+            }
         }
 
-        async function requestAdminRejection() {
+        function requestDocumentsEmail() {
             if (!selectedAdminOrderId) return;
+            const order = adminOrders.find(o => o.id === selectedAdminOrderId);
+            if (!order) return;
+
+            const subject = encodeURIComponent(`Zusätzliche Unterlagen für Ihren Auftrag ${order.id} erforderlich`);
+            const body = encodeURIComponent(`Hallo,\n\nfür die Bearbeitung Ihres Auftrags (${order.packageName}) benötigen wir noch weitere Unterlagen oder Angaben.\n\nBitte laden Sie diese direkt in Ihrem Kundenportal hoch oder antworten Sie auf diese E-Mail.\n\nVielen Dank!\n\nMit freundlichen Grüßen\nSHK Angebotsprüfung`);
+
+            window.location.href = `mailto:${order.email}?subject=${subject}&body=${body}`;
+        }
+
+        function sendInvoiceEmail(type) {
+            if (!selectedAdminOrderId) return;
+            const order = adminOrders.find(o => o.id === selectedAdminOrderId);
+            if (!order) return;
+
+            const basePrice = order.price || 149;
+            const manualDiscount = parseFloat(order.manualDiscount) || 0;
+            const finalPrice = Math.max(0, basePrice - manualDiscount);
+
+            const amount = type === '50' ? (finalPrice / 2).toFixed(2) + ' € (50% Anzahlung)' : finalPrice.toFixed(2) + ' € (100% Gesamtbetrag)';
+            const subject = encodeURIComponent(`Ihre Rechnung (${type === '50' ? 'Anzahlung' : 'Gesamt'}) für Auftrag ${order.id}`);
+            const body = encodeURIComponent(`Hallo,\n\nanbei erhalten Sie die Rechnung für Ihren gebuchten Service (${order.packageName}).\n\nBetrag: ${amount}\n\nVielen Dank für Ihr Vertrauen!\n\nMit freundlichen Grüßen\nSHK Angebotsprüfung`);
+
+            window.location.href = `mailto:${order.email}?subject=${subject}&body=${body}`;
+        }
+
+        async function rejectAdminOrder() {
+            if (!selectedAdminOrderId) return;
+            if (!confirm('Möchten Sie diesen Auftrag wirklich ablehnen?')) return;
+
             const order = adminOrders.find(o => o.id === selectedAdminOrderId);
             if (!order || !order.idDoc) return;
 
-            order.status = 7;
+            order.status = 5;
+
             if (db) {
-                await db.collection('orders').doc(order.idDoc).update({ status: 7 });
-                alert('Zur Prüfung auf Ablehnung an Admin übermittelt!');
-                loadAdminOrders();
-                selectAdminOrder(order.id);
+                try {
+                    await db.collection('orders').doc(order.idDoc).update({ status: 5 });
+                    alert('Auftrag wurde abgelehnt.');
+                } catch(e) {
+                    alert('Fehler: ' + e.message);
+                }
             }
+
+            const subject = encodeURIComponent(`Aktualisierung zu Ihrem Auftrag ${order.id}`);
+            const body = encodeURIComponent(`Hallo,\n\nleider mussten wir Ihren Auftrag (${order.packageName}) ablehnen. Bei Fragen wenden Sie sich gerne an unseren Support.\n\nMit freundlichen Grüßen\nSHK Angebotsprüfung`);
+            window.open(`mailto:${order.email}?subject=${subject}&body=${body}`);
+
+            loadAdminOrders();
+        }
+
+        async function archiveAdminOrder() {
+            if (!selectedAdminOrderId) return;
+            if (!confirm('Möchten Sie diesen Auftrag in das Archiv verschieben?')) return;
+
+            const order = adminOrders.find(o => o.id === selectedAdminOrderId);
+            if (!order || !order.idDoc) return;
+
+            order.isArchived = true;
+
+            if (db) {
+                try {
+                    await db.collection('orders').doc(order.idDoc).update({ isArchived: true });
+                    alert('Auftrag wurde ins Archiv verschoben.');
+                } catch(e) {
+                    alert('Fehler: ' + e.message);
+                }
+            }
+            loadAdminOrders();
         }
 
         async function saveAdminOrderChanges() {
@@ -882,15 +1926,18 @@
             const order = adminOrders.find(o => o.id === selectedAdminOrderId);
             if (!order || !order.idDoc) return;
 
+            const oldStatus = order.status;
             const newStatus = parseInt(document.getElementById('adminStatusSelect').value);
-            const myRank = getCurrentUserRank();
-
-            if (newStatus === 5 && myRank === 'Sachbearbeiter') {
-                alert("Sachbearbeiter dürfen Aufträge nicht direkt ablehnen. Nutzen Sie stattdessen den Button 'Prüfung auf Ablehnung anfordern'.");
-                return;
-            }
 
             order.status = newStatus;
+            order.paymentStatus = document.getElementById('adminPaymentSelect').value;
+            
+            if (newStatus === 6) {
+                order.paymentStatus = 'paid';
+                document.getElementById('adminPaymentSelect').value = 'paid';
+            }
+
+            order.manualDiscount = parseFloat(document.getElementById('adminManualPriceInput').value) || 0;
             order.savings = document.getElementById('adminSavingsInput').value;
             order.summary = document.getElementById('adminSummaryInput').value;
             order.defects = document.getElementById('adminDefectsInput').value.split('\n').filter(Boolean);
@@ -900,6 +1947,7 @@
                 const reportFile = reportFileInput.files[0];
                 const reader = new FileReader();
                 reader.readAsDataURL(reportFile);
+                
                 await new Promise(resolve => {
                     reader.onload = function() {
                         order.reportData = reader.result;
@@ -910,61 +1958,134 @@
             }
 
             if (db) {
-                await db.collection('orders').doc(order.idDoc).update({
-                    status: order.status,
-                    savings: order.savings,
-                    summary: order.summary,
-                    defects: order.defects,
-                    reportData: order.reportData || null,
-                    reportName: order.reportName || null
-                });
-                alert('Änderungen gespeichert!');
+                try {
+                    await db.collection('orders').doc(order.idDoc).update({
+                        status: order.status,
+                        paymentStatus: order.paymentStatus,
+                        manualDiscount: order.manualDiscount,
+                        savings: order.savings,
+                        summary: order.summary,
+                        defects: order.defects,
+                        reportData: order.reportData || null,
+                        reportName: order.reportName || null
+                    });
+                    alert('Änderungen erfolgreich in Firestore gespeichert!');
+                } catch(e) {
+                    alert('Fehler beim Speichern: ' + e.message);
+                }
             }
+
+            if (oldStatus !== newStatus) {
+                const statusNames = { 1: 'Eingegangen', 2: 'In Fachprüfung', 3: 'Bericht wird erstellt', 4: 'Abgeschlossen', 5: 'Abgelehnt', 6: 'Storniert' };
+                const subject = encodeURIComponent(`Statusänderung für Ihren Auftrag ${order.id}`);
+                const body = encodeURIComponent(`Hallo,\n\nder Bearbeitungsstand Ihres Auftrags (${order.packageName}) hat sich geändert.\n\nNeuer Status: ${statusNames[newStatus] || 'In Bearbeitung'}\n\nSie können Ihr Kundenportal einsehen, um Details abzurufen.\n\nMit freundlichen Grüßen\nSHK Angebotsprüfung`);
+                window.open(`mailto:${order.email}?subject=${subject}&body=${body}`);
+            }
+
             loadAdminOrders();
         }
 
-        function sendInvoiceEmail(type) {
-            if (!selectedAdminOrderId) return;
-            const order = adminOrders.find(o => o.id === selectedAdminOrderId);
-            if (!order) return;
-            const amount = type === '50' ? (order.price / 2).toFixed(2) + ' € (50% Anzahlung)' : order.price.toFixed(2) + ' € (Gesamt)';
-            window.location.href = `mailto:${order.email}?subject=Rechnung%20für%20Auftrag%20${order.id}&body=Betrag:%20${amount}`;
+        function openAuthModal(mode) {
+            isRegisterMode = (mode === 'register');
+            isForgotPasswordMode = false;
+            updateAuthModalUI();
+            document.getElementById('authModal').classList.remove('hidden');
         }
 
-        function saveMarketPriceItem(e) {
-            e.preventDefault();
-            const title = document.getElementById('mpTitle').value;
-            const p1 = parseFloat(document.getElementById('mpPrice1').value) || 0;
-            const p2 = parseFloat(document.getElementById('mpPrice2').value) || 0;
-            const p3 = parseFloat(document.getElementById('mpPrice3').value) || 0;
-            if (db) {
-                db.collection('market_prices').add({ title, prices: [p1,p2,p3], average: (p1+p2+p3)/3, updatedAt: new Date().toISOString() })
-                  .then(() => { alert("Marktpreis gespeichert!"); loadMarketPrices(); });
+        function closeAuthModal() {
+            document.getElementById('authModal').classList.add('hidden');
+        }
+
+        function toggleAuthMode() {
+            isRegisterMode = !isRegisterMode;
+            isForgotPasswordMode = false;
+            updateAuthModalUI();
+        }
+
+        function openForgotPasswordMode() {
+            isForgotPasswordMode = true;
+            updateAuthModalUI();
+        }
+
+        function updateAuthModalUI() {
+            const title = document.getElementById('authModalTitle');
+            const subtitle = document.getElementById('authModalSubtitle');
+            const btn = document.getElementById('authSubmitBtn');
+            const passwordContainer = document.getElementById('passwordFieldContainer');
+            const toggleText = document.getElementById('authToggleText');
+            const toggleBtn = document.getElementById('authToggleBtn');
+            const forgotBtn = document.getElementById('forgotPasswordBtn');
+
+            if (isForgotPasswordMode) {
+                title.textContent = "Passwort zurücksetzen";
+                subtitle.textContent = "Geben Sie Ihre E-Mail-Adresse ein, um einen Reset-Link zu erhalten.";
+                btn.textContent = "Link senden";
+                passwordContainer.classList.add('hidden');
+                document.getElementById('authPassword').required = false;
+                toggleText.textContent = "Zurück zum";
+                toggleBtn.textContent = "Login";
+                forgotBtn.classList.add('hidden');
+            } else if (isRegisterMode) {
+                title.textContent = "Kundenkonto erstellen";
+                subtitle.textContent = "Geben Sie Ihre Zugangsdaten ein, um Ihre Aufträge einzusehen.";
+                btn.textContent = "Registrieren";
+                passwordContainer.classList.remove('hidden');
+                document.getElementById('authPassword').required = true;
+                toggleText.textContent = "Bereits ein Konto?";
+                toggleBtn.textContent = "Anmelden";
+                forgotBtn.classList.add('hidden');
+            } else {
+                title.textContent = "Kundenportal Login";
+                subtitle.textContent = "Geben Sie Ihre Zugangsdaten ein, um Ihre Aufträge einzusehen.";
+                btn.textContent = "Anmelden";
+                passwordContainer.classList.remove('hidden');
+                document.getElementById('authPassword').required = true;
+                toggleText.textContent = "Noch kein Konto?";
+                toggleBtn.textContent = "Registrieren";
+                forgotBtn.classList.add('hidden');
             }
         }
 
-        function renderMarketPricesTable() {
-            const container = document.getElementById('marketPricesTableContainer');
-            if (!container) return;
-            container.innerHTML = `
-                <table class="w-full text-left text-xs text-slate-300">
-                    <tr class="bg-slate-950 text-slate-400"><th class="p-2">Position</th><th class="p-2">Mittelwert</th></tr>
-                    ${marketPrices.map(m => `<tr class="border-b border-slate-800"><td class="p-2">${m.title}</td><td class="p-2 text-emerald-400">${m.average.toFixed(2)} €</td></tr>`).join('')}
-                </table>`;
+        async function handleAuthSubmit(event) {
+            event.preventDefault();
+            const email = document.getElementById('authEmail').value;
+            const password = document.getElementById('authPassword').value;
+
+            if (!auth) {
+                currentUser = { email: email, uid: 'demo_user_123' };
+                updateNavbarUI();
+                closeAuthModal();
+                openClientPortal();
+                return;
+            }
+
+            try {
+                if (isForgotPasswordMode) {
+                    await auth.sendPasswordResetEmail(email);
+                    alert('Eine E-Mail zum Zurücksetzen des Passworts wurde an ' + email + ' gesendet!');
+                    openAuthModal('login');
+                } else if (isRegisterMode) {
+                    await auth.createUserWithEmailAndPassword(email, password);
+                    alert('Registrierung erfolgreich!');
+                    closeAuthModal();
+                    openClientPortal();
+                } else {
+                    await auth.signInWithEmailAndPassword(email, password);
+                    closeAuthModal();
+                    openClientPortal();
+                }
+            } catch (error) {
+                alert('Fehler: ' + error.message);
+            }
         }
 
-        function openAuthModal() { document.getElementById('authModal').classList.remove('hidden'); }
-        function closeAuthModal() { document.getElementById('authModal').classList.add('hidden'); }
-        async function handleAuthSubmit(e) {
-            e.preventDefault();
-            try {
-                await auth.signInWithEmailAndPassword(document.getElementById('authEmail').value, document.getElementById('authPassword').value);
-                closeAuthModal(); openClientPortal();
-            } catch(err) { alert(err.message); }
-        }
         async function logoutUser() {
-            if (auth) await auth.signOut();
-            currentUser = null; updateNavbarUI(); switchView('landing');
+            if (auth) {
+                await auth.signOut();
+            }
+            currentUser = null;
+            updateNavbarUI();
+            switchView('landing');
         }
     </script>
 </body>
