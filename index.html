@@ -49,7 +49,10 @@
                     <button type="button" onclick="openAuthModal('register')" class="bg-emerald-500 hover:bg-emerald-600 text-slate-950 font-semibold px-4 py-2 rounded-xl text-sm shadow-lg shadow-emerald-500/20 transition">Kundenportal</button>
                 </div>
                 <div id="userNavArea" class="hidden items-center space-x-3">
-                    <span id="navUserEmail" class="text-xs text-slate-400 hidden sm:inline"></span>
+                    <div class="hidden sm:flex flex-col items-end">
+                        <span id="navUserEmail" class="text-xs text-slate-300 font-medium"></span>
+                        <span id="navUserRoleBadge" class="text-[10px] text-emerald-400 font-bold uppercase tracking-wider">Kunde</span>
+                    </div>
                     <button type="button" onclick="openClientPortal()" class="bg-slate-800 hover:bg-slate-700 text-emerald-400 border border-emerald-500/30 px-4 py-2 rounded-xl text-sm font-medium transition">
                         <i class="fa-solid fa-gauge-high mr-2"></i>Dashboard
                     </button>
@@ -180,7 +183,7 @@
                                     <span class="text-4xl font-extrabold text-white">349 €</span>
                                     <span class="text-slate-400 ml-2 text-sm">inkl. MwSt.</span>
                                 </div>
-                                <p class="text-slate-400 text-sm mt-4">Gegenüberstellung von bis zu 3 konkurrierenden Installteursangeboten.</p>
+                                <p class="text-slate-400 text-sm mt-4">Gegenüberstellung von bis zu 3 konkurrierenden Installateursangeboten.</p>
                                 <ul class="mt-6 space-y-3 text-sm text-slate-300">
                                     <li class="flex items-center"><i class="fa-solid fa-check text-emerald-400 mr-3"></i>Direkter Leistungs- & Preisvergleich</li>
                                     <li class="flex items-center"><i class="fa-solid fa-check text-emerald-400 mr-3"></i>Auswertung technischer Differenzen</li>
@@ -196,6 +199,12 @@
                         <h3 class="text-xl font-bold text-white mb-2"><i class="fa-solid fa-cloud-arrow-up text-emerald-400 mr-2"></i>Auftrag einreichen</h3>
                         <p class="text-slate-400 text-sm mb-6">Füllen Sie die Eckdaten aus und laden Sie Ihr Angebot (PDF oder Bilder) hoch. Nach dem Absenden wird automatisch Ihr Kundenkonto erstellt bzw. verknüpft.</p>
                         
+                        <!-- Stammkunden-Rabatt Hinweisbanner -->
+                        <div id="stammkundenBanner" class="hidden mb-4 bg-emerald-500/10 border border-emerald-500/30 rounded-xl p-3.5 flex items-center justify-between text-xs text-emerald-400 font-semibold">
+                            <span><i class="fa-solid fa-star mr-2"></i>Stammkunden-Status erkannt: Sie erhalten automatisch 5 % Rabatt auf Ihre Auftragsanfrage!</span>
+                            <span class="bg-emerald-500 text-slate-950 font-black px-2 py-0.5 rounded">-5 %</span>
+                        </div>
+
                         <form id="orderForm" onsubmit="handleOrderSubmission(event)" class="space-y-4">
                             <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
                                 <div>
@@ -204,11 +213,11 @@
                                 </div>
                                 <div>
                                     <label class="block text-xs font-medium text-slate-300 mb-1">E-Mail-Adresse</label>
-                                    <input type="email" id="orderEmail" required placeholder="name@beispiel.de" class="w-full bg-slate-950 border border-slate-700 rounded-xl px-4 py-3 text-sm text-white focus:border-emerald-500 focus:outline-none">
+                                    <input type="email" id="orderEmail" required onblur="checkEmailForStammkunde(this.value)" placeholder="name@beispiel.de" class="w-full bg-slate-950 border border-slate-700 rounded-xl px-4 py-3 text-sm text-white focus:border-emerald-500 focus:outline-none">
                                 </div>
                             </div>
 
-                            <!-- NEU: Vor- und Nachname (nur bei Neukunden erforderlich) -->
+                            <!-- Vor- und Nachname (nur bei Neukunden erforderlich) -->
                             <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
                                 <div>
                                     <label class="block text-xs font-medium text-slate-300 mb-1">Vorname (nur für Neukunden)</label>
@@ -284,7 +293,10 @@
         <div id="clientPortalView" class="hidden py-12 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
             <div class="flex flex-col md:flex-row justify-between items-start md:items-center mb-8 pb-6 border-b border-slate-800 gap-4">
                 <div>
-                    <h1 class="text-3xl font-extrabold text-white">Mein Kundenportal</h1>
+                    <div class="flex items-center gap-3">
+                        <h1 class="text-3xl font-extrabold text-white">Mein Kundenportal</h1>
+                        <span id="clientPortalRoleBadge" class="px-3 py-1 rounded-full text-xs font-bold bg-slate-800 text-emerald-400 border border-emerald-500/30">Kunde</span>
+                    </div>
                     <p class="text-slate-400 text-sm mt-1">Übersicht Ihrer eingereichten Angebote und Bearbeitungsstatus in Echtzeit.</p>
                 </div>
                 <button type="button" onclick="switchView('landing')" class="bg-slate-800 hover:bg-slate-700 text-white px-4 py-2 rounded-xl text-sm font-medium transition">
@@ -431,10 +443,13 @@
 
         <!-- ADMIN PORTAL VIEW -->
         <div id="adminPortalView" class="hidden py-12 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-            <div class="flex justify-between items-center mb-8 pb-6 border-b border-slate-800">
+            <div class="flex flex-col sm:flex-row justify-between items-start sm:items-center mb-8 pb-6 border-b border-slate-800 gap-4">
                 <div>
-                    <h1 class="text-3xl font-extrabold text-white"><i class="fa-solid fa-shield-halved text-amber-400 mr-3"></i>Admin-Konsole (Prüfer-Dashboard)</h1>
-                    <p class="text-slate-400 text-sm mt-1">Auftragsverwaltung, Statusänderung, Kundenübersicht und Marktpreise.</p>
+                    <div class="flex items-center gap-3">
+                        <h1 class="text-3xl font-extrabold text-white"><i class="fa-solid fa-shield-halved text-amber-400 mr-3"></i>Admin-Konsole (Prüfer-Dashboard)</h1>
+                        <span id="adminHeaderRoleBadge" class="px-3 py-1 rounded-full text-xs font-bold bg-amber-500/20 text-amber-400 border border-amber-500/30">Hauptadmin</span>
+                    </div>
+                    <p class="text-slate-400 text-sm mt-1">Auftragsverwaltung, Statusänderung, Kunden-Rangverwaltung und Marktpreise.</p>
                 </div>
                 <button type="button" onclick="switchView('clientPortal')" class="bg-slate-800 hover:bg-slate-700 text-white px-4 py-2 rounded-xl text-sm font-medium transition">
                     Zum Kundenportal
@@ -476,7 +491,7 @@
                     <i class="fa-solid fa-box-archive mr-2"></i>Archiv
                 </button>
                 <button type="button" onclick="switchAdminTab('customers')" id="tabBtnCustomers" class="px-5 py-3 text-sm font-bold border-b-2 border-transparent text-slate-400 hover:text-white transition">
-                    <i class="fa-solid fa-users mr-2"></i>Kunden
+                    <i class="fa-solid fa-users mr-2"></i>Kunden & Ränge
                 </button>
                 <button type="button" onclick="switchAdminTab('marketprices')" id="tabBtnMarketPrices" class="px-5 py-3 text-sm font-bold border-b-2 border-transparent text-slate-400 hover:text-white transition">
                     <i class="fa-solid fa-database mr-2"></i>Marktpreise-DB
@@ -510,9 +525,42 @@
                         <p>Wählen Sie links einen Auftrag oder eine Ansicht aus.</p>
                     </div>
 
-                    <!-- NEU: Kunden-Übersichts-Panel -->
+                    <!-- Kunden- & Rangverwaltungs-Panel -->
                     <div id="adminCustomersPanel" class="hidden bg-slate-900 border border-slate-800 rounded-2xl p-6 shadow-xl space-y-6">
-                        <h3 class="text-lg font-bold text-white border-b border-slate-800 pb-4"><i class="fa-solid fa-users text-emerald-400 mr-2"></i>Alle registrierten Kunden</h3>
+                        <div class="flex flex-col sm:flex-row sm:items-center justify-between border-b border-slate-800 pb-4 gap-2">
+                            <div>
+                                <h3 class="text-lg font-bold text-white"><i class="fa-solid fa-users-gear text-emerald-400 mr-2"></i>Kunden & Rangverwaltung</h3>
+                                <p class="text-xs text-slate-400 mt-0.5">Weisen Sie Konten Ränge und Berechtigungen zu.</p>
+                            </div>
+                            <span id="roleManagementPermissionHint" class="text-xs px-3 py-1 rounded-lg bg-emerald-500/10 text-emerald-400 border border-emerald-500/20 font-semibold">
+                                Rollenvergabe aktiv
+                            </span>
+                        </div>
+
+                        <!-- Rang-Erklärungslegende -->
+                        <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-2.5 text-[11px]">
+                            <div class="bg-slate-950 border border-slate-800 rounded-xl p-3">
+                                <span class="font-bold text-slate-200 block"><i class="fa-solid fa-user text-slate-400 mr-1.5"></i>Kunde (Standard)</span>
+                                <span class="text-slate-400">Standardrang für reguläre Kundenkonten.</span>
+                            </div>
+                            <div class="bg-slate-950 border border-emerald-500/30 rounded-xl p-3">
+                                <span class="font-bold text-emerald-400 block"><i class="fa-solid fa-star mr-1.5"></i>Stammkunde</span>
+                                <span class="text-slate-400">Erhält automatisch 5 % Rabatt bei Auftragsanfrage.</span>
+                            </div>
+                            <div class="bg-slate-950 border border-sky-500/30 rounded-xl p-3">
+                                <span class="font-bold text-sky-400 block"><i class="fa-solid fa-user-tie mr-1.5"></i>Sachbearbeiter</span>
+                                <span class="text-slate-400">Alle Admin-Rechte, kann jedoch keine Rollen vergeben.</span>
+                            </div>
+                            <div class="bg-slate-950 border border-purple-500/30 rounded-xl p-3">
+                                <span class="font-bold text-purple-400 block"><i class="fa-solid fa-user-shield mr-1.5"></i>Admin</span>
+                                <span class="text-slate-400">Volle Rechte, kann nur den Hauptadmin nicht ändern.</span>
+                            </div>
+                            <div class="bg-slate-950 border border-amber-500/30 rounded-xl p-3 sm:col-span-2 lg:col-span-2">
+                                <span class="font-bold text-amber-400 block"><i class="fa-solid fa-crown mr-1.5"></i>Hauptadmin (System-E-Mail)</span>
+                                <span class="text-slate-400">Fest an die Admin-E-Mail aus dem Quelltext gebunden (Rolle kann nicht geändert werden).</span>
+                            </div>
+                        </div>
+
                         <div id="adminCustomersTableContainer" class="overflow-x-auto">
                             <!-- Dynamische Kundentabelle -->
                         </div>
@@ -626,7 +674,7 @@
                             <div class="flex items-center space-x-3">
                                 <i class="fa-solid fa-user-plus text-emerald-400 text-xl"></i>
                                 <div>
-                                    <span class="text-emerald-400 font-bold text-xs uppercase tracking-wider block">NEUKUNDE</span>
+                                    <span class="text-emerald-400 font-bold text-xs uppercase tracking-wider block">KUNDENINFO</span>
                                     <span id="adminCustomerNameBadge" class="text-xs text-slate-300">Name: ---</span>
                                 </div>
                             </div>
@@ -771,7 +819,11 @@
             console.warn("Firebase-Konfiguration Fehler:", e);
         }
 
+        const ADMIN_EMAIL = "admin@shk-angebote-pruefen.web.app";
+
         let currentUser = null;
+        let currentUserRole = 'Kunde'; // 'Kunde' | 'Stammkunde' | 'Sachbearbeiter' | 'Admin' | 'Hauptadmin'
+        let isStammkundeActive = false; // Automatischer 5% Rabatt bei Auftragsanfrage
         let isRegisterMode = false;
         let isForgotPasswordMode = false;
         let selectedPackageName = "Heizungs-Angebot";
@@ -787,19 +839,117 @@
         let activeArchiveYear = null;
         let activeMarketPriceCategory = 'Alle';
 
-        const ADMIN_EMAIL = "admin@shk-angebote-pruefen.web.app";
+        // Hilfsfunktionen für Rollen-Berechtigungen
+        function isMainAdminEmail(email) {
+            if (!email) return false;
+            return email.toLowerCase().trim() === ADMIN_EMAIL.toLowerCase().trim();
+        }
+
+        function hasAdminAccess(role = currentUserRole) {
+            return ['Hauptadmin', 'Admin', 'Sachbearbeiter'].includes(role);
+        }
+
+        function canManageRoles(role = currentUserRole) {
+            return ['Hauptadmin', 'Admin'].includes(role);
+        }
+
+        // Ermittelt den Rang einer E-Mail-Adresse aus Firestore bzw. prüft auf Hauptadmin
+        async function fetchRoleForEmail(email) {
+            if (!email) return 'Kunde';
+            const cleanMail = email.toLowerCase().trim();
+            if (isMainAdminEmail(cleanMail)) {
+                return 'Hauptadmin';
+            }
+            if (db) {
+                try {
+                    const snapshot = await db.collection('customers').get();
+                    let foundRole = 'Kunde';
+                    snapshot.forEach(doc => {
+                        const data = doc.data();
+                        if (data.email && data.email.toLowerCase().trim() === cleanMail) {
+                            if (data.role) foundRole = data.role;
+                        }
+                    });
+                    return foundRole;
+                } catch (e) {
+                    console.warn("Fehler beim Abrufen der Rolle:", e);
+                }
+            }
+            return 'Kunde';
+        }
+
+        // Stellt sicher, dass der Nutzer in der 'customers'-Collection existiert
+        async function ensureCustomerRecord(email, firstName = '', lastName = '') {
+            if (!db || !email) return;
+            const cleanMail = email.toLowerCase().trim();
+            const defaultRole = isMainAdminEmail(cleanMail) ? 'Hauptadmin' : 'Kunde';
+
+            try {
+                const snapshot = await db.collection('customers').get();
+                let existingDoc = null;
+                snapshot.forEach(doc => {
+                    const data = doc.data();
+                    if (data.email && data.email.toLowerCase().trim() === cleanMail) {
+                        existingDoc = { id: doc.id, ...data };
+                    }
+                });
+
+                if (!existingDoc) {
+                    await db.collection('customers').add({
+                        email: email.trim(),
+                        firstName: firstName || (isMainAdminEmail(cleanMail) ? 'Hauptadmin' : ''),
+                        lastName: lastName || '',
+                        role: defaultRole,
+                        createdAt: new Date().toISOString()
+                    });
+                } else {
+                    const updates = {};
+                    if (isMainAdminEmail(cleanMail) && existingDoc.role !== 'Hauptadmin') {
+                        updates.role = 'Hauptadmin';
+                    } else if (!existingDoc.role) {
+                        updates.role = 'Kunde';
+                    }
+                    if (!existingDoc.firstName && firstName) updates.firstName = firstName;
+                    if (!existingDoc.lastName && lastName) updates.lastName = lastName;
+
+                    if (Object.keys(updates).length > 0) {
+                        await db.collection('customers').doc(existingDoc.id).update(updates);
+                    }
+                }
+            } catch (e) {
+                console.warn("Fehler beim Synchronisieren des Kundenkontos:", e);
+            }
+        }
 
         if (auth) {
-            auth.onAuthStateChanged(user => {
+            auth.onAuthStateChanged(async user => {
                 currentUser = user;
-                updateNavbarUI();
                 if (user) {
+                    await ensureCustomerRecord(user.email);
+                    currentUserRole = await fetchRoleForEmail(user.email);
+                    isStammkundeActive = (currentUserRole === 'Stammkunde');
+
+                    const orderEmailInput = document.getElementById('orderEmail');
+                    if (orderEmailInput && !orderEmailInput.value) {
+                        orderEmailInput.value = user.email;
+                    }
+
+                    updateStammkundenBannerUI();
+                    updatePackageInputDisplay();
+                    updateNavbarUI();
                     loadUserOrders();
-                    if (user.email === ADMIN_EMAIL) {
+
+                    if (hasAdminAccess()) {
                         loadAdminOrders();
                         loadMarketPrices();
                         loadCustomers();
                     }
+                } else {
+                    currentUserRole = 'Kunde';
+                    isStammkundeActive = false;
+                    updateStammkundenBannerUI();
+                    updatePackageInputDisplay();
+                    updateNavbarUI();
                 }
             });
         }
@@ -809,12 +959,27 @@
             const userNav = document.getElementById('userNavArea');
             const adminBtn = document.getElementById('adminNavBtn');
             const emailSpan = document.getElementById('navUserEmail');
+            const roleBadge = document.getElementById('navUserRoleBadge');
+            const clientPortalBadge = document.getElementById('clientPortalRoleBadge');
+            const adminHeaderBadge = document.getElementById('adminHeaderRoleBadge');
 
             if (currentUser) {
                 authNav.classList.add('hidden');
                 userNav.classList.remove('hidden');
+                userNav.classList.add('flex');
                 emailSpan.textContent = currentUser.email;
-                if (currentUser.email === ADMIN_EMAIL) {
+
+                if (roleBadge) {
+                    roleBadge.textContent = currentUserRole === 'Stammkunde' ? 'Stammkunde (-5%)' : currentUserRole;
+                }
+                if (clientPortalBadge) {
+                    clientPortalBadge.textContent = currentUserRole === 'Stammkunde' ? 'Stammkunde (5% Rabatt aktiv)' : `Rang: ${currentUserRole}`;
+                }
+                if (adminHeaderBadge) {
+                    adminHeaderBadge.textContent = `Rolle: ${currentUserRole}`;
+                }
+
+                if (hasAdminAccess()) {
                     adminBtn.classList.remove('hidden');
                 } else {
                     adminBtn.classList.add('hidden');
@@ -822,7 +987,34 @@
             } else {
                 authNav.classList.remove('hidden');
                 userNav.classList.add('hidden');
+                userNav.classList.remove('flex');
             }
+        }
+
+        function updateStammkundenBannerUI() {
+            const banner = document.getElementById('stammkundenBanner');
+            if (!banner) return;
+            if (isStammkundeActive) {
+                banner.classList.remove('hidden');
+            } else {
+                banner.classList.add('hidden');
+            }
+        }
+
+        // Prüft beim Verlassen des E-Mail-Felds im Auftragsformular, ob ein Stammkunde vorliegt
+        async function checkEmailForStammkunde(email) {
+            if (!email || !email.includes('@')) {
+                if (!currentUser) {
+                    isStammkundeActive = false;
+                    updateStammkundenBannerUI();
+                    updatePackageInputDisplay();
+                }
+                return;
+            }
+            const role = await fetchRoleForEmail(email);
+            isStammkundeActive = (role === 'Stammkunde');
+            updateStammkundenBannerUI();
+            updatePackageInputDisplay();
         }
 
         function switchView(viewName) {
@@ -841,8 +1033,8 @@
                 document.getElementById('clientPortalView').classList.remove('hidden');
                 loadUserOrders();
             } else if (viewName === 'adminPortal') {
-                if (!currentUser || currentUser.email !== ADMIN_EMAIL) {
-                    alert('Nur für Administratoren zugänglich.');
+                if (!currentUser || !hasAdminAccess()) {
+                    alert('Zugriff verweigert: Nur für Sachbearbeiter, Administratoren und den Hauptadmin zugänglich.');
                     return;
                 }
                 document.getElementById('adminPortalView').classList.remove('hidden');
@@ -862,11 +1054,23 @@
             document.getElementById('rechner').scrollIntoView({ behavior: 'smooth' });
         }
 
+        function getCalculatedOrderPrice(basePrice, stammkundeFlag, codeDiscountPercent) {
+            const stammDiscount = stammkundeFlag ? 0.05 : 0;
+            const totalDiscount = Math.min(1, stammDiscount + codeDiscountPercent);
+            return Number((basePrice * (1 - totalDiscount)).toFixed(2));
+        }
+
         function updatePackageInputDisplay() {
-            const finalPrice = selectedPackagePrice * (1 - appliedDiscountPercent);
-            let text = `${selectedPackageName} (${finalPrice.toFixed(0)} €`;
-            if (appliedDiscountPercent > 0) {
-                text += ` inkl. ${appliedDiscountPercent * 100}% Rabatt`;
+            const finalPrice = getCalculatedOrderPrice(selectedPackagePrice, isStammkundeActive, appliedDiscountPercent);
+            const priceFormatted = finalPrice % 1 === 0 ? finalPrice.toFixed(0) : finalPrice.toFixed(2).replace('.', ',');
+            
+            let discountParts = [];
+            if (isStammkundeActive) discountParts.push('5% Stammkunden-Rabatt');
+            if (appliedDiscountPercent > 0) discountParts.push(`${appliedDiscountPercent * 100}% Code-Rabatt`);
+
+            let text = `${selectedPackageName} (${priceFormatted} €`;
+            if (discountParts.length > 0) {
+                text += ` inkl. ${discountParts.join(' + ')}`;
             }
             text += `)`;
             document.getElementById('selectedPackageInput').value = text;
@@ -895,7 +1099,7 @@
             }
         }
 
-        // Auftragsabgabe mit Vorname, Nachname, Passwort-Prüfung für Neukunden
+        // Auftragsabgabe mit Vorname, Nachname, Passwort-Prüfung & automatischem 5% Stammkunden-Rabatt
         async function handleOrderSubmission(event) {
             event.preventDefault();
             const email = document.getElementById('orderEmail').value.trim();
@@ -921,7 +1125,6 @@
                 const isExistingUser = methods.length > 0;
 
                 if (!isExistingUser) {
-                    // Neukunde: Vorname, Nachname und Passwort zwingend erforderlich
                     if (!firstName || !lastName) {
                         alert("Bitte geben Sie Ihren Vor- und Nachnamen zur Erstellung Ihres Kundenkontos ein.");
                         document.getElementById('orderFirstName').focus();
@@ -932,10 +1135,8 @@
                         document.getElementById('orderPasswordInput').focus();
                         return;
                     }
-                    // Konto anlegen
                     await auth.createUserWithEmailAndPassword(email, password);
                 } else {
-                    // Bestandskunde: Optionaler Login falls Passwort angegeben
                     if (password && password.length > 0) {
                         try {
                             await auth.signInWithEmailAndPassword(email, password);
@@ -945,20 +1146,32 @@
                     }
                 }
 
+                // Rang des Kunden prüfen (für automatischen 5% Stammkunden-Rabatt)
+                const customerRole = await fetchRoleForEmail(email);
+                const customerIsStammkunde = (customerRole === 'Stammkunde');
+                isStammkundeActive = customerIsStammkunde;
+                updateStammkundenBannerUI();
+                updatePackageInputDisplay();
+
                 const reader = new FileReader();
                 reader.readAsDataURL(file);
                 
                 reader.onload = async function () {
                     const fileBase64 = reader.result;
                     const orderId = 'SHK-' + Math.floor(100000 + Math.random() * 900000);
-                    const finalCalculatedPrice = selectedPackagePrice * (1 - appliedDiscountPercent);
+                    const finalCalculatedPrice = getCalculatedOrderPrice(selectedPackagePrice, customerIsStammkunde, appliedDiscountPercent);
+
+                    let discountLabels = [];
+                    if (customerIsStammkunde) discountLabels.push('Stammkunde (5%)');
+                    if (appliedDiscountPercent > 0) discountLabels.push('Angebot10 (10%)');
 
                     const newOrder = {
                         id: orderId,
                         packageName: selectedPackageName,
                         price: finalCalculatedPrice,
                         originalPrice: selectedPackagePrice,
-                        discountApplied: appliedDiscountPercent > 0 ? 'Angebot10' : null,
+                        discountApplied: discountLabels.length > 0 ? discountLabels.join(' + ') : null,
+                        stammkundenRabatt: customerIsStammkunde,
                         manualDiscount: 0,
                         email: email,
                         firstName: firstName || '',
@@ -982,16 +1195,7 @@
 
                     if (db) {
                         await db.collection('orders').add(newOrder);
-
-                        // Kunde in separater 'customers' Sammlung speichern (falls Neukunde)
-                        if (!isExistingUser) {
-                            await db.collection('customers').add({
-                                email: email,
-                                firstName: firstName,
-                                lastName: lastName,
-                                createdAt: new Date().toISOString()
-                            });
-                        }
+                        await ensureCustomerRecord(email, firstName, lastName);
                     }
 
                     alert('Auftrag erfolgreich eingereicht und Ihrem Kundenkonto zugeordnet!');
@@ -1062,6 +1266,7 @@
                             <span class="text-xs px-2 py-0.5 rounded-full ${statusBadgeClass}">${statusBadgeText}</span>
                         </div>
                         <h4 class="text-white font-semibold text-sm">${o.packageName || 'Heizungs-Angebot'} (${o.price || 149} €)</h4>
+                        ${o.discountApplied ? `<span class="text-[10px] text-emerald-400 block mt-0.5"><i class="fa-solid fa-tag mr-1"></i>${o.discountApplied}</span>` : ''}
                         <div class="mt-2 text-xs text-slate-400">
                             <i class="fa-solid fa-file-pdf mr-1"></i>${o.fileName}
                         </div>
@@ -1268,7 +1473,7 @@
             }
         }
 
-        // NEU: Kunden aus Firestore laden
+        // Kunden aus Firestore laden
         async function loadCustomers() {
             customersList = [];
             if (db) {
@@ -1286,10 +1491,37 @@
             }
         }
 
-        // Kunden-Tabelle rendern
+        // Hilfsfunktion für farbige Rang-Badges
+        function getRoleBadgeHtml(role) {
+            switch (role) {
+                case 'Hauptadmin':
+                    return `<span class="inline-flex items-center px-2.5 py-1 rounded-lg text-xs font-bold bg-amber-500/20 text-amber-400 border border-amber-500/40"><i class="fa-solid fa-crown mr-1.5"></i>Hauptadmin</span>`;
+                case 'Admin':
+                    return `<span class="inline-flex items-center px-2.5 py-1 rounded-lg text-xs font-bold bg-purple-500/20 text-purple-400 border border-purple-500/40"><i class="fa-solid fa-user-shield mr-1.5"></i>Admin</span>`;
+                case 'Sachbearbeiter':
+                    return `<span class="inline-flex items-center px-2.5 py-1 rounded-lg text-xs font-bold bg-sky-500/20 text-sky-400 border border-sky-500/40"><i class="fa-solid fa-user-tie mr-1.5"></i>Sachbearbeiter</span>`;
+                case 'Stammkunde':
+                    return `<span class="inline-flex items-center px-2.5 py-1 rounded-lg text-xs font-bold bg-emerald-500/20 text-emerald-400 border border-emerald-500/40"><i class="fa-solid fa-star mr-1.5"></i>Stammkunde (-5%)</span>`;
+                default:
+                    return `<span class="inline-flex items-center px-2.5 py-1 rounded-lg text-xs font-semibold bg-slate-800 text-slate-300 border border-slate-700"><i class="fa-solid fa-user mr-1.5"></i>Kunde</span>`;
+            }
+        }
+
+        // Kunden-Tabelle inkl. Rang-Zuweisung rendern
         function renderCustomersTable() {
             const container = document.getElementById('adminCustomersTableContainer');
+            const permHint = document.getElementById('roleManagementPermissionHint');
             if (!container) return;
+
+            if (permHint) {
+                if (canManageRoles()) {
+                    permHint.textContent = `Eingeloggt als ${currentUserRole}: Rollenvergabe aktiv`;
+                    permHint.className = "text-xs px-3 py-1 rounded-lg bg-emerald-500/10 text-emerald-400 border border-emerald-500/20 font-semibold";
+                } else {
+                    permHint.textContent = `Eingeloggt als Sachbearbeiter: Keine Berechtigung zur Rollenvergabe`;
+                    permHint.className = "text-xs px-3 py-1 rounded-lg bg-amber-500/10 text-amber-400 border border-amber-500/20 font-semibold";
+                }
+            }
 
             // Auftragsanzahl pro E-Mail berechnen
             const orderCounts = {};
@@ -1300,18 +1532,57 @@
                 }
             });
 
-            // Falls Kunden direkt aus den Aufträgen extrahiert werden müssen (falls customers Sammlung leer)
             const uniqueCustomers = {};
+            const mainAdminMailKey = ADMIN_EMAIL.toLowerCase().trim();
+
+            // 1. Hauptadmin immer als festen System-Eintrag vorhalten
+            uniqueCustomers[mainAdminMailKey] = {
+                idDoc: null,
+                email: ADMIN_EMAIL,
+                firstName: 'System',
+                lastName: 'Hauptadmin',
+                role: 'Hauptadmin',
+                createdAt: ''
+            };
+
+            // 2. Registrierte Kunden aus der 'customers'-Collection zusammenführen
+            customersList.forEach(c => {
+                if (c.email) {
+                    const mail = c.email.toLowerCase().trim();
+                    const isMain = isMainAdminEmail(mail);
+                    uniqueCustomers[mail] = {
+                        idDoc: c.idDoc || null,
+                        email: c.email,
+                        firstName: c.firstName || (isMain ? 'System' : 'Kunde'),
+                        lastName: c.lastName || (isMain ? 'Hauptadmin' : ''),
+                        role: isMain ? 'Hauptadmin' : (c.role || 'Kunde'),
+                        createdAt: c.createdAt || ''
+                    };
+                }
+            });
+
+            // 3. Kunden aus 'adminOrders' ergänzen (falls noch nicht in 'customers' gespeichert)
             adminOrders.forEach(o => {
                 if (o.email) {
                     const mail = o.email.toLowerCase().trim();
+                    const isMain = isMainAdminEmail(mail);
                     if (!uniqueCustomers[mail]) {
                         uniqueCustomers[mail] = {
+                            idDoc: null,
                             email: o.email,
-                            firstName: o.firstName || 'Unbekannt',
-                            lastName: o.lastName || '',
+                            firstName: o.firstName || (isMain ? 'System' : 'Unbekannt'),
+                            lastName: o.lastName || (isMain ? 'Hauptadmin' : ''),
+                            role: isMain ? 'Hauptadmin' : 'Kunde',
                             createdAt: o.createdAt || ''
                         };
+                    } else {
+                        if ((!uniqueCustomers[mail].firstName || uniqueCustomers[mail].firstName === 'Unbekannt' || uniqueCustomers[mail].firstName === 'Kunde') && o.firstName) {
+                            uniqueCustomers[mail].firstName = o.firstName;
+                            uniqueCustomers[mail].lastName = o.lastName || '';
+                        }
+                        if (!uniqueCustomers[mail].createdAt && o.createdAt) {
+                            uniqueCustomers[mail].createdAt = o.createdAt;
+                        }
                     }
                 }
             });
@@ -1323,28 +1594,130 @@
                 return;
             }
 
+            const availableRoles = [
+                { value: 'Kunde', label: 'Kunde (Standard)' },
+                { value: 'Stammkunde', label: 'Stammkunde (5% Rabatt)' },
+                { value: 'Sachbearbeiter', label: 'Sachbearbeiter' },
+                { value: 'Admin', label: 'Admin' }
+            ];
+
             container.innerHTML = `
                 <table class="w-full text-left text-xs text-slate-300">
                     <thead class="bg-slate-950 text-slate-400 uppercase border-b border-slate-800">
                         <tr>
                             <th class="p-3">Name</th>
                             <th class="p-3">E-Mail-Adresse</th>
-                            <th class="p-3">Anzahl Aufträge</th>
-                            <th class="p-3">Registriert / Erster Auftrag</th>
+                            <th class="p-3">Aktueller Rang</th>
+                            <th class="p-3">Rang zuweisen</th>
+                            <th class="p-3 text-center">Aufträge</th>
+                            <th class="p-3">Registriert</th>
                         </tr>
                     </thead>
                     <tbody class="divide-y divide-slate-800">
-                        ${customerArray.map(c => `
-                            <tr class="hover:bg-slate-950/50">
-                                <td class="p-3 font-semibold text-white">${c.firstName} ${c.lastName}</td>
-                                <td class="p-3 text-emerald-400">${c.email}</td>
-                                <td class="p-3">${orderCounts[c.email.toLowerCase().trim()] || 1}</td>
-                                <td class="p-3">${c.createdAt ? new Date(c.createdAt).toLocaleDateString('de-DE') : '-'}</td>
-                            </tr>
-                        `).join('')}
+                        ${customerArray.map(c => {
+                            const isTargetMainAdmin = isMainAdminEmail(c.email);
+                            const currentRole = isTargetMainAdmin ? 'Hauptadmin' : (c.role || 'Kunde');
+                            const safeEmailAttr = c.email.replace(/'/g, "\\'");
+
+                            let roleControlHtml = '';
+                            if (isTargetMainAdmin) {
+                                // Hauptadmin kann niemals geändert werden
+                                roleControlHtml = `
+                                    <span class="text-[11px] text-slate-500 italic flex items-center">
+                                        <i class="fa-solid fa-lock mr-1.5 text-amber-400"></i>Festgelegt (Quelltext)
+                                    </span>
+                                `;
+                            } else if (canManageRoles()) {
+                                // Admin und Hauptadmin dürfen Ränge vergeben
+                                roleControlHtml = `
+                                    <select onchange="updateCustomerRole('${safeEmailAttr}', this.value)" class="bg-slate-950 border border-slate-700 hover:border-emerald-500 text-white text-xs rounded-lg px-2.5 py-1.5 focus:outline-none focus:border-emerald-500 transition">
+                                        ${availableRoles.map(r => `<option value="${r.value}" ${currentRole === r.value ? 'selected' : ''}>${r.label}</option>`).join('')}
+                                    </select>
+                                `;
+                            } else {
+                                // Sachbearbeiter hat keine Berechtigung zur Rollenvergabe
+                                roleControlHtml = `
+                                    <span class="text-[11px] text-slate-500 italic">
+                                        <i class="fa-solid fa-ban mr-1"></i>Keine Berechtigung
+                                    </span>
+                                `;
+                            }
+
+                            return `
+                                <tr class="hover:bg-slate-950/50">
+                                    <td class="p-3 font-semibold text-white">${c.firstName} ${c.lastName}</td>
+                                    <td class="p-3 text-emerald-400">${c.email}</td>
+                                    <td class="p-3">${getRoleBadgeHtml(currentRole)}</td>
+                                    <td class="p-3">${roleControlHtml}</td>
+                                    <td class="p-3 text-center font-bold">${orderCounts[c.email.toLowerCase().trim()] || 0}</td>
+                                    <td class="p-3">${c.createdAt ? new Date(c.createdAt).toLocaleDateString('de-DE') : '-'}</td>
+                                </tr>
+                            `;
+                        }).join('')}
                     </tbody>
                 </table>
             `;
+        }
+
+        // Speichert eine Rollenänderung in Firestore
+        async function updateCustomerRole(targetEmail, newRole) {
+            if (!canManageRoles()) {
+                alert('Zugriff verweigert: Als Sachbearbeiter können Sie keine Rollen vergeben.');
+                renderCustomersTable();
+                return;
+            }
+
+            if (isMainAdminEmail(targetEmail)) {
+                alert('Die Rolle des Hauptadmins ist fest im Quelltext verankert und kann nicht geändert werden.');
+                renderCustomersTable();
+                return;
+            }
+
+            if (newRole === 'Hauptadmin') {
+                alert('Der Rang Hauptadmin kann keinem anderen Konto zugewiesen werden.');
+                renderCustomersTable();
+                return;
+            }
+
+            const cleanTarget = targetEmail.toLowerCase().trim();
+            const existingCustomer = customersList.find(c => c.email && c.email.toLowerCase().trim() === cleanTarget);
+
+            // Vorname / Nachname aus Aufträgen ermitteln, falls Konto bisher nur in orders existierte
+            const relatedOrder = adminOrders.find(o => o.email && o.email.toLowerCase().trim() === cleanTarget);
+
+            if (db) {
+                try {
+                    if (existingCustomer && existingCustomer.idDoc) {
+                        await db.collection('customers').doc(existingCustomer.idDoc).update({
+                            role: newRole,
+                            updatedAt: new Date().toISOString()
+                        });
+                    } else {
+                        await db.collection('customers').add({
+                            email: targetEmail.trim(),
+                            firstName: relatedOrder ? (relatedOrder.firstName || 'Kunde') : 'Kunde',
+                            lastName: relatedOrder ? (relatedOrder.lastName || '') : '',
+                            role: newRole,
+                            createdAt: relatedOrder && relatedOrder.createdAt ? relatedOrder.createdAt : new Date().toISOString(),
+                            updatedAt: new Date().toISOString()
+                        });
+                    }
+
+                    // Falls der eingeloggte Admin seine eigene Rolle geändert hat, UI aktualisieren
+                    if (currentUser && currentUser.email.toLowerCase().trim() === cleanTarget) {
+                        currentUserRole = newRole;
+                        isStammkundeActive = (newRole === 'Stammkunde');
+                        updateNavbarUI();
+                        updateStammkundenBannerUI();
+                        updatePackageInputDisplay();
+                    }
+
+                    await loadCustomers();
+                    renderAdminDashboard();
+                } catch (e) {
+                    alert('Fehler beim Speichern des Rangs: ' + e.message);
+                }
+            }
         }
 
         async function handleFileImport() {
@@ -1749,8 +2122,14 @@
                 html += ordersInYear.length === 0 ? `<p class="text-xs text-slate-500 mt-2">Keine Aufträge in diesem Jahr.</p>` : ordersInYear.map(o => renderOrderCard(o)).join('');
                 container.innerHTML = html;
             } else if (currentAdminTab === 'customers') {
-                listTitle.textContent = "Kunden-Schnellwahl";
-                container.innerHTML = `<p class="text-xs text-slate-400">Übersicht aller Kunden rechts in der Tabelle.</p>`;
+                listTitle.textContent = "Kunden & Ränge";
+                container.innerHTML = `
+                    <div class="bg-slate-900 border border-slate-800 rounded-xl p-4 space-y-2 text-xs text-slate-400">
+                        <p class="text-white font-semibold"><i class="fa-solid fa-circle-info text-emerald-400 mr-1.5"></i>Rang-Verwaltung</p>
+                        <p>Rechts in der Übersicht können Sie jedem Konto einen Rang zuweisen.</p>
+                        <p class="text-emerald-400 font-medium">Stammkunden erhalten bei neuen Anfragen automatisch 5 % Rabatt.</p>
+                    </div>
+                `;
             } else if (currentAdminTab === 'marketprices') {
                 listTitle.textContent = "Marktpreise-DB";
                 container.innerHTML = `<p class="text-xs text-slate-400">Verwaltung der Marktpreise rechts im Editor.</p>`;
@@ -1778,6 +2157,7 @@
                     <div class="mt-2 text-xs text-emerald-400 font-medium">
                         <i class="fa-solid fa-box mr-1"></i>${o.packageName || 'Heizungs-Angebot'} (${displayPrice} €)
                     </div>
+                    ${o.discountApplied ? `<div class="mt-1 text-[10px] text-emerald-300"><i class="fa-solid fa-tag mr-1"></i>${o.discountApplied}</div>` : ''}
                     <div class="flex justify-between items-center mt-2 text-xs text-slate-400">
                         <span class="${o.status == 5 || o.status == 6 ? 'text-rose-400 font-bold' : ''}">${statusLabel}</span>
                         <span>${o.paymentStatus === 'paid' ? 'Bezahlt' : (o.paymentStatus === 'partial' ? 'Angezahlt' : 'Offen')}</span>
@@ -1824,7 +2204,7 @@
             const noticeBox = document.getElementById('adminNewCustomerNotice');
             if (order.firstName && order.lastName) {
                 noticeBox.classList.remove('hidden');
-                document.getElementById('adminCustomerNameBadge').textContent = `Kunde: ${order.firstName} ${order.lastName}`;
+                document.getElementById('adminCustomerNameBadge').textContent = `Kunde: ${order.firstName} ${order.lastName}${order.discountApplied ? ' (' + order.discountApplied + ')' : ''}`;
                 document.getElementById('adminDepositAmount').textContent = `${(displayPrice / 2).toFixed(2)} € Anzahlung (50%)`;
             } else {
                 noticeBox.classList.add('hidden');
@@ -2042,17 +2422,18 @@
                 document.getElementById('authPassword').required = true;
                 toggleText.textContent = "Noch kein Konto?";
                 toggleBtn.textContent = "Registrieren";
-                forgotBtn.classList.add('hidden');
+                forgotBtn.classList.remove('hidden');
             }
         }
 
         async function handleAuthSubmit(event) {
             event.preventDefault();
-            const email = document.getElementById('authEmail').value;
+            const email = document.getElementById('authEmail').value.trim();
             const password = document.getElementById('authPassword').value;
 
             if (!auth) {
                 currentUser = { email: email, uid: 'demo_user_123' };
+                currentUserRole = isMainAdminEmail(email) ? 'Hauptadmin' : 'Kunde';
                 updateNavbarUI();
                 closeAuthModal();
                 openClientPortal();
@@ -2066,11 +2447,13 @@
                     openAuthModal('login');
                 } else if (isRegisterMode) {
                     await auth.createUserWithEmailAndPassword(email, password);
+                    await ensureCustomerRecord(email);
                     alert('Registrierung erfolgreich!');
                     closeAuthModal();
                     openClientPortal();
                 } else {
                     await auth.signInWithEmailAndPassword(email, password);
+                    await ensureCustomerRecord(email);
                     closeAuthModal();
                     openClientPortal();
                 }
@@ -2084,6 +2467,10 @@
                 await auth.signOut();
             }
             currentUser = null;
+            currentUserRole = 'Kunde';
+            isStammkundeActive = false;
+            updateStammkundenBannerUI();
+            updatePackageInputDisplay();
             updateNavbarUI();
             switchView('landing');
         }
