@@ -68,7 +68,6 @@
     <main id="appContainer">
         <!-- LANDING VIEW -->
         <div id="landingView">
-            <!-- Hero Section -->
             <section class="relative pt-20 pb-24 overflow-hidden">
                 <div class="absolute inset-0 bg-[radial-gradient(ellipse_at_top,_var(--tw-gradient-stops))] from-emerald-900/20 via-slate-900 to-slate-900 -z-10"></div>
                 <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 text-center">
@@ -93,12 +92,12 @@
                 </div>
             </section>
 
-            <!-- Pricing & Interactive Calculator Section -->
+            <!-- Pricing & Upload Section -->
             <section id="preise" class="py-20 bg-slate-950/50 border-y border-slate-800/60">
                 <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
                     <div class="text-center max-w-3xl mx-auto mb-16">
                         <h2 class="text-3xl font-bold text-white">Transparente Pakete & Auftrags-Upload</h2>
-                        <p class="text-slate-400 mt-3">Wählen Sie Ihr Gewerk und laden Sie Ihr Angebot direkt hoch, um den Prüfprozess zu starten.</p>
+                        <p class="text-slate-400 mt-3">Wählen Sie Ihr Gewerk und laden Sie Ihr Angebot direkt hoch.</p>
                     </div>
 
                     <div class="grid grid-cols-1 lg:grid-cols-3 gap-8 items-start">
@@ -153,13 +152,34 @@
                                 </div>
                             </div>
                             <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                                <input type="text" id="orderFirstName" placeholder="Vorname (Neukunde)" class="w-full bg-slate-950 border border-slate-700 rounded-xl px-4 py-3 text-sm text-white focus:outline-none">
-                                <input type="text" id="orderLastName" placeholder="Nachname (Neukunde)" class="w-full bg-slate-950 border border-slate-700 rounded-xl px-4 py-3 text-sm text-white focus:outline-none">
+                                <div>
+                                    <label class="block text-xs font-medium text-slate-300 mb-1">Vorname (Neukunde)</label>
+                                    <input type="text" id="orderFirstName" placeholder="Max" class="w-full bg-slate-950 border border-slate-700 rounded-xl px-4 py-3 text-sm text-white focus:outline-none">
+                                </div>
+                                <div>
+                                    <label class="block text-xs font-medium text-slate-300 mb-1">Nachname (Neukunde)</label>
+                                    <input type="text" id="orderLastName" placeholder="Mustermann" class="w-full bg-slate-950 border border-slate-700 rounded-xl px-4 py-3 text-sm text-white focus:outline-none">
+                                </div>
                             </div>
-                            <input type="text" id="orderProjectName" placeholder="Bauvorhaben / Projekt" class="w-full bg-slate-950 border border-slate-700 rounded-xl px-4 py-3 text-sm text-white focus:outline-none" value="Standard Projekt">
-                            <input type="password" id="orderPasswordInput" placeholder="Passwort (nur Neukunden Pflicht)" class="w-full bg-slate-950 border border-slate-700 rounded-xl px-4 py-3 text-sm text-white focus:outline-none">
-                            <input type="file" id="offerFile" required class="w-full text-xs text-slate-400 bg-slate-950 rounded-xl border border-slate-700 p-2">
-                            <button type="submit" class="w-full bg-emerald-500 hover:bg-emerald-600 text-slate-950 font-bold py-4 rounded-xl text-base transition">Verbindlich anfragen</button>
+                            <div>
+                                <label class="block text-xs font-medium text-slate-300 mb-1">Bauvorhaben / Projekt</label>
+                                <input type="text" id="orderProjectName" placeholder="z. B. EFH Hauptstraße 12" class="w-full bg-slate-950 border border-slate-700 rounded-xl px-4 py-3 text-sm text-white focus:outline-none" value="Standard Projekt">
+                            </div>
+                            <div>
+                                <label class="block text-xs font-medium text-slate-300 mb-1">Passwort (nur Neukunden Pflicht)</label>
+                                <input type="password" id="orderPasswordInput" placeholder="Min. 6 Zeichen" class="w-full bg-slate-950 border border-slate-700 rounded-xl px-4 py-3 text-sm text-white focus:outline-none">
+                            </div>
+                            <div>
+                                <label class="block text-xs font-medium text-slate-300 mb-1">Angebotsdatei (PDF, JPG, PNG)</label>
+                                <input type="file" id="offerFile" required class="w-full text-xs text-slate-400 bg-slate-950 rounded-xl border border-slate-700 p-2 cursor-pointer">
+                            </div>
+                            <div>
+                                <label class="block text-xs font-medium text-slate-300 mb-1">Zusätzliche Hinweise</label>
+                                <textarea id="orderNotes" rows="2" placeholder="Hinweise..." class="w-full bg-slate-950 border border-slate-700 rounded-xl px-4 py-3 text-sm text-white focus:outline-none"></textarea>
+                            </div>
+                            <button type="submit" class="w-full bg-emerald-500 hover:bg-emerald-600 text-slate-950 font-bold py-4 rounded-xl text-base transition">
+                                <i class="fa-solid fa-paper-plane mr-2"></i>Verbindlich anfragen
+                            </button>
                         </form>
                     </div>
                 </div>
@@ -170,20 +190,47 @@
         <div id="clientPortalView" class="hidden py-12 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
             <div class="flex justify-between items-center mb-8 pb-6 border-b border-slate-800">
                 <h1 class="text-3xl font-extrabold text-white">Mein Kundenportal</h1>
-                <button type="button" onclick="switchView('landing')" class="bg-slate-800 text-white px-4 py-2 rounded-xl text-sm font-medium">Zur Startseite</button>
+                <button type="button" onclick="switchView('landing')" class="bg-slate-800 hover:bg-slate-700 text-white px-4 py-2 rounded-xl text-sm font-medium">Zur Startseite</button>
             </div>
+
+            <!-- Portal Direkt-Upload -->
+            <div class="bg-slate-900 border border-slate-800 rounded-2xl p-6 shadow-xl mb-8">
+                <h3 class="text-lg font-bold text-white mb-2"><i class="fa-solid fa-file-circle-plus text-emerald-400 mr-2"></i>Weiteres Angebot hochladen</h3>
+                <form onsubmit="handlePortalOrderSubmission(event)" class="space-y-4">
+                    <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                        <select id="portalPackageSelect" class="w-full bg-slate-950 border border-slate-700 rounded-xl px-4 py-2.5 text-sm text-emerald-400 font-semibold focus:outline-none">
+                            <option value="Heizungs-Angebot|149">Heizungs-Angebot (149 €)</option>
+                            <option value="Komplettbad / Sanitär|249">Komplettbad / Sanitär (249 €)</option>
+                            <option value="Angebotsvergleich|349">Angebotsvergleich (349 €)</option>
+                        </select>
+                        <select id="portalProjectSelect" onchange="checkNewProjectInput(this)" class="w-full bg-slate-950 border border-slate-700 rounded-xl px-4 py-2.5 text-sm text-white focus:outline-none">
+                            <option value="">-- Neues Bauvorhaben anlegen --</option>
+                        </select>
+                    </div>
+                    <div id="newProjectNameContainer" class="hidden">
+                        <input type="text" id="portalNewProjectInput" placeholder="Name des neuen Bauvorhabens" class="w-full bg-slate-950 border border-slate-700 rounded-xl px-4 py-2.5 text-sm text-white focus:outline-none">
+                    </div>
+                    <input type="file" id="portalOfferFile" required class="w-full text-xs text-slate-400 bg-slate-950 rounded-xl border border-slate-700 p-2 cursor-pointer">
+                    <button type="submit" class="bg-emerald-500 hover:bg-emerald-600 text-slate-950 font-bold px-6 py-2.5 rounded-xl text-xs transition">Hochladen</button>
+                </form>
+            </div>
+
             <div class="grid grid-cols-1 lg:grid-cols-3 gap-8">
                 <div class="lg:col-span-1 space-y-4">
                     <h2 class="text-lg font-bold text-white mb-2">Ihre Aufträge</h2>
                     <div id="clientOrdersList" class="space-y-3"></div>
                 </div>
-                <div class="lg:col-span-2">
+                <div class="lg:col-span-2 space-y-6">
                     <div id="noActiveOrderPrompt" class="bg-slate-900 border border-slate-800 rounded-2xl p-12 text-center text-slate-400">
                         <p>Wählen Sie links einen Auftrag aus.</p>
                     </div>
                     <div id="activeOrderDetailsPanel" class="hidden bg-slate-900 border border-slate-800 rounded-2xl p-6 shadow-xl space-y-4">
                         <h3 id="detailOrderId" class="text-xl font-bold text-white">Auftrag</h3>
                         <p id="detailOrderPackage" class="text-sm text-emerald-400"></p>
+                        <div id="completedReportCard" class="hidden pt-4 border-t border-slate-800 space-y-3">
+                            <a id="clientReportDownloadBtn" href="#" target="_blank" class="hidden inline-block bg-emerald-500 hover:bg-emerald-600 text-slate-950 font-bold px-4 py-2 rounded-xl text-xs">Bericht herunterladen (PDF)</a>
+                            <p id="reportSummaryText" class="text-sm text-slate-300 bg-slate-950 p-3 rounded-xl"></p>
+                        </div>
                     </div>
                 </div>
             </div>
@@ -194,9 +241,9 @@
             <div class="flex justify-between items-center mb-8 pb-6 border-b border-slate-800">
                 <div>
                     <h1 class="text-3xl font-extrabold text-white"><i class="fa-solid fa-shield-halved text-amber-400 mr-3"></i>Admin-Konsole</h1>
-                    <p class="text-slate-400 text-sm mt-1">Auftragsverwaltung, Kunden & Ränge.</p>
+                    <p class="text-slate-400 text-sm mt-1">Auftragsverwaltung, Kunden, Ränge & Marktpreise.</p>
                 </div>
-                <button type="button" onclick="switchView('clientPortal')" class="bg-slate-800 text-white px-4 py-2 rounded-xl text-sm font-medium">Zum Kundenportal</button>
+                <button type="button" onclick="switchView('clientPortal')" class="bg-slate-800 hover:bg-slate-700 text-white px-4 py-2 rounded-xl text-sm font-medium">Zum Kundenportal</button>
             </div>
 
             <!-- KPIs -->
@@ -231,7 +278,7 @@
 
             <div class="grid grid-cols-1 lg:grid-cols-3 gap-8">
                 <div class="lg:col-span-1 space-y-4">
-                    <h2 id="adminListTitle" class="text-lg font-bold text-white mb-2">Aktive Aufträge</h2>
+                    <h2 id="adminListTitle" class="text-lg font-bold text-white mb-2">Aufträge</h2>
                     <div id="adminOrdersList" class="space-y-3"></div>
                 </div>
 
@@ -240,7 +287,7 @@
                         <p>Wählen Sie links einen Auftrag oder eine Ansicht aus.</p>
                     </div>
 
-                    <!-- Kunden-Panel mit Rängen -->
+                    <!-- Kunden-Panel -->
                     <div id="adminCustomersPanel" class="hidden bg-slate-900 border border-slate-800 rounded-2xl p-6 shadow-xl space-y-6">
                         <h3 class="text-lg font-bold text-white border-b border-slate-800 pb-4"><i class="fa-solid fa-users text-emerald-400 mr-2"></i>Kunden & Accountsränge</h3>
                         <div id="adminCustomersTableContainer" class="overflow-x-auto"></div>
@@ -251,7 +298,6 @@
                         <div class="bg-slate-900 border border-slate-800 rounded-2xl p-6 shadow-xl space-y-4">
                             <h3 class="text-lg font-bold text-white border-b border-slate-800 pb-4">Marktpreise-DB & Import</h3>
                             <form onsubmit="saveMarketPriceItem(event)" class="space-y-4 bg-slate-950 p-4 rounded-xl border border-slate-800">
-                                <input type="hidden" id="marketPriceDocId">
                                 <input type="text" id="mpTitle" required placeholder="Position / Beschreibung" class="w-full bg-slate-900 border border-slate-700 rounded-xl px-4 py-2.5 text-sm text-white focus:outline-none">
                                 <div class="grid grid-cols-3 gap-3">
                                     <input type="number" step="0.01" id="mpPrice1" required class="bg-slate-900 border border-slate-700 rounded-xl px-4 py-2 text-sm text-white" placeholder="Preis 1">
@@ -278,7 +324,7 @@
                                 <option value="4">4. Abgeschlossen</option>
                                 <option value="5" id="optionStatusRejected">5. Abgelehnt</option>
                                 <option value="6">6. Storniert</option>
-                                <option value="7">7. Prüfung auf Ablehnung (Wartet auf Admin)</option>
+                                <option value="7">7. Prüfung auf Ablehnung</option>
                             </select>
                         </div>
 
@@ -288,17 +334,15 @@
                                 <span class="text-xs font-bold text-amber-400 uppercase block">Sachbearbeiter-Option</span>
                                 <span class="text-xs text-slate-300">Diesen Auftrag zur admin-seitigen Ablehnung vorschlagen.</span>
                             </div>
-                            <button type="button" onclick="requestAdminRejection()" class="bg-amber-500 hover:bg-amber-600 text-slate-950 font-bold px-4 py-2 rounded-lg text-xs transition">
-                                <i class="fa-solid fa-triangle-exclamation mr-1"></i>Prüfung auf Ablehnung anfordern
-                            </button>
+                            <button type="button" onclick="requestAdminRejection()" class="bg-amber-500 hover:bg-amber-600 text-slate-950 font-bold px-4 py-2 rounded-lg transition">Prüfung auf Ablehnung anfordern</button>
                         </div>
 
-                        <!-- Rechnungsversand & Dokumente -->
+                        <!-- Rechnungsversand -->
                         <div class="bg-slate-950 p-4 rounded-xl border border-slate-800 space-y-3">
                             <span class="text-xs font-semibold text-white block"><i class="fa-solid fa-file-invoice-dollar text-emerald-400 mr-2"></i>Rechnung senden</span>
                             <div class="grid grid-cols-2 gap-2">
                                 <button type="button" onclick="sendInvoiceEmail('50')" class="bg-slate-900 hover:bg-slate-800 border border-emerald-500/40 text-emerald-400 text-xs py-2 px-3 rounded-lg text-left">50% Anzahlung</button>
-                                <button type="button" onclick="sendInvoiceEmail('100')" class="bg-slate-900 hover:bg-slate-800 border border-slate-700 text-white text-xs py-2 px-3 rounded-lg text-left">100% Gesamtrechnung</button>
+                                <button type="button" onclick="sendInvoiceEmail('100')" class="bg-slate-900 hover:bg-slate-800 border border-slate-700 text-white text-xs py-2 px-3 rounded-lg text-left">100% Gesamt</button>
                             </div>
                         </div>
 
@@ -356,7 +400,7 @@
             if (!firebase.apps.length) firebase.initializeApp(firebaseConfig);
             auth = firebase.auth();
             db = firebase.firestore();
-        } catch (e) { console.warn(e); }
+        } catch (e) { console.warn("Firebase Init Error:", e); }
 
         let currentUser = null;
         let userOrders = [];
@@ -402,12 +446,15 @@
             const adminBtn = document.getElementById('adminNavBtn');
             const emailSpan = document.getElementById('navUserEmail');
 
+            if (!authNav || !userNav) return;
             if (currentUser) {
                 authNav.classList.add('hidden');
                 userNav.classList.remove('hidden');
-                emailSpan.textContent = currentUser.email;
-                if (currentUser.email === ADMIN_EMAIL || isTeamMember(currentUser.email)) adminBtn.classList.remove('hidden');
-                else adminBtn.classList.add('hidden');
+                if (emailSpan) emailSpan.textContent = currentUser.email;
+                if (adminBtn) {
+                    if (currentUser.email === ADMIN_EMAIL || isTeamMember(currentUser.email)) adminBtn.classList.remove('hidden');
+                    else adminBtn.classList.add('hidden');
+                }
             } else {
                 authNav.classList.remove('hidden');
                 userNav.classList.add('hidden');
@@ -449,7 +496,7 @@
             if (e.target.files[0]) document.getElementById('fileNameDisplay').textContent = `Ausgewählt: ${e.target.files[0].name}`;
         }
 
-        // Auftragsabgabe mit automatischer Rabattierung (5% für Zuverlässiger Kunde, 10% für Stammkunde, Standard: Kunde)
+        // Auftragsabgabe mit Rabatten & Kundenprüfung
         async function handleOrderSubmission(e) {
             e.preventDefault();
             const email = document.getElementById('orderEmail').value.trim();
@@ -477,16 +524,11 @@
                 let customerRank = 'Kunde';
                 if (db) {
                     const custSnap = await db.collection('customers').where('email', '==', email).get();
-                    if (!custSnap.empty) {
-                        customerRank = custSnap.docs[0].data().rank || 'Kunde';
-                    }
+                    if (!custSnap.empty) customerRank = custSnap.docs[0].data().rank || 'Kunde';
                 }
 
                 let basePrice = 149;
-                let discountPercent = 0;
-                if (customerRank === 'Zuverlässiger Kunde') discountPercent = 0.05;
-                if (customerRank === 'Stammkunde') discountPercent = 0.10;
-
+                let discountPercent = customerRank === 'Stammkunde' ? 0.10 : (customerRank === 'Zuverlässiger Kunde' ? 0.05 : 0);
                 let finalPrice = basePrice * (1 - discountPercent);
 
                 const reader = new FileReader();
@@ -497,7 +539,6 @@
                         packageName: 'Heizungs-Angebot',
                         price: finalPrice,
                         originalPrice: basePrice,
-                        discountApplied: `${discountPercent * 100}% (${customerRank})`,
                         email: email,
                         firstName: firstName || '',
                         lastName: lastName || '',
@@ -523,7 +564,7 @@
                             });
                         }
                     }
-                    alert(`Auftrag erfolgreich eingereicht! (Rang: ${customerRank}, Preis: ${finalPrice} €)`);
+                    alert(`Auftrag eingereicht! (Rang: ${customerRank}, Preis: ${finalPrice} €)`);
                     switchView('clientPortal');
                 };
             } catch (err) { alert("Fehler: " + err.message); }
@@ -578,16 +619,23 @@
         async function loadUserOrders() {
             userOrders = [];
             if (db && currentUser) {
-                const snap = await db.collection('orders').where('email', '==', currentUser.email).get();
-                snap.forEach(doc => userOrders.push({ idDoc: doc.id, ...doc.data() }));
+                try {
+                    const snap = await db.collection('orders').where('email', '==', currentUser.email).get();
+                    snap.forEach(doc => userOrders.push({ idDoc: doc.id, ...doc.data() }));
+                } catch(e) { console.warn(e); }
             }
-            document.getElementById('clientStatTotal').textContent = userOrders.length;
-            document.getElementById('clientOrdersList').innerHTML = userOrders.map(o => `
-                <div onclick="activeOrderId='${o.id}'; renderClientOrdersList();" class="bg-slate-900 border border-slate-800 rounded-xl p-4 cursor-pointer mb-2">
-                    <span class="text-xs font-bold text-emerald-400">${o.id}</span>
-                    <h4 class="text-white font-semibold text-sm">${o.projectName || 'Projekt'} (${o.price} €)</h4>
-                </div>
-            `).join('');
+            const statTotal = document.getElementById('clientStatTotal');
+            if (statTotal) statTotal.textContent = userOrders.length;
+            
+            const list = document.getElementById('clientOrdersList');
+            if (list) {
+                list.innerHTML = userOrders.map(o => `
+                    <div onclick="selectClientOrder('${o.id}')" class="bg-slate-900 border border-slate-800 rounded-xl p-4 cursor-pointer mb-2">
+                        <span class="text-xs font-bold text-emerald-400">${o.id}</span>
+                        <h4 class="text-white font-semibold text-sm">${o.projectName || 'Projekt'} (${o.price} €)</h4>
+                    </div>
+                `).join('');
+            }
             
             const select = document.getElementById('portalProjectSelect');
             if (select) {
@@ -596,11 +644,37 @@
             }
         }
 
+        function selectClientOrder(orderId) {
+            activeOrderId = orderId;
+            const order = userOrders.find(o => o.id === orderId);
+            if (!order) return;
+            document.getElementById('noActiveOrderPrompt').classList.add('hidden');
+            document.getElementById('activeOrderDetailsPanel').classList.remove('hidden');
+            document.getElementById('detailOrderId').textContent = `Auftrag ${order.id} [${order.projectName || ''}]`;
+            document.getElementById('detailOrderPackage').textContent = `${order.packageName} — ${order.price} €`;
+
+            const reportCard = document.getElementById('completedReportCard');
+            if (order.status == 4) {
+                reportCard.classList.remove('hidden');
+                document.getElementById('reportSummaryText').textContent = order.summary || 'Kein Fazit hinterlegt.';
+                if (order.reportData) {
+                    const btn = document.getElementById('clientReportDownloadBtn');
+                    btn.href = order.reportData;
+                    btn.download = order.reportName || 'Pruefbericht.pdf';
+                    btn.classList.remove('hidden');
+                }
+            } else {
+                reportCard.classList.add('hidden');
+            }
+        }
+
         async function loadAdminOrders() {
             adminOrders = [];
             if (db) {
-                const snap = await db.collection('orders').get();
-                snap.forEach(doc => adminOrders.push({ idDoc: doc.id, ...doc.data() }));
+                try {
+                    const snap = await db.collection('orders').get();
+                    snap.forEach(doc => adminOrders.push({ idDoc: doc.id, ...doc.data() }));
+                } catch(e) { console.warn(e); }
             }
             renderAdminDashboard();
             updateAdminKPIs();
@@ -618,16 +692,18 @@
                 if (o.savings) savingsNum += parseInt(o.savings.replace(/[^0-9]/g, '')) || 0;
             });
 
-            document.getElementById('adminStatCurrentRevenue').textContent = currentRev.toLocaleString('de-DE') + ' €';
-            document.getElementById('adminStatProjectedRevenue').textContent = currentRev.toLocaleString('de-DE') + ' €';
-            document.getElementById('adminStatSavings').textContent = savingsNum.toLocaleString('de-DE') + ' €';
+            if (document.getElementById('adminStatCurrentRevenue')) document.getElementById('adminStatCurrentRevenue').textContent = currentRev.toLocaleString('de-DE') + ' €';
+            if (document.getElementById('adminStatProjectedRevenue')) document.getElementById('adminStatProjectedRevenue').textContent = currentRev.toLocaleString('de-DE') + ' €';
+            if (document.getElementById('adminStatSavings')) document.getElementById('adminStatSavings').textContent = savingsNum.toLocaleString('de-DE') + ' €';
         }
 
         async function loadMarketPrices() {
             marketPrices = [];
             if (db) {
-                const snap = await db.collection('market_prices').get();
-                snap.forEach(doc => marketPrices.push({ idDoc: doc.id, ...doc.data() }));
+                try {
+                    const snap = await db.collection('market_prices').get();
+                    snap.forEach(doc => marketPrices.push({ idDoc: doc.id, ...doc.data() }));
+                } catch(e) { console.warn(e); }
             }
             if (currentAdminTab === 'marketprices') renderMarketPricesTable();
         }
@@ -635,19 +711,20 @@
         async function loadCustomers() {
             customersList = [];
             if (db) {
-                const snap = await db.collection('customers').get();
-                snap.forEach(doc => customersList.push({ idDoc: doc.id, ...doc.data() }));
+                try {
+                    const snap = await db.collection('customers').get();
+                    snap.forEach(doc => customersList.push({ idDoc: doc.id, ...doc.data() }));
+                } catch(e) { console.warn(e); }
             }
             if (currentAdminTab === 'customers') renderCustomersTable();
         }
 
-        // Rang in Firestore aktualisieren mit Admin-Schutz und Sachbearbeiter-Beschränkung
         async function updateCustomerRank(targetEmail, newRank) {
             if (!db || !currentUser) return;
             const myRank = getCurrentUserRank();
 
             if (myRank === 'Sachbearbeiter') {
-                alert("Sachbearbeiter haben keine Berechtigung, Accountsränge zu ändern.");
+                alert("Sachbearbeiter haben keine Berechtigung, Ränge zu ändern.");
                 loadCustomers();
                 return;
             }
@@ -664,7 +741,7 @@
                 } else {
                     await db.collection('customers').add({ email: targetEmail, rank: newRank, createdAt: new Date().toISOString() });
                 }
-                alert(`Rang für ${targetEmail} auf "${newRank}" aktualisiert!`);
+                alert(`Rang für ${targetEmail} aktualisiert!`);
                 loadCustomers();
             } catch (err) { alert("Fehler: " + err.message); }
         }
@@ -692,7 +769,7 @@
                         <tr>
                             <th class="p-3">Name</th>
                             <th class="p-3">E-Mail</th>
-                            <th class="p-3">Accountsrang zuweisen</th>
+                            <th class="p-3">Accountsrang</th>
                         </tr>
                     </thead>
                     <tbody class="divide-y divide-slate-800">
@@ -738,6 +815,7 @@
 
         function renderAdminDashboard() {
             const container = document.getElementById('adminOrdersList');
+            if (!container) return;
             if (currentAdminTab === 'active' || currentAdminTab === 'rejected' || currentAdminTab === 'cancelled' || currentAdminTab === 'archive') {
                 let filtered = adminOrders;
                 if (currentAdminTab === 'active') filtered = adminOrders.filter(o => !o.isArchived && o.status != 5 && o.status != 6);
@@ -866,7 +944,9 @@
         }
 
         function renderMarketPricesTable() {
-            document.getElementById('marketPricesTableContainer').innerHTML = `
+            const container = document.getElementById('marketPricesTableContainer');
+            if (!container) return;
+            container.innerHTML = `
                 <table class="w-full text-left text-xs text-slate-300">
                     <tr class="bg-slate-950 text-slate-400"><th class="p-2">Position</th><th class="p-2">Mittelwert</th></tr>
                     ${marketPrices.map(m => `<tr class="border-b border-slate-800"><td class="p-2">${m.title}</td><td class="p-2 text-emerald-400">${m.average.toFixed(2)} €</td></tr>`).join('')}
