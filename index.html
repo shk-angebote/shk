@@ -203,16 +203,28 @@
                                     <input type="text" id="selectedPackageInput" readonly class="w-full bg-slate-950 border border-slate-700 rounded-xl px-4 py-3 text-sm text-emerald-400 font-semibold focus:outline-none" value="Heizungs-Angebot (149 €)">
                                 </div>
                                 <div>
-                                    <label class="block text-xs font-medium text-slate-300 mb-1">E-Mail-Adresse (für Kundenkonto)</label>
+                                    <label class="block text-xs font-medium text-slate-300 mb-1">E-Mail-Adresse</label>
                                     <input type="email" id="orderEmail" required placeholder="name@beispiel.de" class="w-full bg-slate-950 border border-slate-700 rounded-xl px-4 py-3 text-sm text-white focus:border-emerald-500 focus:outline-none">
                                 </div>
                             </div>
 
-                            <!-- Optionales Passwortfeld für Neukunden / optionalen Login -->
+                            <!-- NEU: Vor- und Nachname (nur bei Neukunden erforderlich) -->
+                            <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                                <div>
+                                    <label class="block text-xs font-medium text-slate-300 mb-1">Vorname (nur für Neukunden)</label>
+                                    <input type="text" id="orderFirstName" placeholder="Max" class="w-full bg-slate-950 border border-slate-700 rounded-xl px-4 py-3 text-sm text-white focus:border-emerald-500 focus:outline-none">
+                                </div>
+                                <div>
+                                    <label class="block text-xs font-medium text-slate-300 mb-1">Nachname (nur für Neukunden)</label>
+                                    <input type="text" id="orderLastName" placeholder="Mustermann" class="w-full bg-slate-950 border border-slate-700 rounded-xl px-4 py-3 text-sm text-white focus:border-emerald-500 focus:outline-none">
+                                </div>
+                            </div>
+
+                            <!-- Passwortfeld für Neukunden / optional für Bestandskunden -->
                             <div>
-                                <label class="block text-xs font-medium text-slate-300 mb-1">Passwort (optional für Bestandskunden, Pflicht für Neukunden)</label>
+                                <label class="block text-xs font-medium text-slate-300 mb-1">Passwort (nur für Neukunden Pflicht)</label>
                                 <input type="password" id="orderPasswordInput" placeholder="Passwort für neues Kundenkonto (min. 6 Zeichen)" class="w-full bg-slate-950 border border-slate-700 rounded-xl px-4 py-3 text-sm text-white focus:border-emerald-500 focus:outline-none">
-                                <span class="text-[11px] text-slate-400 mt-1 block">Bestandskunden können das Feld leer lassen. Neukunden müssen hier ein Passwort zur Erstellung ihres Kontos angeben.</span>
+                                <span class="text-[11px] text-slate-400 mt-1 block">Bestandskunden können das Feld leer lassen. Neukunden müssen Vorname, Nachname und ein Passwort angeben.</span>
                             </div>
 
                             <!-- Rabattcode Bereich -->
@@ -422,7 +434,7 @@
             <div class="flex justify-between items-center mb-8 pb-6 border-b border-slate-800">
                 <div>
                     <h1 class="text-3xl font-extrabold text-white"><i class="fa-solid fa-shield-halved text-amber-400 mr-3"></i>Admin-Konsole (Prüfer-Dashboard)</h1>
-                    <p class="text-slate-400 text-sm mt-1">Auftragsverwaltung, Statusänderung und Erstellung von Prüfberichten.</p>
+                    <p class="text-slate-400 text-sm mt-1">Auftragsverwaltung, Statusänderung, Kundenübersicht und Marktpreise.</p>
                 </div>
                 <button type="button" onclick="switchView('clientPortal')" class="bg-slate-800 hover:bg-slate-700 text-white px-4 py-2 rounded-xl text-sm font-medium transition">
                     Zum Kundenportal
@@ -447,22 +459,6 @@
                     <span class="text-xs text-slate-400 block">Kunden-Gesamtersparnis</span>
                     <span id="adminStatSavings" class="text-2xl font-bold text-emerald-400 mt-1 block">0 €</span>
                 </div>
-                <div class="bg-slate-900 border border-slate-800 rounded-2xl p-5">
-                    <span class="text-xs text-slate-400 block">Neue Aufträge (Aktiv)</span>
-                    <span id="adminStatNew" class="text-xl font-bold text-white mt-1 block">0</span>
-                </div>
-                <div class="bg-slate-900 border border-slate-800 rounded-2xl p-5">
-                    <span class="text-xs text-slate-400 block">Offene Aufträge (Aktiv)</span>
-                    <span id="adminStatOpen" class="text-xl font-bold text-white mt-1 block">0</span>
-                </div>
-                <div class="bg-slate-900 border border-slate-800 rounded-2xl p-5">
-                    <span class="text-xs text-slate-400 block">In Prüfung (Aktiv)</span>
-                    <span id="adminStatReview" class="text-xl font-bold text-amber-400 mt-1 block">0</span>
-                </div>
-                <div class="bg-slate-900 border border-slate-800 rounded-2xl p-5">
-                    <span class="text-xs text-slate-400 block">Abgeschlossen (Aktiv)</span>
-                    <span id="adminStatDone" class="text-xl font-bold text-emerald-400 mt-1 block">0</span>
-                </div>
             </div>
 
             <!-- Admin Reiter Navigation -->
@@ -479,13 +475,16 @@
                 <button type="button" onclick="switchAdminTab('archive')" id="tabBtnArchive" class="px-5 py-3 text-sm font-bold border-b-2 border-transparent text-slate-400 hover:text-white transition">
                     <i class="fa-solid fa-box-archive mr-2"></i>Archiv
                 </button>
+                <button type="button" onclick="switchAdminTab('customers')" id="tabBtnCustomers" class="px-5 py-3 text-sm font-bold border-b-2 border-transparent text-slate-400 hover:text-white transition">
+                    <i class="fa-solid fa-users mr-2"></i>Kunden
+                </button>
                 <button type="button" onclick="switchAdminTab('marketprices')" id="tabBtnMarketPrices" class="px-5 py-3 text-sm font-bold border-b-2 border-transparent text-slate-400 hover:text-white transition">
                     <i class="fa-solid fa-database mr-2"></i>Marktpreise-DB
                 </button>
             </div>
 
             <div class="grid grid-cols-1 lg:grid-cols-3 gap-8">
-                <!-- Admin Orders Table / List ODER Suchleiste für Marktpreise -->
+                <!-- Admin Orders Table / List ODER Suchleiste für Marktpreise / Kundenliste -->
                 <div class="lg:col-span-1 space-y-4">
                     <div id="adminListHeaderContainer" class="space-y-3">
                         <h2 id="adminListTitle" class="text-lg font-bold text-white mb-2">Aktive Aufträge</h2>
@@ -504,17 +503,23 @@
                     </div>
                 </div>
 
-                <!-- Admin Editor Panel ODER Marktpreise Formular & Live-Prüfer -->
+                <!-- Admin Editor Panel / Kundenansicht / Marktpreise -->
                 <div class="lg:col-span-2">
                     <div id="adminSelectPrompt" class="bg-slate-900 border border-slate-800 rounded-2xl p-12 text-center text-slate-400">
                         <i class="fa-solid fa-file-pen text-4xl text-slate-600 mb-3"></i>
-                        <p>Wählen Sie links einen Auftrag aus, um den Status zu bearbeiten und den Prüfbericht zu erstellen.</p>
+                        <p>Wählen Sie links einen Auftrag oder eine Ansicht aus.</p>
+                    </div>
+
+                    <!-- NEU: Kunden-Übersichts-Panel -->
+                    <div id="adminCustomersPanel" class="hidden bg-slate-900 border border-slate-800 rounded-2xl p-6 shadow-xl space-y-6">
+                        <h3 class="text-lg font-bold text-white border-b border-slate-800 pb-4"><i class="fa-solid fa-users text-emerald-400 mr-2"></i>Alle registrierten Kunden</h3>
+                        <div id="adminCustomersTableContainer" class="overflow-x-auto">
+                            <!-- Dynamische Kundentabelle -->
+                        </div>
                     </div>
 
                     <!-- Marktpreise Management & Live-Prüf-Tool -->
                     <div id="adminMarketPricesPanel" class="hidden space-y-6">
-                        
-                        <!-- GAEB- & Datei-Import für die Marktpreise-DB -->
                         <div class="bg-slate-900 border border-slate-800 rounded-2xl p-6 shadow-xl space-y-4">
                             <h4 class="text-sm font-bold text-white"><i class="fa-solid fa-file-arrow-up text-emerald-400 mr-2"></i>Leistungsverzeichnis / GAEB-Datei importieren</h4>
                             <p class="text-xs text-slate-400">Lade eine GAEB-Datei (.x83 / .d83 / .xml) oder eine Preisliste (TXT/CSV) hoch, um Positionen und Einheitswerte automatisch zu extrahieren und in die Datenbank zu übernehmen.</p>
@@ -528,7 +533,6 @@
                             <span id="importFeedback" class="text-xs block"></span>
                         </div>
 
-                        <!-- Live-Schnellprüf-Tool für Marktpreise -->
                         <div class="bg-slate-900 border border-slate-800 rounded-2xl p-6 shadow-xl space-y-4">
                             <h3 class="text-lg font-bold text-white border-b border-slate-800 pb-3"><i class="fa-solid fa-calculator text-emerald-400 mr-2"></i>Position schnell auf Plausibilität prüfen</h3>
                             <div class="grid grid-cols-1 sm:grid-cols-3 gap-3">
@@ -553,11 +557,8 @@
                             </div>
                         </div>
 
-                        <!-- Bestehendes Marktpreise-Verwaltungsformular -->
                         <div class="bg-slate-900 border border-slate-800 rounded-2xl p-6 shadow-xl space-y-6">
                             <h3 class="text-lg font-bold text-white border-b border-slate-800 pb-4"><i class="fa-solid fa-database text-emerald-400 mr-2"></i>Marktpreis-Datenbank & Mittelwert</h3>
-                            <p class="text-xs text-slate-400">Trage hier marktübliche Positionen, Kategorien und Vergleichspreise ein. Das System errechnet automatisch den Mittelwert.</p>
-                            
                             <form onsubmit="saveMarketPriceItem(event)" class="space-y-4 bg-slate-950 p-4 rounded-xl border border-slate-800">
                                 <input type="hidden" id="marketPriceDocId">
                                 <div class="grid grid-cols-1 sm:grid-cols-3 gap-3">
@@ -597,10 +598,7 @@
                                     </button>
                                 </div>
                             </form>
-
-                            <div id="marketPricesTableContainer" class="overflow-x-auto">
-                                <!-- Dynamische Tabelle der Marktpreise -->
-                            </div>
+                            <div id="marketPricesTableContainer" class="overflow-x-auto"></div>
                         </div>
                     </div>
 
@@ -624,37 +622,32 @@
                             </div>
                         </div>
 
-                        <!-- Neukunden Hinweis & Anzahlungs-Info -->
                         <div id="adminNewCustomerNotice" class="hidden bg-emerald-500/10 border border-emerald-500/30 rounded-xl p-4 flex items-center justify-between">
                             <div class="flex items-center space-x-3">
                                 <i class="fa-solid fa-user-plus text-emerald-400 text-xl"></i>
                                 <div>
                                     <span class="text-emerald-400 font-bold text-xs uppercase tracking-wider block">NEUKUNDE</span>
-                                    <span class="text-xs text-slate-300">Gemäß Richtlinie: 50% Anzahlung erforderlich</span>
+                                    <span id="adminCustomerNameBadge" class="text-xs text-slate-300">Name: ---</span>
                                 </div>
                             </div>
                             <span id="adminDepositAmount" class="text-sm font-black text-emerald-400">0 € Anzahlung</span>
                         </div>
 
-                        <!-- Manueller Preisnachlass (Euro) -->
                         <div class="bg-slate-950 p-4 rounded-xl border border-slate-800 space-y-2">
                             <label class="block text-xs font-semibold text-white">Manueller Preisnachlass (€)</label>
                             <input type="number" id="adminManualPriceInput" class="w-full bg-slate-900 border border-slate-700 rounded-xl px-4 py-2.5 text-sm text-white focus:border-emerald-500 focus:outline-none" placeholder="z. B. 20 (Rabattbetrag in €)">
-                            <span class="text-[11px] text-slate-400 block">Der Betrag wird vom ursprünglichen Paketpreis abgezogen.</span>
                         </div>
 
-                        <!-- Zusätzliche Unterlagen anfordern Button -->
                         <div class="bg-slate-950 p-4 rounded-xl border border-slate-800 flex items-center justify-between">
                             <div>
                                 <span class="text-xs font-semibold text-white block">Zusätzliche Unterlagen anfordern</span>
-                                <span class="text-xs text-slate-400">Sendet eine E-Mail an den Kunden, dass Dokumente fehlen</span>
+                                <span class="text-xs text-slate-400">Sendet eine E-Mail an den Kunden</span>
                             </div>
                             <button type="button" onclick="requestDocumentsEmail()" class="bg-amber-500 hover:bg-amber-600 text-slate-950 font-bold px-4 py-2 rounded-lg text-xs transition">
                                 <i class="fa-solid fa-paper-plane mr-1"></i>Unterlagen anfordern
                             </button>
                         </div>
 
-                        <!-- Rechnungsversand per Knopfdruck -->
                         <div class="bg-slate-950 p-4 rounded-xl border border-slate-800 space-y-3">
                             <span class="text-xs font-semibold text-white block"><i class="fa-solid fa-file-invoice-dollar text-emerald-400 mr-2"></i>Rechnung an Kunden senden</span>
                             <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
@@ -669,11 +662,9 @@
                             </div>
                         </div>
 
-                        <!-- Zahlungsstatus Umschalter -->
                         <div class="flex items-center justify-between bg-slate-950 p-4 rounded-xl border border-slate-800">
                             <div>
                                 <span class="text-xs font-semibold text-white block">Bezahlstatus</span>
-                                <span class="text-xs text-slate-400">Aktueller Status der Rechnung</span>
                             </div>
                             <select id="adminPaymentSelect" class="bg-slate-900 border border-slate-700 text-white text-xs rounded-lg px-3 py-2 focus:outline-none">
                                 <option value="unpaid">Offene Rechnung</option>
@@ -682,7 +673,6 @@
                             </select>
                         </div>
 
-                        <!-- Admin Upload für den fertigen Bericht -->
                         <div class="bg-slate-950 p-4 rounded-xl border border-slate-800 space-y-2">
                             <label class="block text-xs font-semibold text-white">Fertigen Prüfbericht hochladen (PDF)</label>
                             <input type="file" id="adminReportFileInput" accept="application/pdf" class="w-full text-xs text-slate-400 file:mr-4 file:py-2 file:px-4 file:rounded-lg file:border-0 file:text-xs file:font-semibold file:bg-emerald-500 file:text-slate-950 hover:file:bg-emerald-600 cursor-pointer">
@@ -692,18 +682,17 @@
                         <div class="space-y-4">
                             <div>
                                 <label class="block text-xs font-medium text-slate-300 mb-1">Identifiziertes Einsparpotenzial (€)</label>
-                                <input type="text" id="adminSavingsInput" class="w-full bg-slate-950 border border-slate-700 rounded-xl px-4 py-2.5 text-sm text-white focus:border-emerald-500 focus:outline-none" placeholder="z. B. 2450">
+                                <input type="text" id="adminSavingsInput" class="w-full bg-slate-950 border border-slate-700 rounded-xl px-4 py-2.5 text-sm text-white focus:border-emerald-500 focus:outline-none">
                             </div>
                             <div>
-                                <label class="block text-xs font-medium text-slate-300 mb-1">Prüffazit / Zusammenfassung für Kunden</label>
-                                <textarea id="adminSummaryInput" rows="3" class="w-full bg-slate-950 border border-slate-700 rounded-xl px-4 py-2.5 text-sm text-white focus:border-emerald-500 focus:outline-none" placeholder="Zusammenfassung der technischen Prüfung..."></textarea>
+                                <label class="block text-xs font-medium text-slate-300 mb-1">Prüffazit / Zusammenfassung</label>
+                                <textarea id="adminSummaryInput" rows="3" class="w-full bg-slate-950 border border-slate-700 rounded-xl px-4 py-2.5 text-sm text-white focus:border-emerald-500 focus:outline-none"></textarea>
                             </div>
                             <div>
-                                <label class="block text-xs font-medium text-slate-300 mb-1">Erkannte Mängel / Abweichungen</label>
-                                <textarea id="adminDefectsInput" rows="3" class="w-full bg-slate-950 border border-slate-700 rounded-xl px-4 py-2.5 text-sm text-white focus:border-emerald-500 focus:outline-none" placeholder="Mangel 1: Hydraulischer Abgleich fehlt (-450 €)&#10;Mangel 2: Überdimensionierter Puffer..."></textarea>
+                                <label class="block text-xs font-medium text-slate-300 mb-1">Erkannte Mängel</label>
+                                <textarea id="adminDefectsInput" rows="3" class="w-full bg-slate-950 border border-slate-700 rounded-xl px-4 py-2.5 text-sm text-white focus:border-emerald-500 focus:outline-none"></textarea>
                             </div>
                             
-                            <!-- Action Buttons -->
                             <div class="grid grid-cols-1 sm:grid-cols-3 gap-3">
                                 <button type="button" onclick="archiveAdminOrder()" class="bg-amber-500/10 hover:bg-amber-500/20 text-amber-400 border border-amber-500/30 font-bold py-3 rounded-xl text-sm transition">
                                     <i class="fa-solid fa-box-archive mr-1"></i>Archivieren
@@ -722,7 +711,7 @@
         </div>
     </main>
 
-    <!-- AUTH MODAL (Login / Register / Passwort vergessen) -->
+    <!-- AUTH MODAL -->
     <div id="authModal" class="fixed inset-0 z-50 flex items-center justify-center bg-slate-950/80 backdrop-blur-sm hidden">
         <div class="bg-slate-900 border border-slate-800 rounded-2xl p-8 max-w-md w-full mx-4 shadow-2xl relative">
             <button type="button" onclick="closeAuthModal()" class="absolute top-4 right-4 text-slate-400 hover:text-white"><i class="fa-solid fa-xmark text-lg"></i></button>
@@ -760,9 +749,6 @@
     <script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore-compat.js"></script>
 
     <script>
-        // ==========================================
-        // FIREBASE KONFIGURATION
-        // ==========================================
         const firebaseConfig = {
             apiKey: "AIzaSyB_hKknTz9_FM__bneuGv6IKaw_0sbKhIM",
             authDomain: "shk-angebote-pruefen.firebaseapp.com",
@@ -795,6 +781,7 @@
         let activeOrderId = null;
         let adminOrders = [];
         let marketPrices = [];
+        let customersList = [];
         let selectedAdminOrderId = null;
         let currentAdminTab = 'active'; 
         let activeArchiveYear = null;
@@ -811,6 +798,7 @@
                     if (user.email === ADMIN_EMAIL) {
                         loadAdminOrders();
                         loadMarketPrices();
+                        loadCustomers();
                     }
                 }
             });
@@ -860,6 +848,7 @@
                 document.getElementById('adminPortalView').classList.remove('hidden');
                 loadAdminOrders();
                 loadMarketPrices();
+                loadCustomers();
             }
         }
 
@@ -906,10 +895,12 @@
             }
         }
 
-        // Auftragsabgabe mit intelligenter Neu- & Bestandskunden-Prüfung per Passwort
+        // Auftragsabgabe mit Vorname, Nachname, Passwort-Prüfung für Neukunden
         async function handleOrderSubmission(event) {
             event.preventDefault();
             const email = document.getElementById('orderEmail').value.trim();
+            const firstName = document.getElementById('orderFirstName').value.trim();
+            const lastName = document.getElementById('orderLastName').value.trim();
             const password = document.getElementById('orderPasswordInput').value;
             const notes = document.getElementById('orderNotes').value;
             const fileInput = document.getElementById('offerFile');
@@ -926,31 +917,34 @@
             }
 
             try {
-                // 1. Prüfen, ob die E-Mail bereits im System existiert
                 const methods = await auth.fetchSignInMethodsForEmail(email);
                 const isExistingUser = methods.length > 0;
 
                 if (!isExistingUser) {
-                    // NEUKUNDE: Passwort ist zwingend erforderlich
+                    // Neukunde: Vorname, Nachname und Passwort zwingend erforderlich
+                    if (!firstName || !lastName) {
+                        alert("Bitte geben Sie Ihren Vor- und Nachnamen zur Erstellung Ihres Kundenkontos ein.");
+                        document.getElementById('orderFirstName').focus();
+                        return;
+                    }
                     if (!password || password.length < 6) {
                         alert("Bitte Passwort eingeben zur Erstellung Ihres Kundenkontos (mind. 6 Zeichen).");
                         document.getElementById('orderPasswordInput').focus();
                         return;
                     }
-                    // Konto für Neukunden anlegen
+                    // Konto anlegen
                     await auth.createUserWithEmailAndPassword(email, password);
                 } else {
-                    // BESTANDSKUNDE: Passwort ist optional. Wenn eingegeben, versuchen im Hintergrund einzuloggen.
+                    // Bestandskunde: Optionaler Login falls Passwort angegeben
                     if (password && password.length > 0) {
                         try {
                             await auth.signInWithEmailAndPassword(email, password);
                         } catch (pwErr) {
-                            console.warn("Bestandskunde hat falsches Passwort eingegeben, wird trotzdem als Bestandskunde ohne Login fortgeführt:", pwErr);
+                            console.warn("Falsches Passwort eingegeben, Fortfahren als Bestandskunde ohne Login:", pwErr);
                         }
                     }
                 }
 
-                // 2. Datei hochladen und Auftrag speichern
                 const reader = new FileReader();
                 reader.readAsDataURL(file);
                 
@@ -967,6 +961,8 @@
                         discountApplied: appliedDiscountPercent > 0 ? 'Angebot10' : null,
                         manualDiscount: 0,
                         email: email,
+                        firstName: firstName || '',
+                        lastName: lastName || '',
                         notes: notes,
                         fileName: file.name,
                         fileData: fileBase64,
@@ -986,6 +982,16 @@
 
                     if (db) {
                         await db.collection('orders').add(newOrder);
+
+                        // Kunde in separater 'customers' Sammlung speichern (falls Neukunde)
+                        if (!isExistingUser) {
+                            await db.collection('customers').add({
+                                email: email,
+                                firstName: firstName,
+                                lastName: lastName,
+                                createdAt: new Date().toISOString()
+                            });
+                        }
                     }
 
                     alert('Auftrag erfolgreich eingereicht und Ihrem Kundenkonto zugeordnet!');
@@ -1262,7 +1268,85 @@
             }
         }
 
-        // GAEB- & Datei-Import für Marktpreise
+        // NEU: Kunden aus Firestore laden
+        async function loadCustomers() {
+            customersList = [];
+            if (db) {
+                try {
+                    const snapshot = await db.collection('customers').get();
+                    snapshot.forEach(doc => {
+                        customersList.push({ idDoc: doc.id, ...doc.data() });
+                    });
+                } catch(e) {
+                    console.warn("Fehler beim Laden der Kunden:", e);
+                }
+            }
+            if (currentAdminTab === 'customers') {
+                renderCustomersTable();
+            }
+        }
+
+        // Kunden-Tabelle rendern
+        function renderCustomersTable() {
+            const container = document.getElementById('adminCustomersTableContainer');
+            if (!container) return;
+
+            // Auftragsanzahl pro E-Mail berechnen
+            const orderCounts = {};
+            adminOrders.forEach(o => {
+                if (o.email) {
+                    const mail = o.email.toLowerCase().trim();
+                    orderCounts[mail] = (orderCounts[mail] || 0) + 1;
+                }
+            });
+
+            // Falls Kunden direkt aus den Aufträgen extrahiert werden müssen (falls customers Sammlung leer)
+            const uniqueCustomers = {};
+            adminOrders.forEach(o => {
+                if (o.email) {
+                    const mail = o.email.toLowerCase().trim();
+                    if (!uniqueCustomers[mail]) {
+                        uniqueCustomers[mail] = {
+                            email: o.email,
+                            firstName: o.firstName || 'Unbekannt',
+                            lastName: o.lastName || '',
+                            createdAt: o.createdAt || ''
+                        };
+                    }
+                }
+            });
+
+            const customerArray = Object.values(uniqueCustomers);
+
+            if (customerArray.length === 0) {
+                container.innerHTML = `<p class="text-xs text-slate-500 py-4 text-center">Keine Kunden gefunden.</p>`;
+                return;
+            }
+
+            container.innerHTML = `
+                <table class="w-full text-left text-xs text-slate-300">
+                    <thead class="bg-slate-950 text-slate-400 uppercase border-b border-slate-800">
+                        <tr>
+                            <th class="p-3">Name</th>
+                            <th class="p-3">E-Mail-Adresse</th>
+                            <th class="p-3">Anzahl Aufträge</th>
+                            <th class="p-3">Registriert / Erster Auftrag</th>
+                        </tr>
+                    </thead>
+                    <tbody class="divide-y divide-slate-800">
+                        ${customerArray.map(c => `
+                            <tr class="hover:bg-slate-950/50">
+                                <td class="p-3 font-semibold text-white">${c.firstName} ${c.lastName}</td>
+                                <td class="p-3 text-emerald-400">${c.email}</td>
+                                <td class="p-3">${orderCounts[c.email.toLowerCase().trim()] || 1}</td>
+                                <td class="p-3">${c.createdAt ? new Date(c.createdAt).toLocaleDateString('de-DE') : '-'}</td>
+                            </tr>
+                        `).join('')}
+                    </tbody>
+                </table>
+            `;
+        }
+
         async function handleFileImport() {
             const fileInput = document.getElementById('importFile');
             const feedback = document.getElementById('importFeedback');
@@ -1359,7 +1443,6 @@
             reader.readAsText(file, "UTF-8");
         }
 
-        // Dropdown für das Live-Prüf-Tool befüllen
         function populateBauteilDropdown() {
             const select = document.getElementById('selectBauteil');
             if (!select) return;
@@ -1369,7 +1452,6 @@
             });
         }
 
-        // Live-Ampel-Prüffunktion für das Admin-Tool
         function pruefePositionGegenMarktwert() {
             const selectId = document.getElementById('selectBauteil').value;
             const angebotspreis = parseFloat(document.getElementById('inputAngebotspreis').value);
@@ -1542,27 +1624,32 @@
             document.getElementById('tabBtnRejected').className = "px-5 py-3 text-sm font-bold border-b-2 " + (tabName === 'rejected' ? "border-emerald-500 text-emerald-400" : "border-transparent text-slate-400 hover:text-white") + " transition";
             document.getElementById('tabBtnCancelled').className = "px-5 py-3 text-sm font-bold border-b-2 " + (tabName === 'cancelled' ? "border-emerald-500 text-emerald-400" : "border-transparent text-slate-400 hover:text-white") + " transition";
             document.getElementById('tabBtnArchive').className = "px-5 py-3 text-sm font-bold border-b-2 " + (tabName === 'archive' ? "border-emerald-500 text-emerald-400" : "border-transparent text-slate-400 hover:text-white") + " transition";
+            document.getElementById('tabBtnCustomers').className = "px-5 py-3 text-sm font-bold border-b-2 " + (tabName === 'customers' ? "border-emerald-500 text-emerald-400" : "border-transparent text-slate-400 hover:text-white") + " transition";
             document.getElementById('tabBtnMarketPrices').className = "px-5 py-3 text-sm font-bold border-b-2 " + (tabName === 'marketprices' ? "border-emerald-500 text-emerald-400" : "border-transparent text-slate-400 hover:text-white") + " transition";
 
             const selectPrompt = document.getElementById('adminSelectPrompt');
             const editorPanel = document.getElementById('adminEditorPanel');
             const marketPricesPanel = document.getElementById('adminMarketPricesPanel');
+            const customersPanel = document.getElementById('adminCustomersPanel');
             const searchContainer = document.getElementById('adminSearchContainer');
 
+            selectPrompt.classList.add('hidden');
+            editorPanel.classList.add('hidden');
+            marketPricesPanel.classList.add('hidden');
+            customersPanel.classList.add('hidden');
+            searchContainer.classList.add('hidden');
+
             if (tabName === 'marketprices') {
-                selectPrompt.classList.add('hidden');
-                editorPanel.classList.add('hidden');
                 marketPricesPanel.classList.remove('hidden');
                 searchContainer.classList.remove('hidden');
                 loadMarketPrices();
+            } else if (tabName === 'customers') {
+                customersPanel.classList.remove('hidden');
+                loadCustomers();
             } else {
-                marketPricesPanel.classList.add('hidden');
-                searchContainer.classList.add('hidden');
                 if (!selectedAdminOrderId) {
                     selectPrompt.classList.remove('hidden');
-                    editorPanel.classList.add('hidden');
                 } else {
-                    selectPrompt.classList.add('hidden');
                     editorPanel.classList.remove('hidden');
                 }
             }
@@ -1571,17 +1658,11 @@
         }
 
         function renderAdminDashboard() {
-            const newOrders = adminOrders.filter(o => !o.isArchived && o.status == 1).length;
-            const openOrders = adminOrders.filter(o => !o.isArchived && o.status < 4).length;
-            const inReview = adminOrders.filter(o => !o.isArchived && (o.status == 2 || o.status == 3)).length;
-            const completed = adminOrders.filter(o => !o.isArchived && o.status == 4).length;
-
             let currentRevenue = 0;
             let openRevenue = 0;
 
             adminOrders.forEach(o => {
                 if (o.status == 5 || o.status == 6) return;
-
                 const basePrice = o.price || 149;
                 const manualDiscount = parseFloat(o.manualDiscount) || 0;
                 const finalPrice = Math.max(0, basePrice - manualDiscount);
@@ -1609,20 +1690,7 @@
                     totalSavingsNum += num;
                 }
             });
-
-            document.getElementById('adminStatNew').textContent = newOrders;
-            document.getElementById('adminStatOpen').textContent = openOrders;
-            document.getElementById('adminStatReview').textContent = inReview;
-            document.getElementById('adminStatDone').textContent = completed;
             document.getElementById('adminStatSavings').textContent = totalSavingsNum.toLocaleString('de-DE') + ' €';
-
-            const emailCounts = {};
-            adminOrders.forEach(o => {
-                if (o.email) {
-                    const mail = o.email.toLowerCase().trim();
-                    emailCounts[mail] = (emailCounts[mail] || 0) + 1;
-                }
-            });
 
             const container = document.getElementById('adminOrdersList');
             const listTitle = document.getElementById('adminListTitle');
@@ -1630,54 +1698,43 @@
             if (currentAdminTab === 'active') {
                 listTitle.textContent = "Aktive Aufträge";
                 const activeOrders = adminOrders.filter(o => !o.isArchived && o.status != 5 && o.status != 6);
-                
                 if (activeOrders.length === 0) {
                     container.innerHTML = `<p class="text-xs text-slate-500">Keine aktiven Aufträge vorhanden.</p>`;
                     return;
                 }
-
-                container.innerHTML = activeOrders.map(o => renderOrderCard(o, emailCounts)).join('');
+                container.innerHTML = activeOrders.map(o => renderOrderCard(o)).join('');
             } else if (currentAdminTab === 'rejected') {
                 listTitle.textContent = "Abgelehnte Aufträge";
                 const rejectedOrders = adminOrders.filter(o => !o.isArchived && o.status == 5);
-
                 if (rejectedOrders.length === 0) {
                     container.innerHTML = `<p class="text-xs text-slate-500">Keine abgelehnten Aufträge vorhanden.</p>`;
                     return;
                 }
-
-                container.innerHTML = rejectedOrders.map(o => renderOrderCard(o, emailCounts)).join('');
+                container.innerHTML = rejectedOrders.map(o => renderOrderCard(o)).join('');
             } else if (currentAdminTab === 'cancelled') {
                 listTitle.textContent = "Stornierte Aufträge";
                 const cancelledOrders = adminOrders.filter(o => !o.isArchived && o.status == 6);
-
                 if (cancelledOrders.length === 0) {
                     container.innerHTML = `<p class="text-xs text-slate-500">Keine stornierten Aufträge vorhanden.</p>`;
                     return;
                 }
-
-                container.innerHTML = cancelledOrders.map(o => renderOrderCard(o, emailCounts)).join('');
+                container.innerHTML = cancelledOrders.map(o => renderOrderCard(o)).join('');
             } else if (currentAdminTab === 'archive') {
                 const archiveOrders = adminOrders.filter(o => o.isArchived);
                 const yearsMap = {};
-
                 archiveOrders.forEach(o => {
                     const year = o.createdAt ? new Date(o.createdAt).getFullYear() : 'Unbekannt';
                     if (!yearsMap[year]) yearsMap[year] = [];
                     yearsMap[year].push(o);
                 });
-
                 const availableYears = Object.keys(yearsMap).sort().reverse();
-
                 if (availableYears.length === 0) {
                     container.innerHTML = `<p class="text-xs text-slate-500">Das Archiv ist leer.</p>`;
                     return;
                 }
-
                 if (!activeArchiveYear || !yearsMap[activeArchiveYear]) {
                     activeArchiveYear = availableYears[0];
                 }
-
                 let html = `
                     <div class="flex flex-wrap gap-2 mb-4">
                         ${availableYears.map(y => `
@@ -1687,25 +1744,20 @@
                         `).join('')}
                     </div>
                 `;
-
                 listTitle.textContent = `Archiv — Jahr ${activeArchiveYear}`;
                 const ordersInYear = yearsMap[activeArchiveYear] || [];
-
-                if (ordersInYear.length === 0) {
-                    html += `<p class="text-xs text-slate-500 mt-2">Keine Aufträge in diesem Jahr.</p>`;
-                } else {
-                    html += ordersInYear.map(o => renderOrderCard(o, emailCounts)).join('');
-                }
-
+                html += ordersInYear.length === 0 ? `<p class="text-xs text-slate-500 mt-2">Keine Aufträge in diesem Jahr.</p>` : ordersInYear.map(o => renderOrderCard(o)).join('');
                 container.innerHTML = html;
+            } else if (currentAdminTab === 'customers') {
+                listTitle.textContent = "Kunden-Schnellwahl";
+                container.innerHTML = `<p class="text-xs text-slate-400">Übersicht aller Kunden rechts in der Tabelle.</p>`;
             } else if (currentAdminTab === 'marketprices') {
                 listTitle.textContent = "Marktpreise-DB";
                 container.innerHTML = `<p class="text-xs text-slate-400">Verwaltung der Marktpreise rechts im Editor.</p>`;
             }
         }
 
-        function renderOrderCard(o, emailCounts) {
-            const isNewCustomer = o.email && emailCounts[o.email.toLowerCase().trim()] === 1;
+        function renderOrderCard(o) {
             let statusLabel = `Status ${o.status}/4`;
             if (o.status == 5) statusLabel = 'Abgelehnt';
             if (o.status == 6) statusLabel = 'Storniert';
@@ -1714,16 +1766,17 @@
             const basePrice = o.price || 149;
             const manualDiscount = parseFloat(o.manualDiscount) || 0;
             const displayPrice = Math.max(0, basePrice - manualDiscount);
+            const customerName = (o.firstName && o.lastName) ? `${o.firstName} ${o.lastName}` : o.email;
 
             return `
                 <div onclick="selectAdminOrder('${o.id}')" class="bg-slate-900 border ${selectedAdminOrderId === o.id ? 'border-amber-500' : 'border-slate-800'} hover:border-slate-700 rounded-xl p-4 cursor-pointer transition mb-3">
                     <div class="flex justify-between items-center mb-1">
                         <span class="text-xs font-bold text-amber-400">${o.id}</span>
-                        ${isNewCustomer ? '<span class="bg-emerald-500 text-slate-950 font-extrabold text-[10px] px-2 py-0.5 rounded-full uppercase tracking-wider">NEUKUNDE</span>' : ''}
+                        <span class="text-xs text-slate-300 font-medium">${customerName}</span>
                     </div>
                     <h4 class="text-white font-semibold text-sm truncate">${o.email}</h4>
                     <div class="mt-2 text-xs text-emerald-400 font-medium">
-                        <i class="fa-solid fa-box mr-1"></i>${o.packageName || 'Heizungs-Angebot'} (${displayPrice} €) ${manualDiscount > 0 ? `<span class="text-xs text-amber-400">(inkl. ${manualDiscount}€ Rabatt)</span>` : ''}
+                        <i class="fa-solid fa-box mr-1"></i>${o.packageName || 'Heizungs-Angebot'} (${displayPrice} €)
                     </div>
                     <div class="flex justify-between items-center mt-2 text-xs text-slate-400">
                         <span class="${o.status == 5 || o.status == 6 ? 'text-rose-400 font-bold' : ''}">${statusLabel}</span>
@@ -1734,7 +1787,7 @@
         }
 
         function selectAdminOrder(orderId) {
-            if (currentAdminTab === 'marketprices') return;
+            if (currentAdminTab === 'marketprices' || currentAdminTab === 'customers') return;
             selectedAdminOrderId = orderId;
             const order = adminOrders.find(o => o.id === orderId);
             if (!order) return;
@@ -1743,6 +1796,7 @@
 
             document.getElementById('adminSelectPrompt').classList.add('hidden');
             document.getElementById('adminMarketPricesPanel').classList.add('hidden');
+            document.getElementById('adminCustomersPanel').classList.add('hidden');
             document.getElementById('adminEditorPanel').classList.remove('hidden');
 
             const basePrice = order.price || 149;
@@ -1767,20 +1821,11 @@
                 reportStatusSpan.className = "text-[11px] text-slate-500 block";
             }
 
-            const emailCounts = {};
-            adminOrders.forEach(o => {
-                if (o.email) {
-                    const mail = o.email.toLowerCase().trim();
-                    emailCounts[mail] = (emailCounts[mail] || 0) + 1;
-                }
-            });
-            const isNewCustomer = order.email && emailCounts[order.email.toLowerCase().trim()] === 1;
             const noticeBox = document.getElementById('adminNewCustomerNotice');
-            
-            if (isNewCustomer) {
+            if (order.firstName && order.lastName) {
                 noticeBox.classList.remove('hidden');
-                const depositNum = (displayPrice / 2).toFixed(2);
-                document.getElementById('adminDepositAmount').textContent = `${depositNum} € Anzahlung (50%)`;
+                document.getElementById('adminCustomerNameBadge').textContent = `Kunde: ${order.firstName} ${order.lastName}`;
+                document.getElementById('adminDepositAmount').textContent = `${(displayPrice / 2).toFixed(2)} € Anzahlung (50%)`;
             } else {
                 noticeBox.classList.add('hidden');
             }
