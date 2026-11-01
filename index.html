@@ -507,7 +507,21 @@
                     <!-- Marktpreise Management & Live-Prüf-Tool -->
                     <div id="adminMarketPricesPanel" class="hidden space-y-6">
                         
-                        <!-- NEU: Live-Schnellprüf-Tool für Marktpreise -->
+                        <!-- GAEB- & Datei-Import für die Marktpreise-DB -->
+                        <div class="bg-slate-900 border border-slate-800 rounded-2xl p-6 shadow-xl space-y-4">
+                            <h4 class="text-sm font-bold text-white"><i class="fa-solid fa-file-arrow-up text-emerald-400 mr-2"></i>Leistungsverzeichnis / GAEB-Datei importieren</h4>
+                            <p class="text-xs text-slate-400">Lade eine GAEB-Datei (.x83 / .d83 / .xml) oder eine Preisliste (TXT/CSV) hoch, um Positionen und Einheitswerte automatisch zu extrahieren und in die Datenbank zu übernehmen.</p>
+                            
+                            <div class="flex flex-col sm:flex-row gap-3 items-center">
+                                <input type="file" id="importFile" accept=".xml,.d83,.p83,.x83,.txt,.csv" class="w-full text-xs text-slate-400 file:mr-4 file:py-2 file:px-4 file:rounded-xl file:border-0 file:text-xs file:font-semibold file:bg-emerald-500 file:text-slate-950 hover:file:bg-emerald-600 cursor-pointer bg-slate-950 rounded-xl border border-slate-700 p-2">
+                                <button type="button" onclick="handleFileImport()" class="w-full sm:w-auto bg-emerald-500 hover:bg-emerald-600 text-slate-950 font-bold px-6 py-2.5 rounded-xl text-xs transition whitespace-nowrap shadow-lg shadow-emerald-500/20">
+                                    <i class="fa-solid fa-cogs mr-1"></i>Importieren & Speichern
+                                </button>
+                            </div>
+                            <span id="importFeedback" class="text-xs block"></span>
+                        </div>
+
+                        <!-- Live-Schnellprüf-Tool für Marktpreise -->
                         <div class="bg-slate-900 border border-slate-800 rounded-2xl p-6 shadow-xl space-y-4">
                             <h3 class="text-lg font-bold text-white border-b border-slate-800 pb-3"><i class="fa-solid fa-calculator text-emerald-400 mr-2"></i>Position schnell auf Plausibilität prüfen</h3>
                             <div class="grid grid-cols-1 sm:grid-cols-3 gap-3">
@@ -1217,6 +1231,103 @@
             }
         }
 
+        // GAEB- & Datei-Import für Marktpreise
+        async function handleFileImport() {
+            const fileInput = document.getElementById('importFile');
+            const feedback = document.getElementById('importFeedback');
+            const file = fileInput.files[0];
+
+            if (!file) {
+                alert("Bitte wählen Sie eine Datei aus.");
+                return;
+            }
+
+            feedback.textContent = "Datei wird analysiert und verarbeitet...";
+            feedback.className = "text-xs block text-amber-400";
+
+            const reader = new FileReader();
+            const fileName = file.name.toLowerCase();
+
+            reader.onload = async function(e) {
+                const content = e.target.result;
+                let importedItems = [];
+
+                try {
+                    if (fileName.endsWith('.xml') || fileName.endsWith('.x83') || fileName.endsWith('.d83')) {
+                        const parser = new DOMParser();
+                        const xmlDoc = parser.parseFromString(content, "text/xml");
+                        const items = xmlDoc.querySelectorAll('Item, BoQItem, LstSatz');
+                        
+                        items.forEach(node => {
+                            const descNode = node.querySelector('Text, ShortDesc, OutlTxt, Description');
+                            const priceNode = node.querySelector('UP, UnitPrice, Price, BiicePrice');
+                            
+                            if (descNode) {
+                                const title = descNode.textContent.trim();
+                                const price = priceNode ? parseFloat(priceNode.textContent) || 0 : 0;
+                                
+                                if (title.length > 3) {
+                                    importedItems.push({
+                                        title: title.substring(0, 100),
+                                        category: 'Heizung',
+                                        prices: [price, price, price],
+                                        average: price > 0 ? price : 100,
+                                        updatedAt: new Date().toISOString()
+                                    });
+                                }
+                            }
+                        });
+                    } else {
+                        const lines = content.split('\n');
+                        lines.forEach(line => {
+                            const parts = line.split(/[\t;]/);
+                            if (parts.length >= 2) {
+                                const title = parts[0].trim();
+                                const price = parseFloat(parts[1].replace(',', '.')) || 0;
+                                
+                                if (title.length > 2) {
+                                    importedItems.push({
+                                        title: title,
+                                        category: 'Sanitär',
+                                        prices: [price, price, price],
+                                        average: price > 0 ? price : 50,
+                                        updatedAt: new Date().toISOString()
+                                    });
+                                }
+                            }
+                        });
+                    }
+
+                    if (importedItems.length === 0) {
+                        throw new Error("Es konnten keine gültigen Positionen in der Datei gefunden werden.");
+                    }
+
+                    let batchCount = 0;
+                    if (db) {
+                        const batch = db.batch();
+                        importedItems.forEach(item => {
+                            const newDocRef = db.collection('market_prices').doc();
+                            batch.set(newDocRef, item);
+                            batchCount++;
+                        });
+                        await batch.commit();
+                    }
+
+                    feedback.textContent = `Erfolgreich! ${batchCount} Positionen wurden in die Marktpreise-DB importiert.`;
+                    feedback.className = "text-xs block text-emerald-400 font-semibold";
+                    fileInput.value = '';
+                    loadMarketPrices();
+
+                } catch (error) {
+                    console.error("Import-Fehler:", error);
+                    feedback.textContent = "Fehler beim Verarbeiten der Datei: " + error.message;
+                    feedback.className = "text-xs block text-rose-400";
+                }
+            };
+
+            reader.readAsText(file, "UTF-8");
+        }
+
         // Dropdown für das Live-Prüf-Tool befüllen
         function populateBauteilDropdown() {
             const select = document.getElementById('selectBauteil');
@@ -1243,7 +1354,7 @@
             const item = marketPrices.find(m => m.idDoc === selectId);
             if (!item) return;
 
-            const maxErlaubt = item.average * 1.25; // 25% Toleranzgrenze
+            const maxErlaubt = item.average * 1.25;
 
             ergebnisBox.classList.remove('hidden');
             if (angebotspreis <= item.average) {
