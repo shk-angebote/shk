@@ -208,6 +208,13 @@
                                 </div>
                             </div>
 
+                            <!-- Optionales Passwortfeld für Neukunden / optionalen Login -->
+                            <div>
+                                <label class="block text-xs font-medium text-slate-300 mb-1">Passwort (optional für Bestandskunden, Pflicht für Neukunden)</label>
+                                <input type="password" id="orderPasswordInput" placeholder="Passwort für neues Kundenkonto (min. 6 Zeichen)" class="w-full bg-slate-950 border border-slate-700 rounded-xl px-4 py-3 text-sm text-white focus:border-emerald-500 focus:outline-none">
+                                <span class="text-[11px] text-slate-400 mt-1 block">Bestandskunden können das Feld leer lassen. Neukunden müssen hier ein Passwort zur Erstellung ihres Kontos angeben.</span>
+                            </div>
+
                             <!-- Rabattcode Bereich -->
                             <div>
                                 <label class="block text-xs font-medium text-slate-300 mb-1">Rabattcode (optional)</label>
@@ -899,9 +906,11 @@
             }
         }
 
+        // Auftragsabgabe mit intelligenter Neu- & Bestandskunden-Prüfung per Passwort
         async function handleOrderSubmission(event) {
             event.preventDefault();
-            const email = document.getElementById('orderEmail').value;
+            const email = document.getElementById('orderEmail').value.trim();
+            const password = document.getElementById('orderPasswordInput').value;
             const notes = document.getElementById('orderNotes').value;
             const fileInput = document.getElementById('offerFile');
             const file = fileInput.files[0];
@@ -911,60 +920,82 @@
                 return;
             }
 
-            const reader = new FileReader();
-            reader.readAsDataURL(file);
-            
-            reader.onload = async function () {
-                const fileBase64 = reader.result;
-                const orderId = 'SHK-' + Math.floor(100000 + Math.random() * 900000);
-                const finalCalculatedPrice = selectedPackagePrice * (1 - appliedDiscountPercent);
+            if (!auth) {
+                alert("Fehler: Firebase Auth ist nicht initialisiert.");
+                return;
+            }
 
-                const newOrder = {
-                    id: orderId,
-                    packageName: selectedPackageName,
-                    price: finalCalculatedPrice,
-                    originalPrice: selectedPackagePrice,
-                    discountApplied: appliedDiscountPercent > 0 ? 'Angebot10' : null,
-                    manualDiscount: 0,
-                    email: email,
-                    notes: notes,
-                    fileName: file.name,
-                    fileData: fileBase64,
-                    additionalFiles: [],
-                    status: 1, 
-                    paymentStatus: 'unpaid',
-                    isArchived: false,
-                    savings: '3200 €',
-                    summary: 'Das Angebot wurde technisch erfasst. Die Detailprüfung auf Plausibilität läuft.',
-                    defects: [
-                        'Hydraulischer Abgleich Position unklar (-350 €)',
-                        'Wärmepumpen-Auslegung im Grenzbereich (-1.200 €)'
-                    ],
-                    createdAt: new Date().toISOString(),
-                    userId: currentUser ? currentUser.uid : 'anon_' + email
-                };
+            try {
+                // 1. Prüfen, ob die E-Mail bereits im System existiert
+                const methods = await auth.fetchSignInMethodsForEmail(email);
+                const isExistingUser = methods.length > 0;
 
-                if (db) {
-                    try {
-                        await db.collection('orders').add(newOrder);
-                    } catch(e) {
-                        console.error("Firestore Speicherfehler:", e);
-                        alert('Fehler beim Speichern in der Datenbank: ' + e.message);
+                if (!isExistingUser) {
+                    // NEUKUNDE: Passwort ist zwingend erforderlich
+                    if (!password || password.length < 6) {
+                        alert("Bitte Passwort eingeben zur Erstellung Ihres Kundenkontos (mind. 6 Zeichen).");
+                        document.getElementById('orderPasswordInput').focus();
                         return;
                     }
-                }
-
-                if (!currentUser && auth) {
-                    try {
-                        await auth.createUserWithEmailAndPassword(email, "geheim123");
-                    } catch(e) {
-                        try { await auth.signInWithEmailAndPassword(email, "geheim123"); } catch(ex) {}
+                    // Konto für Neukunden anlegen
+                    await auth.createUserWithEmailAndPassword(email, password);
+                } else {
+                    // BESTANDSKUNDE: Passwort ist optional. Wenn eingegeben, versuchen im Hintergrund einzuloggen.
+                    if (password && password.length > 0) {
+                        try {
+                            await auth.signInWithEmailAndPassword(email, password);
+                        } catch (pwErr) {
+                            console.warn("Bestandskunde hat falsches Passwort eingegeben, wird trotzdem als Bestandskunde ohne Login fortgeführt:", pwErr);
+                        }
                     }
                 }
 
-                alert('Auftrag und Angebotsdatei erfolgreich übermittelt!');
-                switchView('clientPortal');
-            };
+                // 2. Datei hochladen und Auftrag speichern
+                const reader = new FileReader();
+                reader.readAsDataURL(file);
+                
+                reader.onload = async function () {
+                    const fileBase64 = reader.result;
+                    const orderId = 'SHK-' + Math.floor(100000 + Math.random() * 900000);
+                    const finalCalculatedPrice = selectedPackagePrice * (1 - appliedDiscountPercent);
+
+                    const newOrder = {
+                        id: orderId,
+                        packageName: selectedPackageName,
+                        price: finalCalculatedPrice,
+                        originalPrice: selectedPackagePrice,
+                        discountApplied: appliedDiscountPercent > 0 ? 'Angebot10' : null,
+                        manualDiscount: 0,
+                        email: email,
+                        notes: notes,
+                        fileName: file.name,
+                        fileData: fileBase64,
+                        additionalFiles: [],
+                        status: 1, 
+                        paymentStatus: 'unpaid',
+                        isArchived: false,
+                        savings: '3200 €',
+                        summary: 'Das Angebot wurde technisch erfasst. Die Detailprüfung auf Plausibilität läuft.',
+                        defects: [
+                            'Hydraulischer Abgleich Position unklar (-350 €)',
+                            'Wärmepumpen-Auslegung im Grenzbereich (-1.200 €)'
+                        ],
+                        createdAt: new Date().toISOString(),
+                        userId: auth.currentUser ? auth.currentUser.uid : 'anon_' + email
+                    };
+
+                    if (db) {
+                        await db.collection('orders').add(newOrder);
+                    }
+
+                    alert('Auftrag erfolgreich eingereicht und Ihrem Kundenkonto zugeordnet!');
+                    switchView('clientPortal');
+                };
+
+            } catch (error) {
+                console.error("Fehler bei der Auftragsabgabe:", error);
+                alert("Fehler: " + error.message);
+            }
         }
 
         async function loadUserOrders() {
