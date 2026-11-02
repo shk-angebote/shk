@@ -359,7 +359,7 @@
                     </div>
 
                     <div id="activeOrderDetailsPanel" class="hidden space-y-6">
-                        <!-- Abgelehnt Hinweis Box (inkl. Weg-X-en Button & sichtbarem Ablehnungsgrund) -->
+                        <!-- Abgelehnt Hinweis Box -->
                         <div id="orderRejectedBanner" class="hidden bg-rose-500/10 border border-rose-500/30 rounded-2xl p-6 shadow-xl space-y-3">
                             <div class="flex items-start justify-between gap-4">
                                 <div class="flex items-start space-x-4">
@@ -373,7 +373,6 @@
                                     <i class="fa-solid fa-xmark mr-1"></i>Ausblenden
                                 </button>
                             </div>
-                            <!-- Für den Kunden freigegebener Ablehnungsgrund -->
                             <div id="clientRejectedReasonBox" class="hidden bg-slate-950/90 border border-rose-500/30 rounded-xl p-3.5 text-xs">
                                 <span class="font-bold text-rose-400 block mb-1">
                                     <i class="fa-solid fa-comment-dots mr-1.5"></i>Begründung / Hinweis vom Prüfer:
@@ -382,7 +381,7 @@
                             </div>
                         </div>
 
-                        <!-- Storniert Hinweis Box (inkl. Weg-X-en Button & optionaler Begründung) -->
+                        <!-- Storniert Hinweis Box -->
                         <div id="orderCancelledBanner" class="hidden bg-amber-500/10 border border-amber-500/30 rounded-2xl p-6 shadow-xl space-y-3">
                             <div class="flex items-start justify-between gap-4">
                                 <div class="flex items-start space-x-4">
@@ -396,7 +395,6 @@
                                     <i class="fa-solid fa-xmark mr-1"></i>Ausblenden
                                 </button>
                             </div>
-                            <!-- Für den Kunden freigegebener Stornierungsgrund -->
                             <div id="clientCancelledReasonBox" class="hidden bg-slate-950/90 border border-amber-500/30 rounded-xl p-3.5 text-xs">
                                 <span class="font-bold text-amber-400 block mb-1">
                                     <i class="fa-solid fa-comment-dots mr-1.5"></i>Begründung / Hinweis zur Stornierung:
@@ -521,7 +519,7 @@
                         <h1 class="text-3xl font-extrabold text-white"><i class="fa-solid fa-shield-halved text-amber-400 mr-3"></i>Admin-Konsole (Prüfer-Dashboard)</h1>
                         <span id="adminHeaderRoleBadge" class="px-3 py-1 rounded-full text-xs font-bold bg-amber-500/20 text-amber-400 border border-amber-500/30">Hauptadmin</span>
                     </div>
-                    <p class="text-slate-400 text-sm mt-1">Auftragsverwaltung, Freigaben, Kunden-Rangverwaltung und Marktpreise.</p>
+                    <p class="text-slate-400 text-sm mt-1">Auftragsverwaltung, Freigaben, Kunden-Rangverwaltung, Marktpreise & Angebots-Rekonstruktion.</p>
                 </div>
                 <button type="button" onclick="switchView('clientPortal')" class="bg-slate-800 hover:bg-slate-700 text-white px-4 py-2 rounded-xl text-sm font-medium transition">
                     Zum Kundenportal
@@ -548,7 +546,7 @@
                 </div>
             </div>
 
-            <!-- Admin Reiter Navigation -->
+            <!-- Admin Reiter Navigation (inkl. neuem Reiter "Angebot rekonstruieren") -->
             <div class="flex flex-wrap gap-2 border-b border-slate-800 mb-6">
                 <button type="button" onclick="switchAdminTab('active')" id="tabBtnActive" class="px-5 py-3 text-sm font-bold border-b-2 border-emerald-500 text-emerald-400 transition">
                     <i class="fa-solid fa-list-check mr-2"></i>Aktive Aufträge
@@ -572,15 +570,18 @@
                 <button type="button" onclick="switchAdminTab('marketprices')" id="tabBtnMarketPrices" class="px-5 py-3 text-sm font-bold border-b-2 border-transparent text-slate-400 hover:text-white transition">
                     <i class="fa-solid fa-database mr-2"></i>Marktpreise-DB
                 </button>
+                <button type="button" onclick="switchAdminTab('reconstruct')" id="tabBtnReconstruct" class="px-5 py-3 text-sm font-bold border-b-2 border-transparent text-slate-400 hover:text-white transition">
+                    <i class="fa-solid fa-wand-magic-sparkles mr-2 text-emerald-400"></i>Angebot rekonstruieren
+                </button>
             </div>
 
             <div class="grid grid-cols-1 lg:grid-cols-3 gap-8">
-                <!-- Admin Orders Table / List ODER Suchleiste für Marktpreise / Kundenliste -->
+                <!-- Linke Spalte: Auftragsliste ODER Such-/Katalog-Leiste für Marktpreise & Angebots-Rekonstruktion -->
                 <div class="lg:col-span-1 space-y-4">
                     <div id="adminListHeaderContainer" class="space-y-3">
                         <h2 id="adminListTitle" class="text-lg font-bold text-white mb-2">Aktive Aufträge</h2>
                         <div id="adminSearchContainer" class="hidden space-y-2">
-                            <input type="text" id="marketPriceSearchInput" oninput="renderMarketPricesTable()" placeholder="🔍 Nach Kurztext, Langtext oder Einheit suchen..." class="w-full bg-slate-950 border border-slate-700 rounded-xl px-4 py-2.5 text-xs text-white focus:border-emerald-500 focus:outline-none">
+                            <input type="text" id="marketPriceSearchInput" oninput="handleCatalogSearchInput()" placeholder="🔍 Nach Kurztext, Langtext oder Einheit suchen..." class="w-full bg-slate-950 border border-slate-700 rounded-xl px-4 py-2.5 text-xs text-white focus:border-emerald-500 focus:outline-none">
                             <div class="flex gap-1">
                                 <button type="button" onclick="filterMarketPricesCategory('Alle')" id="catBtnAlle" class="flex-1 bg-emerald-500 text-slate-950 font-bold py-1.5 rounded-lg text-[11px] transition">Alle</button>
                                 <button type="button" onclick="filterMarketPricesCategory('Heizung')" id="catBtnHeizung" class="flex-1 bg-slate-800 text-slate-300 hover:bg-slate-700 font-semibold py-1.5 rounded-lg text-[11px] transition">Heizung</button>
@@ -589,16 +590,119 @@
                             </div>
                         </div>
                     </div>
-                    <div id="adminOrdersList" class="space-y-3">
+                    <div id="adminOrdersList" class="space-y-3 max-h-[680px] overflow-y-auto pr-1">
                         <!-- Populated dynamically -->
                     </div>
                 </div>
 
-                <!-- Admin Editor Panel / Kundenansicht / Marktpreise -->
+                <!-- Rechte Spalte (2/3): Auftrags-Editor / Kundenansicht / Marktpreise / Angebots-Rekonstruktion -->
                 <div class="lg:col-span-2">
                     <div id="adminSelectPrompt" class="bg-slate-900 border border-slate-800 rounded-2xl p-12 text-center text-slate-400">
                         <i class="fa-solid fa-file-pen text-4xl text-slate-600 mb-3"></i>
                         <p>Wählen Sie links einen Auftrag oder eine Ansicht aus.</p>
+                    </div>
+
+                    <!-- NEU: ANGEBOT REKONSTRUIEREN & GESAMTPREIS-ABGLEICH PANEL -->
+                    <div id="adminReconstructPanel" class="hidden space-y-6">
+                        <div class="bg-slate-900 border border-slate-800 rounded-2xl p-6 shadow-xl space-y-5">
+                            <div class="flex flex-col sm:flex-row sm:items-center justify-between border-b border-slate-800 pb-4 gap-3">
+                                <div>
+                                    <h3 class="text-lg font-bold text-white">
+                                        <i class="fa-solid fa-wand-magic-sparkles text-emerald-400 mr-2"></i>Angebot aus Datenbank-Positionen rekonstruieren
+                                    </h3>
+                                    <p class="text-xs text-slate-400 mt-0.5">
+                                        Klicken Sie links Positionen aus Ihrer Marktpreise-DB zusammen, um das vorliegende Handwerker-Angebot mit den DB-Mittelwerten abzugleichen.
+                                    </p>
+                                </div>
+                                <div class="flex items-center gap-2">
+                                    <button type="button" onclick="clearReconstructedOffer()" class="bg-rose-500/10 hover:bg-rose-500/20 text-rose-400 border border-rose-500/30 font-bold px-3.5 py-2 rounded-xl text-xs transition whitespace-nowrap">
+                                        <i class="fa-solid fa-trash-can mr-1"></i>Auswahl leeren
+                                    </button>
+                                </div>
+                            </div>
+
+                            <!-- Eingabe: Vorliegender Angebots-Gesamtpreis & Ziel-Auftrag -->
+                            <div class="grid grid-cols-1 sm:grid-cols-2 gap-4 bg-slate-950 p-4 rounded-xl border border-slate-800">
+                                <div>
+                                    <label class="block text-xs font-bold text-white mb-1">
+                                        <i class="fa-solid fa-file-invoice-dollar text-amber-400 mr-1.5"></i>Vorliegender Angebots-Gesamtpreis (€ netto)
+                                    </label>
+                                    <input type="number" id="reconstructOfferedTotalInput" step="0.01" oninput="renderReconstructedOffer()" placeholder="z. B. 14500.00 (Netto-Summe laut Handwerker-Angebot)" class="w-full bg-slate-900 border border-slate-700 rounded-xl px-4 py-2.5 text-sm text-white font-bold focus:border-emerald-500 focus:outline-none">
+                                    <span class="text-[11px] text-slate-400 mt-1 block">Tragen Sie hier den Netto-Gesamtpreis des eingereichten Angebots ein (oder pflegen Sie Einzelpreise in der Tabelle).</span>
+                                </div>
+                                <div>
+                                    <label class="block text-xs font-bold text-white mb-1">
+                                        <i class="fa-solid fa-link text-emerald-400 mr-1.5"></i>Mit Kundenauftrag verknüpfen (optional für Übernahme)
+                                    </label>
+                                    <select id="reconstructTargetOrderSelect" onchange="selectedAdminOrderId = this.value" class="w-full bg-slate-900 border border-slate-700 rounded-xl px-3.5 py-2.5 text-xs text-white focus:border-emerald-500 focus:outline-none">
+                                        <option value="">-- Auftrag für Ergebnis-Übernahme wählen --</option>
+                                    </select>
+                                    <span class="text-[11px] text-slate-400 mt-1 block">Ermöglicht den 1-Klick-Export von Einsparpotenzial & Abweichungen in den Auftrag.</span>
+                                </div>
+                            </div>
+
+                            <!-- Live-KPI-Vergleichskarten (Soll nach DB-Mittelwert vs. Ist-Angebot) -->
+                            <div class="grid grid-cols-1 sm:grid-cols-3 gap-4">
+                                <div class="bg-slate-950 border border-emerald-500/30 rounded-xl p-4">
+                                    <span class="text-[11px] text-slate-400 uppercase font-semibold block">Rekonstruierter DB-Mittelwert (Soll)</span>
+                                    <span id="reconStatDbNet" class="text-2xl font-black text-emerald-400 mt-1 block">0,00 €</span>
+                                    <span id="reconStatDbGross" class="text-[11px] text-slate-400 block mt-0.5">0,00 € brutto (inkl. 19% MwSt.)</span>
+                                </div>
+                                <div class="bg-slate-950 border border-slate-800 rounded-xl p-4">
+                                    <span class="text-[11px] text-slate-400 uppercase font-semibold block">Vorliegendes Angebot (Ist)</span>
+                                    <span id="reconStatOfferNet" class="text-2xl font-black text-white mt-1 block">0,00 €</span>
+                                    <span id="reconStatOfferGross" class="text-[11px] text-slate-400 block mt-0.5">0,00 € brutto (inkl. 19% MwSt.)</span>
+                                </div>
+                                <div id="reconStatDiffCard" class="bg-slate-950 border border-slate-800 rounded-xl p-4">
+                                    <span class="text-[11px] text-slate-400 uppercase font-semibold block">Differenz / Einsparpotenzial (Netto)</span>
+                                    <span id="reconStatDiffAmount" class="text-2xl font-black text-slate-300 mt-1 block">0,00 €</span>
+                                    <span id="reconStatDiffBadge" class="text-[11px] text-slate-400 font-semibold block mt-0.5">Noch kein Vergleichswert</span>
+                                </div>
+                            </div>
+
+                            <!-- Ampel-Bewertung & Übernahme-Button -->
+                            <div id="reconstructVerdictBanner" class="hidden p-4 rounded-xl border text-xs flex flex-col sm:flex-row sm:items-center justify-between gap-3">
+                                <div id="reconstructVerdictText" class="font-bold"></div>
+                                <button type="button" onclick="transferReconstructionToOrder()" class="bg-emerald-500 hover:bg-emerald-600 text-slate-950 font-bold px-4 py-2.5 rounded-xl text-xs transition whitespace-nowrap shadow-lg shadow-emerald-500/20">
+                                    <i class="fa-solid fa-file-export mr-1.5"></i>Abgleich in gewählten Auftrag übernehmen
+                                </button>
+                            </div>
+
+                            <!-- Tabelle der zusammengeklickten Positionen -->
+                            <div class="space-y-3">
+                                <div class="flex items-center justify-between">
+                                    <h4 class="text-sm font-bold text-white"><i class="fa-solid fa-list-ol text-emerald-400 mr-2"></i>Zusammengeklickte Angebots-Positionen</h4>
+                                    <span id="reconstructPosCountBadge" class="text-xs text-slate-400">0 Positionen</span>
+                                </div>
+                                <div id="reconstructTableContainer" class="overflow-x-auto border border-slate-800 rounded-xl">
+                                    <!-- Dynamisch gerendert -->
+                                </div>
+                            </div>
+
+                            <!-- Manuelle Zusatzposition ergänzen (falls eine Position nicht in der DB steht) -->
+                            <div class="bg-slate-950 border border-slate-800 rounded-xl p-4 space-y-3">
+                                <span class="text-xs font-bold text-slate-300 block"><i class="fa-solid fa-plus-circle text-emerald-400 mr-1.5"></i>Freie Position manuell zur Rekonstruktion hinzufügen</span>
+                                <div class="grid grid-cols-1 sm:grid-cols-12 gap-2.5">
+                                    <div class="sm:col-span-5">
+                                        <input type="text" id="reconCustomTitle" placeholder="Positionsbeschreibung..." class="w-full bg-slate-900 border border-slate-700 rounded-lg px-3 py-2 text-xs text-white focus:border-emerald-500 focus:outline-none">
+                                    </div>
+                                    <div class="sm:col-span-2">
+                                        <input type="number" id="reconCustomQty" step="0.01" value="1" placeholder="Menge" class="w-full bg-slate-900 border border-slate-700 rounded-lg px-3 py-2 text-xs text-white focus:border-emerald-500 focus:outline-none">
+                                    </div>
+                                    <div class="sm:col-span-2">
+                                        <input type="text" id="reconCustomUnit" value="Stk" list="shkUnitsDatalist" placeholder="Einheit" class="w-full bg-slate-900 border border-slate-700 rounded-lg px-3 py-2 text-xs text-white focus:border-emerald-500 focus:outline-none">
+                                    </div>
+                                    <div class="sm:col-span-2">
+                                        <input type="number" id="reconCustomDbPrice" step="0.01" placeholder="Soll-EP (€)" class="w-full bg-slate-900 border border-slate-700 rounded-lg px-3 py-2 text-xs text-white focus:border-emerald-500 focus:outline-none">
+                                    </div>
+                                    <div class="sm:col-span-1">
+                                        <button type="button" onclick="addCustomPositionToReconstruction()" class="w-full h-full bg-slate-800 hover:bg-emerald-500 hover:text-slate-950 text-emerald-400 border border-emerald-500/30 font-bold py-2 rounded-lg text-xs transition" title="Position hinzufügen">
+                                            <i class="fa-solid fa-plus"></i>
+                                        </button>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
                     </div>
 
                     <!-- Kunden- & Rangverwaltungs-Panel (inkl. Konto-Sperre für Hauptadmin) -->
@@ -676,21 +780,20 @@
                                     <button type="button" onclick="cleanupOldPlaceholders()" class="bg-amber-500/10 hover:bg-amber-500/20 text-amber-400 border border-amber-500/30 px-3 py-1 rounded-lg text-[11px] font-bold transition" title="Löscht alte fehlerhafte 100-€-Platzhalter aus früheren x83-Importen">
                                         <i class="fa-solid fa-broom mr-1"></i>100-€-Platzhalter bereinigen
                                     </button>
-                                    <!-- NEU: Button nur für Hauptadmin zum kompletten Leeren der Marktpreise-DB mit Passwortschutz -->
                                     <button type="button" id="btnClearEntireMarketDb" onclick="openClearDbPasswordModal()" class="hidden bg-rose-500 hover:bg-rose-600 text-white px-3 py-1 rounded-lg text-[11px] font-bold transition shadow-lg shadow-rose-500/20" title="Nur Hauptadmin: Alle Positionen der Datenbank mit Passwort-Bestätigung löschen">
                                         <i class="fa-solid fa-trash-can mr-1"></i>Alle Positionen löschen (Hauptadmin)
                                     </button>
                                 </div>
                             </div>
                             <p class="text-xs text-slate-400 leading-relaxed">
-                                • <strong>GAEB-Import:</strong> Übernimmt den <strong>Kurztext</strong> (<code class="text-emerald-400">OutlTxt</code>) als Titel, speichert den <strong>Langtext</strong> (<code class="text-sky-400">DetailTxt</code>) optional als Info-Tooltip und liest die Einheit (<code class="text-emerald-400">QU</code>) aus.<br>
-                                • <strong>Excel / CSV Import:</strong> Unterstützt <code class="text-emerald-400">.xlsx</code>, <code class="text-emerald-400">.xls</code> und <code class="text-emerald-400">.csv</code> (Spalten: <em>Position | Preis 1 | Preis 2 | Preis 3 | Einheit | Kategorie</em>).
+                                • <strong>Fortlaufende Mittelwert-Bildung:</strong> Wenn Sie eine GAEB- oder Excel-Datei mit bereits vorhandenen Positionen hochladen, werden die neuen Preise automatisch zur Preis-Historie der Position hinzugefügt und in den <strong>Gesamt-Mittelwert</strong> einbezogen.<br>
+                                • <strong>GAEB-Import:</strong> Übernimmt den <strong>Kurztext</strong> (<code class="text-emerald-400">OutlTxt</code>) als Titel, speichert den <strong>Langtext</strong> (<code class="text-sky-400">DetailTxt</code>) als Info-Tooltip und liest die Einheit (<code class="text-emerald-400">QU</code>) aus.
                             </p>
                             
                             <div class="flex flex-col sm:flex-row gap-3 items-center">
                                 <input type="file" id="importFile" multiple accept=".xlsx,.xls,.csv,.txt,.xml,.x82,.d82,.p82,.x83,.d83,.p83,.x84,.d84,.p84,.x85,.x86" class="w-full text-xs text-slate-400 file:mr-4 file:py-2 file:px-4 file:rounded-xl file:border-0 file:text-xs file:font-semibold file:bg-emerald-500 file:text-slate-950 hover:file:bg-emerald-600 cursor-pointer bg-slate-950 rounded-xl border border-slate-700 p-2">
                                 <button type="button" onclick="handleFileImport()" class="w-full sm:w-auto bg-emerald-500 hover:bg-emerald-600 text-slate-950 font-bold px-6 py-2.5 rounded-xl text-xs transition whitespace-nowrap shadow-lg shadow-emerald-500/20">
-                                    <i class="fa-solid fa-cogs mr-1"></i>Importieren & Abgleichen
+                                    <i class="fa-solid fa-cogs mr-1"></i>Importieren & Mittelwerte aktualisieren
                                 </button>
                             </div>
                             <span id="importFeedback" class="text-xs block"></span>
@@ -699,8 +802,8 @@
                         <!-- Schnellprüfungs-Rechner inkl. Mengen-Multiplikator & Direkt-Übernahme in Auftrag -->
                         <div class="bg-slate-900 border border-slate-800 rounded-2xl p-6 shadow-xl space-y-4">
                             <div class="flex flex-col sm:flex-row sm:items-center justify-between border-b border-slate-800 pb-3 gap-2">
-                                <h3 class="text-lg font-bold text-white"><i class="fa-solid fa-calculator text-emerald-400 mr-2"></i>Position & Menge schnell auf Plausibilität prüfen</h3>
-                                <span class="text-[11px] text-slate-400">Berechnet Einzel- und Gesamtpreis inkl. Einsparpotenzial</span>
+                                <h3 class="text-lg font-bold text-white"><i class="fa-solid fa-calculator text-emerald-400 mr-2"></i>Einzel-Position schnell auf Plausibilität prüfen</h3>
+                                <span class="text-[11px] text-slate-400">Für komplette Angebote nutzen Sie den Reiter „Angebot rekonstruieren“</span>
                             </div>
                             <div class="grid grid-cols-1 sm:grid-cols-12 gap-3">
                                 <div class="sm:col-span-5">
@@ -775,13 +878,13 @@
                                         <input type="number" step="0.01" id="mpPrice2" class="w-full bg-slate-900 border border-slate-700 rounded-xl px-4 py-2 text-sm text-white focus:border-emerald-500 focus:outline-none" placeholder="180">
                                     </div>
                                     <div>
-                                        <label class="block text-xs font-medium text-slate-300 mb-1">Preis Angebot 3 (€)</label>
+                                        <label class="block text-xs font-medium text-slate-300 mb-1">Preis Angebot 3 / Weitere (€)</label>
                                         <input type="number" step="0.01" id="mpPrice3" class="w-full bg-slate-900 border border-slate-700 rounded-xl px-4 py-2 text-sm text-white focus:border-emerald-500 focus:outline-none" placeholder="165">
                                     </div>
                                 </div>
                                 <div class="flex gap-3 pt-2">
                                     <button type="submit" class="bg-emerald-500 hover:bg-emerald-600 text-slate-950 font-bold px-5 py-2.5 rounded-xl text-xs transition">
-                                        <i class="fa-solid fa-floppy-disk mr-1"></i>Marktpreis speichern
+                                        <i class="fa-solid fa-floppy-disk mr-1"></i>Marktpreis speichern / ergänzen
                                     </button>
                                     <button type="button" onclick="resetMarketPriceForm()" class="bg-slate-800 hover:bg-slate-700 text-slate-300 font-semibold px-4 py-2.5 rounded-xl text-xs transition">
                                         Formular leeren
@@ -815,7 +918,7 @@
                             </div>
                         </div>
 
-                        <!-- Banner für vorläufige Ablehnung / Stornierung (Freigabe-Workflow inkl. Kunden-Sichtbarkeit) -->
+                        <!-- Banner für vorläufige Ablehnung / Stornierung -->
                         <div id="adminPendingApprovalBanner" class="hidden bg-amber-500/10 border-2 border-amber-500/40 rounded-xl p-4 space-y-3">
                             <div class="flex items-start justify-between gap-3">
                                 <div class="flex items-start space-x-3">
@@ -828,7 +931,6 @@
                                 <span class="px-2.5 py-1 rounded-full text-[10px] font-bold bg-amber-500 text-slate-950 uppercase whitespace-nowrap">Freigabe nötig</span>
                             </div>
 
-                            <!-- Anzeige der internen Sachbearbeiter-Notiz im Freigabe-Banner -->
                             <div id="pendingApprovalReasonBox" class="hidden bg-slate-950/90 border border-amber-500/30 rounded-lg p-3 text-xs">
                                 <span class="text-[10px] font-bold uppercase tracking-wider text-amber-400 block mb-1">
                                     <i class="fa-solid fa-comment-dots mr-1"></i>Interne Notiz / Begründung vom Sachbearbeiter:
@@ -836,7 +938,6 @@
                                 <p id="pendingApprovalReasonText" class="text-slate-200 whitespace-pre-line"></p>
                             </div>
 
-                            <!-- Option & Textfeld für Admin, um den Grund für den Kunden sichtbar zu machen -->
                             <div id="pendingApprovalAdminActions" class="hidden space-y-3 pt-2 border-t border-amber-500/20">
                                 <div class="bg-slate-950/80 border border-slate-800 rounded-xl p-3 space-y-2">
                                     <label class="flex items-center space-x-2.5 cursor-pointer select-none">
@@ -858,7 +959,6 @@
                                 </div>
                             </div>
 
-                            <!-- Hinweis für Sachbearbeiter -->
                             <div id="pendingApprovalClerkHint" class="hidden flex items-center justify-between pt-2 border-t border-amber-500/20 text-xs text-slate-400">
                                 <span><i class="fa-solid fa-lock mr-1 text-amber-400"></i>Ein Admin oder Hauptadmin muss diese Anfrage noch bestätigen.</span>
                                 <button type="button" onclick="denyPreliminaryAction()" class="bg-rose-500/10 hover:bg-rose-500/20 text-rose-400 border border-rose-500/30 px-3 py-1 rounded-lg font-semibold text-xs transition">
@@ -867,7 +967,7 @@
                             </div>
                         </div>
 
-                        <!-- Prominenter Neukunden-Erstanfrage-Warnhinweis inkl. Status-Sperre (50% Rechnung vor Arbeitsbeginn) -->
+                        <!-- Prominenter Neukunden-Erstanfrage-Warnhinweis inkl. Status-Sperre -->
                         <div id="adminFirstInquiryWarningBanner" class="hidden bg-rose-500/10 border-2 border-rose-500/40 rounded-xl p-4 space-y-3">
                             <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
                                 <div class="flex items-start space-x-3">
@@ -973,7 +1073,7 @@
                                     </button>
                                 </div>
 
-                                <!-- Direkte Ablehnung / Stornierung inkl. Kunden-Begründung (Nur für Admin & Hauptadmin sichtbar) -->
+                                <!-- Direkte Ablehnung / Stornierung inkl. Kunden-Begründung -->
                                 <div id="adminDirectRejectCancelRow" class="bg-slate-950 border border-rose-500/30 rounded-xl p-4 space-y-3">
                                     <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-2">
                                         <label class="text-xs font-semibold text-rose-400">
@@ -995,7 +1095,7 @@
                                     </div>
                                 </div>
 
-                                <!-- Vorläufige Ablehnung / Stornierung inkl. internem Notizfeld (Nur für Sachbearbeiter sichtbar) -->
+                                <!-- Vorläufige Ablehnung / Stornierung inkl. internem Notizfeld -->
                                 <div id="clerkPreliminaryRejectCancelRow" class="hidden bg-slate-950 border border-amber-500/30 rounded-xl p-4 space-y-3">
                                     <div>
                                         <label class="block text-xs font-semibold text-amber-400 mb-1">
@@ -1021,7 +1121,7 @@
         </div>
     </main>
 
-    <!-- AUTH MODAL (Unterstützt E-Mail-Login sowie Benutzer "Demo" / Passwort "Demo") -->
+    <!-- AUTH MODAL -->
     <div id="authModal" class="fixed inset-0 z-50 flex items-center justify-center bg-slate-950/80 backdrop-blur-sm hidden">
         <div class="bg-slate-900 border border-slate-800 rounded-2xl p-8 max-w-md w-full mx-4 shadow-2xl relative">
             <button type="button" onclick="closeAuthModal()" class="absolute top-4 right-4 text-slate-400 hover:text-white"><i class="fa-solid fa-xmark text-lg"></i></button>
@@ -1053,7 +1153,7 @@
         </div>
     </div>
 
-    <!-- NEU: PASSWORT-MODAL FÜR HAUPTADMIN ZUM KOMPLETTEN LÖSCHEN DER MARKTPREISE-DATENBANK -->
+    <!-- PASSWORT-MODAL FÜR HAUPTADMIN ZUM KOMPLETTEN LÖSCHEN DER MARKTPREISE-DATENBANK -->
     <div id="clearDbPasswordModal" class="fixed inset-0 z-50 flex items-center justify-center bg-slate-950/85 backdrop-blur-sm hidden">
         <div class="bg-slate-900 border-2 border-rose-500/50 rounded-2xl p-8 max-w-md w-full mx-4 shadow-2xl relative space-y-4">
             <button type="button" onclick="closeClearDbPasswordModal()" class="absolute top-4 right-4 text-slate-400 hover:text-white">
@@ -1136,6 +1236,9 @@
         let activeCustomerRoleFilter = 'Alle';
         let lastCalculatedCheckDefect = null;
 
+        // NEU: Liste der zusammengeklickten Positionen im Reiter "Angebot rekonstruieren"
+        let reconstructedOfferItems = [];
+
         // Hilfsfunktionen für Rollen & Berechtigungen
         function isMainAdminEmail(email) {
             if (!email) return false;
@@ -1154,7 +1257,6 @@
             return ['Hauptadmin', 'Admin'].includes(role);
         }
 
-        // Prüft, ob ein Konto vom Hauptadmin gesperrt wurde
         async function isAccountBlocked(email) {
             if (!email || isMainAdminEmail(email)) return false;
             const cleanMail = email.toLowerCase().trim();
@@ -1312,7 +1414,6 @@
 
         if (auth) {
             auth.onAuthStateChanged(async user => {
-                // Falls aktives Demo-Session-Login besteht und kein Firebase-User eingeloggt ist
                 if (!user && sessionStorage.getItem('shk_demo_session') === 'true') {
                     const blocked = await isAccountBlocked('Demo');
                     if (blocked) {
@@ -1409,7 +1510,6 @@
                     adminBtn.classList.add('hidden');
                 }
 
-                // Hauptadmin-Button zum kompletten Leeren der Marktpreise-DB nur für Hauptadmin einblenden
                 if (clearDbBtn) {
                     if (isMainAdminUser()) {
                         clearDbBtn.classList.remove('hidden');
@@ -2101,6 +2201,7 @@
                     console.warn("Fehler beim Laden der Admin-Aufträge:", e);
                 }
             }
+            populateReconstructTargetOrderDropdown();
             renderAdminDashboard();
         }
 
@@ -2120,6 +2221,9 @@
                 renderMarketPricesTable();
                 populateBauteilDropdown();
                 renderAdminDashboard();
+            } else if (currentAdminTab === 'reconstruct') {
+                renderReconstructCatalogList();
+                renderReconstructedOffer();
             }
         }
 
@@ -2220,7 +2324,6 @@
             }
         }
 
-        // Rendert die Kundentabelle inkl. "Konto sperren"-Button exklusiv für den Hauptadmin
         function renderCustomersTable() {
             const container = document.getElementById('adminCustomersTableContainer');
             const permHint = document.getElementById('roleManagementPermissionHint');
@@ -2264,7 +2367,6 @@
                 createdAt: ''
             };
 
-            // Demo-Konto ("Demo" / "Demo") immer in der Übersicht vorhalten
             uniqueCustomers[DEMO_IDENTIFIER] = {
                 idDoc: null,
                 email: 'Demo',
@@ -2437,7 +2539,6 @@
             `;
         }
 
-        // NEU: Nur Hauptadmin kann Konten sperren / entsperren
         async function toggleCustomerBlock(targetEmail, currentlyBlocked) {
             if (!isMainAdminUser()) {
                 alert('Zugriff verweigert: Nur der Hauptadmin kann Kundenkonten sperren oder entsperren.');
@@ -2579,7 +2680,6 @@
             }
 
             try {
-                // 1. Hauptadmin-Passwort gegen Firebase Auth verifizieren
                 if (auth && auth.currentUser) {
                     const cred = firebase.auth.EmailAuthProvider.credential(ADMIN_EMAIL, enteredPassword);
                     await auth.currentUser.reauthenticateWithCredential(cred);
@@ -2587,7 +2687,6 @@
                     await auth.signInWithEmailAndPassword(ADMIN_EMAIL, enteredPassword);
                 }
 
-                // 2. Alle Dokumente in 'market_prices' löschen
                 if (db) {
                     const snap = await db.collection('market_prices').get();
                     const totalDocs = snap.size;
@@ -2623,7 +2722,7 @@
         }
 
         // ============================================================================
-        // GAEB-IMPORTER (KURZTEXT + OPTIONALER LANGTEXT-TOOLTIP), EXCEL & CSV IMPORT
+        // GAEB-IMPORTER MIT FORTLAUFENDER PREIS-HISTORIE & GESAMT-MITTELWERT
         // ============================================================================
 
         function detectSHKCategory(text) {
@@ -2824,6 +2923,7 @@
             return results;
         }
 
+        // GAEB-, Excel- & CSV-Importer: Nimmt neue Preise bei bestehenden Positionen fortlaufend auf und bezieht alle in den Mittelwert ein
         async function handleFileImport() {
             const fileInput = document.getElementById('importFile');
             const feedback = document.getElementById('importFeedback');
@@ -2834,7 +2934,7 @@
                 return;
             }
 
-            feedback.textContent = `${files.length} Datei(en) werden analysiert (Kurztexte, Langtext-Tooltips, Einheiten & Preise)...`;
+            feedback.textContent = `${files.length} Datei(en) werden analysiert (Kurztexte, Einheiten & fortlaufende Mittelwert-Bildung)...`;
             feedback.className = "text-xs block text-amber-400";
 
             try {
@@ -2933,7 +3033,7 @@
                                 if (!entry.unit && item.unit) {
                                     entry.unit = item.unit;
                                 }
-                                if (item.price > 0 && entry.prices.length < 3) {
+                                if (item.price > 0) {
                                     entry.prices.push(item.price);
                                 }
                             }
@@ -2960,6 +3060,7 @@
                     }
                 });
 
+                // Alle gültigen Preise je Kurztext zusammenführen (ohne künstliches 3er-Limit)
                 const consolidatedImportMap = new Map();
                 let missingPriceCount = 0;
 
@@ -2981,7 +3082,7 @@
                             longText: pos.longText || '',
                             unit: finalUnit,
                             category: pos.category || detectSHKCategory(finalTitle),
-                            prices: [...pos.prices]
+                            prices: pos.prices.filter(p => p > 0)
                         });
                     } else {
                         const existingInBatch = consolidatedImportMap.get(normKey);
@@ -2992,7 +3093,7 @@
                             existingInBatch.longText = pos.longText;
                         }
                         pos.prices.forEach(p => {
-                            if (p > 0 && !existingInBatch.prices.some(ep => Math.abs(ep - p) < 0.001)) {
+                            if (p > 0) {
                                 existingInBatch.prices.push(p);
                             }
                         });
@@ -3006,6 +3107,7 @@
                     throw new Error("Es wurden keine Positionen mit gültigen Preisen (> 0 €) in den gewählten Dateien gefunden.");
                 }
 
+                // Abgleich mit bestehenden Einträgen in Firestore: Neue Preise anhängen & Gesamt-Mittelwert über ALLE Preise bilden
                 const existingLookup = new Map();
                 marketPrices.forEach(mp => {
                     const k = normalizePositionTitleKey(mp.title);
@@ -3022,22 +3124,13 @@
                         const existingDbItem = existingLookup.get(normKey);
 
                         if (existingDbItem && existingDbItem.idDoc) {
-                            const oldValid = (existingDbItem.prices || []).filter(p => p > 0);
-                            const combinedPrices = [...oldValid];
+                            // Bestehende gültige Preise holen und die neuen Preise aus dem GAEB/Excel-Upload anhängen
+                            const oldValidPrices = (existingDbItem.prices || []).filter(p => p > 0);
+                            const newValidPrices = (impItem.prices || []).filter(p => p > 0);
+                            const allPricesHistory = [...oldValidPrices, ...newValidPrices];
 
-                            impItem.prices.forEach(newP => {
-                                if (newP > 0 && !combinedPrices.some(oldP => Math.abs(oldP - newP) < 0.001)) {
-                                    combinedPrices.push(newP);
-                                }
-                            });
-
-                            const latestThree = combinedPrices.slice(-3);
-                            const p1 = latestThree[0] || 0;
-                            const p2 = latestThree[1] || 0;
-                            const p3 = latestThree[2] || 0;
-                            const validForAvg = [p1, p2, p3].filter(p => p > 0);
-                            const avg = validForAvg.length > 0
-                                ? Number((validForAvg.reduce((a, b) => a + b, 0) / validForAvg.length).toFixed(2))
+                            const avg = allPricesHistory.length > 0
+                                ? Number((allPricesHistory.reduce((a, b) => a + b, 0) / allPricesHistory.length).toFixed(2))
                                 : 0;
 
                             const updatedUnit = impItem.unit || existingDbItem.unit || 'Stk';
@@ -3048,19 +3141,15 @@
                                 unit: updatedUnit,
                                 longText: updatedLongText,
                                 category: existingDbItem.category || impItem.category,
-                                prices: [p1, p2, p3],
+                                prices: allPricesHistory,
                                 average: avg,
                                 updatedAt: new Date().toISOString()
                             });
                             updatedCount++;
                         } else {
-                            const latestThree = impItem.prices.slice(0, 3);
-                            const p1 = latestThree[0] || 0;
-                            const p2 = latestThree[1] || 0;
-                            const p3 = latestThree[2] || 0;
-                            const validForAvg = [p1, p2, p3].filter(p => p > 0);
-                            const avg = validForAvg.length > 0
-                                ? Number((validForAvg.reduce((a, b) => a + b, 0) / validForAvg.length).toFixed(2))
+                            const validPrices = (impItem.prices || []).filter(p => p > 0);
+                            const avg = validPrices.length > 0
+                                ? Number((validPrices.reduce((a, b) => a + b, 0) / validPrices.length).toFixed(2))
                                 : 0;
 
                             const newDocRef = db.collection('market_prices').doc();
@@ -3069,7 +3158,7 @@
                                 longText: impItem.longText || '',
                                 unit: impItem.unit || 'Stk',
                                 category: impItem.category,
-                                prices: [p1, p2, p3],
+                                prices: validPrices,
                                 average: avg,
                                 updatedAt: new Date().toISOString()
                             });
@@ -3082,7 +3171,7 @@
 
                 let summaryParts = [];
                 if (createdCount > 0) summaryParts.push(`${createdCount} neu angelegt`);
-                if (updatedCount > 0) summaryParts.push(`${updatedCount} Duplikate aktualisiert`);
+                if (updatedCount > 0) summaryParts.push(`${updatedCount} bestehende Positionen um neue Preise ergänzt & Mittelwert neu berechnet`);
                 if (missingPriceCount > 0) summaryParts.push(`${missingPriceCount} unbepreiste übersprungen`);
 
                 feedback.textContent = `✓ Import abgeschlossen: ${summaryParts.join(', ')}!`;
@@ -3144,15 +3233,14 @@
                 alert("Die Marktpreise-Datenbank ist noch leer.");
                 return;
             }
-            const header = ["Position", "Preis 1", "Preis 2", "Preis 3", "Mittelwert", "Einheit", "Kategorie", "Langtext"];
+            const header = ["Position", "Alle erfassten Preise (€)", "Anzahl Preise", "Mittelwert", "Einheit", "Kategorie", "Langtext"];
             const rows = marketPrices.map(m => {
-                const p1 = (m.prices && m.prices[0]) ? String(m.prices[0]).replace('.', ',') : '';
-                const p2 = (m.prices && m.prices[1]) ? String(m.prices[1]).replace('.', ',') : '';
-                const p3 = (m.prices && m.prices[2]) ? String(m.prices[2]).replace('.', ',') : '';
+                const validPrices = (m.prices || []).filter(p => p > 0);
+                const pricesJoined = validPrices.map(p => String(p.toFixed(2)).replace('.', ',')).join(' | ');
                 const avg = m.average ? String(m.average.toFixed(2)).replace('.', ',') : '0,00';
                 const cleanTitle = `"${(m.title || '').replace(/"/g, '""')}"`;
                 const cleanLong = `"${(m.longText || '').replace(/"/g, '""')}"`;
-                return [cleanTitle, p1, p2, p3, avg, m.unit || 'Stk', m.category || 'Allgemein', cleanLong].join(';');
+                return [cleanTitle, `"${pricesJoined}"`, validPrices.length, avg, m.unit || 'Stk', m.category || 'Allgemein', cleanLong].join(';');
             });
 
             const csvContent = "\uFEFF" + [header.join(';'), ...rows].join('\r\n');
@@ -3274,6 +3362,7 @@
             selectAdminOrder(order.id);
         }
 
+        // Manueller Speichervorgang: Ergänzt neue Preise bei bestehenden Positionen oder aktualisiert beim Bearbeiten
         async function saveMarketPriceItem(event) {
             event.preventDefault();
             let docId = document.getElementById('marketPriceDocId').value;
@@ -3287,23 +3376,35 @@
             const p2 = parseFloat(document.getElementById('mpPrice2').value) || 0;
             const p3 = parseFloat(document.getElementById('mpPrice3').value) || 0;
 
-            let validPrices = [p1, p2, p3].filter(p => p > 0);
-            let avg = validPrices.length > 0 ? Number((validPrices.reduce((a,b) => a+b, 0) / validPrices.length).toFixed(2)) : 0;
+            let enteredPrices = [p1, p2, p3].filter(p => p > 0);
+            let finalPrices = [...enteredPrices];
 
+            // Falls kein docId gesetzt ist, prüfen ob Position schon existiert -> Preise zur Historie anhängen
             if (!docId) {
                 const normKey = normalizePositionTitleKey(title);
                 const existing = marketPrices.find(m => normalizePositionTitleKey(m.title) === normKey);
                 if (existing && existing.idDoc) {
                     docId = existing.idDoc;
+                    const oldPrices = (existing.prices || []).filter(p => p > 0);
+                    finalPrices = [...oldPrices, ...enteredPrices];
+                }
+            } else {
+                // Falls eine Position mit mehr als 3 historischen Preisen bearbeitet wird, ältere Preise erhalten
+                const existing = marketPrices.find(m => m.idDoc === docId);
+                if (existing && Array.isArray(existing.prices) && existing.prices.length > 3) {
+                    const olderPrices = existing.prices.slice(3).filter(p => p > 0);
+                    finalPrices = [...enteredPrices, ...olderPrices];
                 }
             }
+
+            let avg = finalPrices.length > 0 ? Number((finalPrices.reduce((a,b) => a+b, 0) / finalPrices.length).toFixed(2)) : 0;
 
             const itemData = {
                 title: title,
                 longText: longText,
                 unit: unit,
                 category: category,
-                prices: [p1, p2, p3],
+                prices: finalPrices,
                 average: avg,
                 updatedAt: new Date().toISOString()
             };
@@ -3315,7 +3416,7 @@
                     } else {
                         await db.collection('market_prices').add(itemData);
                     }
-                    alert('Marktpreis erfolgreich gespeichert!');
+                    alert('Marktpreis erfolgreich gespeichert und Mittelwert aktualisiert!');
                     resetMarketPriceForm();
                     loadMarketPrices();
                 } catch(e) {
@@ -3334,9 +3435,10 @@
             document.getElementById('mpCategory').value = item.category || 'Allgemein';
             const longTextEl = document.getElementById('mpLongText');
             if (longTextEl) longTextEl.value = item.longText || '';
-            document.getElementById('mpPrice1').value = item.prices[0] || '';
-            document.getElementById('mpPrice2').value = item.prices[1] || '';
-            document.getElementById('mpPrice3').value = item.prices[2] || '';
+            const validPrices = (item.prices || []).filter(p => p > 0);
+            document.getElementById('mpPrice1').value = validPrices[0] || '';
+            document.getElementById('mpPrice2').value = validPrices[1] || '';
+            document.getElementById('mpPrice3').value = validPrices[2] || '';
         }
 
         async function deleteMarketPrice(idDoc) {
@@ -3362,6 +3464,15 @@
             document.getElementById('mpPrice3').value = '';
         }
 
+        // Gemeinsame Such-/Filterfunktion für Marktpreise-DB und Angebots-Rekonstruktion
+        function handleCatalogSearchInput() {
+            if (currentAdminTab === 'reconstruct') {
+                renderReconstructCatalogList();
+            } else {
+                renderMarketPricesTable();
+            }
+        }
+
         function filterMarketPricesCategory(cat) {
             activeMarketPriceCategory = cat;
             ['Alle', 'Heizung', 'Sanitär', 'Allgemein'].forEach(c => {
@@ -3374,15 +3485,18 @@
                     }
                 }
             });
-            renderMarketPricesTable();
+            if (currentAdminTab === 'reconstruct') {
+                renderReconstructCatalogList();
+            } else {
+                renderMarketPricesTable();
+            }
         }
 
-        function renderMarketPricesTable() {
-            const container = document.getElementById('marketPricesTableContainer');
+        function getFilteredMarketPricesList() {
             const searchInput = document.getElementById('marketPriceSearchInput');
             const query = searchInput ? searchInput.value.toLowerCase().trim() : '';
 
-            const filteredPrices = marketPrices.filter(m => {
+            return marketPrices.filter(m => {
                 if (activeMarketPriceCategory !== 'Alle' && m.category !== activeMarketPriceCategory) {
                     return false;
                 }
@@ -3391,6 +3505,11 @@
                 const words = query.split(/\s+/);
                 return words.every(word => haystack.includes(word));
             });
+        }
+
+        function renderMarketPricesTable() {
+            const container = document.getElementById('marketPricesTableContainer');
+            const filteredPrices = getFilteredMarketPricesList();
 
             if (filteredPrices.length === 0) {
                 container.innerHTML = `<p class="text-xs text-slate-500 py-4 text-center">Keine passenden Marktpreise gefunden.</p>`;
@@ -3404,8 +3523,8 @@
                             <th class="p-3">Position (Kurztext & Tooltip)</th>
                             <th class="p-3">Einheit</th>
                             <th class="p-3">Kategorie</th>
-                            <th class="p-3">Preise (€)</th>
-                            <th class="p-3 text-emerald-400 font-bold">Mittelwert</th>
+                            <th class="p-3">Erfasste Preise (€)</th>
+                            <th class="p-3 text-emerald-400 font-bold">Mittelwert (Ø)</th>
                             <th class="p-3 text-right">Aktion</th>
                         </tr>
                     </thead>
@@ -3427,6 +3546,12 @@
                                    </span>`
                                 : '';
 
+                            const validPrices = (m.prices || []).filter(p => p > 0);
+                            const lastPricesDisplay = validPrices.slice(-4).map(p => p.toLocaleString('de-DE', {minimumFractionDigits: 2, maximumFractionDigits: 2}) + ' €').join(' / ');
+                            const countBadge = validPrices.length > 4
+                                ? `<span class="ml-1.5 px-1.5 py-0.5 rounded bg-slate-800 text-emerald-400 font-bold text-[10px]" title="Alle ${validPrices.length} Preise fließen in den Mittelwert ein">(${validPrices.length} Werte)</span>`
+                                : `<span class="ml-1 text-[10px] text-slate-500">(${validPrices.length}x)</span>`;
+
                             return `
                                 <tr class="hover:bg-slate-950/50">
                                     <td class="p-3 font-semibold text-white">
@@ -3437,9 +3562,10 @@
                                     </td>
                                     <td class="p-3"><span class="bg-slate-800 border border-slate-700 px-2 py-0.5 rounded text-[11px] font-bold text-sky-400">${m.unit || 'Stk'}</span></td>
                                     <td class="p-3"><span class="bg-slate-800 px-2 py-0.5 rounded text-[10px] text-emerald-400">${m.category || 'Allgemein'}</span></td>
-                                    <td class="p-3">${(m.prices || []).filter(p => p > 0).map(p => p.toLocaleString('de-DE', {minimumFractionDigits: 2, maximumFractionDigits: 2}) + ' €').join(' / ')}</td>
+                                    <td class="p-3">${lastPricesDisplay}${countBadge}</td>
                                     <td class="p-3 text-emerald-400 font-black">${(m.average || 0).toLocaleString('de-DE', {minimumFractionDigits: 2, maximumFractionDigits: 2})} € / ${m.unit || 'Stk'}</td>
                                     <td class="p-3 text-right space-x-2 whitespace-nowrap">
+                                        <button type="button" onclick="addPositionToReconstruction('${m.idDoc}', 1)" class="text-emerald-400 hover:underline mr-1" title="In Angebots-Rekonstruktion übernehmen"><i class="fa-solid fa-wand-magic-sparkles"></i></button>
                                         <button type="button" onclick="editMarketPrice('${m.idDoc}')" class="text-amber-400 hover:underline" title="Bearbeiten"><i class="fa-solid fa-pen"></i></button>
                                         <button type="button" onclick="deleteMarketPrice('${m.idDoc}')" class="text-rose-400 hover:underline" title="Löschen"><i class="fa-solid fa-trash"></i></button>
                                     </td>
@@ -3450,6 +3576,349 @@
                 </table>
             `;
             populateBauteilDropdown();
+        }
+
+        // ============================================================================
+        // NEU: ANGEBOT REKONSTRUIEREN & GESAMTPREIS-ABGLEICH AUS DATENBANK-POSITIONEN
+        // ============================================================================
+
+        function populateReconstructTargetOrderDropdown() {
+            const select = document.getElementById('reconstructTargetOrderSelect');
+            if (!select) return;
+            const currentVal = select.value || selectedAdminOrderId || '';
+            const activeOrders = adminOrders.filter(o => !o.isArchived && o.status != 5 && o.status != 6);
+
+            select.innerHTML = '<option value="">-- Auftrag für Ergebnis-Übernahme wählen --</option>';
+            activeOrders.forEach(o => {
+                const name = (o.firstName && o.lastName) ? `${o.firstName} ${o.lastName}` : o.email;
+                select.innerHTML += `<option value="${o.id}" ${currentVal === o.id ? 'selected' : ''}>${o.id} — ${name} (${o.packageName || 'Paket'})</option>`;
+            });
+        }
+
+        // Rendert links den anklickbaren Positions-Katalog für den Reiter "Angebot rekonstruieren"
+        function renderReconstructCatalogList() {
+            const container = document.getElementById('adminOrdersList');
+            const listTitle = document.getElementById('adminListTitle');
+            if (!container) return;
+
+            const filtered = getFilteredMarketPricesList();
+            if (listTitle) {
+                listTitle.textContent = `DB-Katalog (${filtered.length} Positionen)`;
+            }
+
+            if (filtered.length === 0) {
+                container.innerHTML = `<p class="text-xs text-slate-500 py-4 text-center">Keine passenden Positionen in der Datenbank gefunden.</p>`;
+                return;
+            }
+
+            container.innerHTML = filtered.map(m => {
+                const unitLabel = m.unit || 'Stk';
+                const avgFormatted = (m.average || 0).toLocaleString('de-DE', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+                const inCart = reconstructedOfferItems.find(it => it.idDoc === m.idDoc);
+
+                return `
+                    <div class="bg-slate-900 border ${inCart ? 'border-emerald-500/60 bg-emerald-950/10' : 'border-slate-800'} hover:border-slate-700 rounded-xl p-3.5 transition">
+                        <div class="flex justify-between items-start gap-2">
+                            <div>
+                                <span class="text-[10px] px-2 py-0.5 rounded bg-slate-800 text-emerald-400 font-semibold">${m.category || 'Allgemein'}</span>
+                                <h4 class="text-white font-semibold text-xs mt-1 leading-snug">${m.title}</h4>
+                            </div>
+                            <span class="text-xs font-black text-emerald-400 whitespace-nowrap">Ø ${avgFormatted} €/${unitLabel}</span>
+                        </div>
+                        <div class="mt-3 flex items-center justify-between gap-2 pt-2 border-t border-slate-800/80">
+                            <div class="flex items-center gap-1.5">
+                                <span class="text-[10px] text-slate-400">Menge:</span>
+                                <input type="number" id="catQty_${m.idDoc}" step="0.5" min="0.1" value="1" class="w-16 bg-slate-950 border border-slate-700 rounded-lg px-2 py-1 text-xs text-white focus:border-emerald-500 focus:outline-none">
+                                <span class="text-[10px] text-sky-400 font-bold">${unitLabel}</span>
+                            </div>
+                            <button type="button" onclick="addPositionFromCatalogCard('${m.idDoc}')" class="bg-emerald-500 hover:bg-emerald-600 text-slate-950 font-bold px-3 py-1.5 rounded-lg text-[11px] transition flex items-center">
+                                <i class="fa-solid fa-plus mr-1"></i>${inCart ? `Hinzufügen (${inCart.qty} ${unitLabel})` : 'Übernehmen'}
+                            </button>
+                        </div>
+                    </div>
+                `;
+            }).join('');
+        }
+
+        function addPositionFromCatalogCard(idDoc) {
+            const qtyInput = document.getElementById('catQty_' + idDoc);
+            const qty = qtyInput ? (parseFloat(qtyInput.value) || 1) : 1;
+            addPositionToReconstruction(idDoc, qty);
+        }
+
+        function addPositionToReconstruction(idDoc, qtyToAdd = 1) {
+            const dbItem = marketPrices.find(m => m.idDoc === idDoc);
+            if (!dbItem) return;
+
+            const existing = reconstructedOfferItems.find(it => it.idDoc === idDoc);
+            if (existing) {
+                existing.qty = Number((existing.qty + qtyToAdd).toFixed(2));
+            } else {
+                reconstructedOfferItems.push({
+                    rowId: 'rec_' + Date.now() + '_' + Math.floor(Math.random() * 1000),
+                    idDoc: dbItem.idDoc,
+                    title: dbItem.title,
+                    unit: dbItem.unit || 'Stk',
+                    category: dbItem.category || 'Allgemein',
+                    qty: Number(qtyToAdd),
+                    dbUnitPrice: Number(dbItem.average || 0),
+                    offeredUnitPrice: null
+                });
+            }
+
+            if (currentAdminTab === 'reconstruct') {
+                renderReconstructCatalogList();
+                renderReconstructedOffer();
+            }
+        }
+
+        function addCustomPositionToReconstruction() {
+            const titleEl = document.getElementById('reconCustomTitle');
+            const qtyEl = document.getElementById('reconCustomQty');
+            const unitEl = document.getElementById('reconCustomUnit');
+            const priceEl = document.getElementById('reconCustomDbPrice');
+
+            const title = (titleEl.value || '').trim();
+            const qty = parseFloat(qtyEl.value) || 1;
+            const unit = normalizeGAEBUnit(unitEl.value) || 'Stk';
+            const dbPrice = parseFloat(priceEl.value) || 0;
+
+            if (!title || dbPrice <= 0) {
+                alert('Bitte geben Sie eine Positionsbeschreibung und einen gültigen Soll-Einheitspreis (€) ein.');
+                return;
+            }
+
+            reconstructedOfferItems.push({
+                rowId: 'custom_' + Date.now(),
+                idDoc: null,
+                title: title,
+                unit: unit,
+                category: detectSHKCategory(title),
+                qty: qty,
+                dbUnitPrice: dbPrice,
+                offeredUnitPrice: null
+            });
+
+            titleEl.value = '';
+            qtyEl.value = '1';
+            priceEl.value = '';
+            renderReconstructedOffer();
+        }
+
+        function updateReconstructedItemQty(rowId, newValue) {
+            const item = reconstructedOfferItems.find(it => it.rowId === rowId);
+            if (!item) return;
+            const val = parseFloat(newValue);
+            item.qty = (!isNaN(val) && val > 0) ? val : 0;
+            renderReconstructedOffer();
+        }
+
+        function updateReconstructedItemOfferedPrice(rowId, newValue) {
+            const item = reconstructedOfferItems.find(it => it.rowId === rowId);
+            if (!item) return;
+            const val = parseFloat(newValue);
+            item.offeredUnitPrice = (!isNaN(val) && val >= 0) ? val : null;
+            renderReconstructedOffer();
+        }
+
+        function removeReconstructedItem(rowId) {
+            reconstructedOfferItems = reconstructedOfferItems.filter(it => it.rowId !== rowId);
+            renderReconstructCatalogList();
+            renderReconstructedOffer();
+        }
+
+        function clearReconstructedOffer() {
+            reconstructedOfferItems = [];
+            const totalInput = document.getElementById('reconstructOfferedTotalInput');
+            if (totalInput) totalInput.value = '';
+            renderReconstructCatalogList();
+            renderReconstructedOffer();
+        }
+
+        function renderReconstructedOffer() {
+            const container = document.getElementById('reconstructTableContainer');
+            const posBadge = document.getElementById('reconstructPosCountBadge');
+            const totalInput = document.getElementById('reconstructOfferedTotalInput');
+            if (!container) return;
+
+            const fmt = (n) => n.toLocaleString('de-DE', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+
+            let dbTotalNet = 0;
+            let sumIndividualOfferedNet = 0;
+            let hasAnyIndividualOfferedPrice = false;
+
+            reconstructedOfferItems.forEach(it => {
+                dbTotalNet += (it.qty * it.dbUnitPrice);
+                if (it.offeredUnitPrice !== null && !isNaN(it.offeredUnitPrice)) {
+                    hasAnyIndividualOfferedPrice = true;
+                    sumIndividualOfferedNet += (it.qty * it.offeredUnitPrice);
+                } else {
+                    sumIndividualOfferedNet += (it.qty * it.dbUnitPrice);
+                }
+            });
+
+            const manualTotalNet = totalInput && totalInput.value ? parseFloat(totalInput.value) : 0;
+            const effectiveOfferedNet = manualTotalNet > 0 ? manualTotalNet : (hasAnyIndividualOfferedPrice ? sumIndividualOfferedNet : 0);
+
+            const dbTotalGross = dbTotalNet * 1.19;
+            const offeredTotalGross = effectiveOfferedNet * 1.19;
+            const diffNet = effectiveOfferedNet > 0 ? (effectiveOfferedNet - dbTotalNet) : 0;
+            const diffPercent = (dbTotalNet > 0 && effectiveOfferedNet > 0) ? (((effectiveOfferedNet / dbTotalNet) - 1) * 100) : 0;
+
+            if (posBadge) {
+                posBadge.textContent = `${reconstructedOfferItems.length} Position(en)`;
+            }
+
+            document.getElementById('reconStatDbNet').textContent = `${fmt(dbTotalNet)} €`;
+            document.getElementById('reconStatDbGross').textContent = `${fmt(dbTotalGross)} € brutto (inkl. 19% MwSt.)`;
+            document.getElementById('reconStatOfferNet').textContent = `${fmt(effectiveOfferedNet)} €`;
+            document.getElementById('reconStatOfferGross').textContent = `${fmt(offeredTotalGross)} € brutto (inkl. 19% MwSt.)`;
+
+            const diffAmountEl = document.getElementById('reconStatDiffAmount');
+            const diffBadgeEl = document.getElementById('reconStatDiffBadge');
+            const verdictBanner = document.getElementById('reconstructVerdictBanner');
+            const verdictText = document.getElementById('reconstructVerdictText');
+
+            if (effectiveOfferedNet > 0 && dbTotalNet > 0) {
+                verdictBanner.classList.remove('hidden');
+                if (diffNet <= 0) {
+                    diffAmountEl.textContent = `${fmt(diffNet)} €`;
+                    diffAmountEl.className = "text-2xl font-black text-emerald-400 mt-1 block";
+                    diffBadgeEl.textContent = `✓ ${Math.abs(diffPercent).toFixed(1)} % unter DB-Mittelwert`;
+                    verdictBanner.className = "p-4 rounded-xl border text-xs flex flex-col sm:flex-row sm:items-center justify-between gap-3 bg-emerald-500/10 border-emerald-500/30 text-emerald-300";
+                    verdictText.innerHTML = `<i class="fa-solid fa-circle-check mr-1.5"></i><strong>Angebot sehr fair kalkuliert:</strong> Der Angebotspreis (${fmt(effectiveOfferedNet)} € netto) liegt im bzw. unter dem rekonstruierten Markt-Mittelwert (${fmt(dbTotalNet)} € netto).`;
+                } else if (diffPercent <= 20) {
+                    diffAmountEl.textContent = `+${fmt(diffNet)} €`;
+                    diffAmountEl.className = "text-2xl font-black text-amber-400 mt-1 block";
+                    diffBadgeEl.textContent = `⚠ +${diffPercent.toFixed(1)} % über DB-Mittelwert`;
+                    verdictBanner.className = "p-4 rounded-xl border text-xs flex flex-col sm:flex-row sm:items-center justify-between gap-3 bg-amber-500/10 border-amber-500/30 text-amber-300";
+                    verdictText.innerHTML = `<i class="fa-solid fa-triangle-exclamation mr-1.5"></i><strong>Leicht erhöht (+${diffPercent.toFixed(1)} %):</strong> Das Angebot liegt um <strong>${fmt(diffNet)} € netto</strong> (${fmt(diffNet * 1.19)} € brutto) über dem DB-Mittelwert.`;
+                } else {
+                    diffAmountEl.textContent = `+${fmt(diffNet)} €`;
+                    diffAmountEl.className = "text-2xl font-black text-rose-400 mt-1 block";
+                    diffBadgeEl.textContent = `✕ +${diffPercent.toFixed(1)} % deutlich überhöht!`;
+                    verdictBanner.className = "p-4 rounded-xl border text-xs flex flex-col sm:flex-row sm:items-center justify-between gap-3 bg-rose-500/10 border-rose-500/30 text-rose-300";
+                    verdictText.innerHTML = `<i class="fa-solid fa-circle-exclamation mr-1.5"></i><strong>Deutliche Überhöhung (+${diffPercent.toFixed(1)} %):</strong> Einsparpotenzial von <strong>${fmt(diffNet)} € netto</strong> (${fmt(diffNet * 1.19)} € brutto) gegenüber den Markt-Mittelwerten identifiziert!`;
+                }
+            } else {
+                diffAmountEl.textContent = `0,00 €`;
+                diffAmountEl.className = "text-2xl font-black text-slate-400 mt-1 block";
+                diffBadgeEl.textContent = `Bitte Angebots-Gesamtpreis eingeben`;
+                verdictBanner.classList.add('hidden');
+            }
+
+            if (reconstructedOfferItems.length === 0) {
+                container.innerHTML = `
+                    <div class="p-8 text-center text-xs text-slate-400 bg-slate-950/60">
+                        <i class="fa-solid fa-hand-pointer text-2xl text-emerald-400 mb-2 block"></i>
+                        Noch keine Positionen ausgewählt. Klicken Sie links im DB-Katalog auf <strong>„Übernehmen“</strong>, um das vorliegende Angebot Stück für Stück zusammenzustellen.
+                    </div>
+                `;
+                return;
+            }
+
+            container.innerHTML = `
+                <table class="w-full text-left text-xs text-slate-300">
+                    <thead class="bg-slate-950 text-slate-400 uppercase border-b border-slate-800">
+                        <tr>
+                            <th class="p-3">Pos. / Kurztext</th>
+                            <th class="p-3 w-24">Menge</th>
+                            <th class="p-3">DB-Ø EP</th>
+                            <th class="p-3 text-emerald-400 font-bold">DB-Gesamt (Soll)</th>
+                            <th class="p-3 w-32">Angebot EP (opt.)</th>
+                            <th class="p-3 text-right">Aktion</th>
+                        </tr>
+                    </thead>
+                    <tbody class="divide-y divide-slate-800 bg-slate-900/60">
+                        ${reconstructedOfferItems.map((it, idx) => {
+                            const rowDbTotal = it.qty * it.dbUnitPrice;
+                            const hasOff = it.offeredUnitPrice !== null && !isNaN(it.offeredUnitPrice);
+                            const rowDiff = hasOff ? ((it.offeredUnitPrice - it.dbUnitPrice) * it.qty) : 0;
+
+                            return `
+                                <tr class="hover:bg-slate-950/50">
+                                    <td class="p-3 font-semibold text-white">
+                                        <span class="text-slate-500 mr-1.5">${idx + 1}.</span>${it.title}
+                                    </td>
+                                    <td class="p-3">
+                                        <div class="flex items-center gap-1">
+                                            <input type="number" step="0.5" min="0.1" value="${it.qty}" onchange="updateReconstructedItemQty('${it.rowId}', this.value)" class="w-16 bg-slate-950 border border-slate-700 rounded-lg px-2 py-1 text-xs text-white focus:border-emerald-500 focus:outline-none">
+                                            <span class="text-[10px] text-sky-400 font-bold">${it.unit}</span>
+                                        </div>
+                                    </td>
+                                    <td class="p-3">${fmt(it.dbUnitPrice)} €/${it.unit}</td>
+                                    <td class="p-3 text-emerald-400 font-bold">${fmt(rowDbTotal)} €</td>
+                                    <td class="p-3">
+                                        <input type="number" step="0.01" value="${hasOff ? it.offeredUnitPrice : ''}" placeholder="Ø ${fmt(it.dbUnitPrice)}" onchange="updateReconstructedItemOfferedPrice('${it.rowId}', this.value)" class="w-24 bg-slate-950 border ${rowDiff > 0 ? 'border-rose-500/60 text-rose-300' : 'border-slate-700 text-white'} rounded-lg px-2 py-1 text-xs focus:border-emerald-500 focus:outline-none">
+                                    </td>
+                                    <td class="p-3 text-right">
+                                        <button type="button" onclick="removeReconstructedItem('${it.rowId}')" class="text-rose-400 hover:text-rose-300 p-1" title="Position entfernen">
+                                            <i class="fa-solid fa-xmark"></i>
+                                        </button>
+                                    </td>
+                                </tr>
+                            `;
+                        }).join('')}
+                    </tbody>
+                </table>
+            `;
+        }
+
+        // Überträgt das Ergebnis der Angebots-Rekonstruktion direkt in den ausgewählten Kundenauftrag
+        function transferReconstructionToOrder() {
+            const targetSelect = document.getElementById('reconstructTargetOrderSelect');
+            const targetOrderId = (targetSelect && targetSelect.value) ? targetSelect.value : selectedAdminOrderId;
+
+            if (!targetOrderId) {
+                alert('Bitte wählen Sie oben rechts im Dropdown „Mit Kundenauftrag verknüpfen“ zuerst einen Auftrag aus.');
+                return;
+            }
+
+            const order = adminOrders.find(o => o.id === targetOrderId);
+            if (!order) return;
+
+            const fmt = (n) => n.toLocaleString('de-DE', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+            let dbTotalNet = 0;
+            let sumIndividualOfferedNet = 0;
+            let hasAnyIndividual = false;
+            const itemDefects = [];
+
+            reconstructedOfferItems.forEach(it => {
+                const sollTotal = it.qty * it.dbUnitPrice;
+                dbTotalNet += sollTotal;
+                if (it.offeredUnitPrice !== null && !isNaN(it.offeredUnitPrice)) {
+                    hasAnyIndividual = true;
+                    const istTotal = it.qty * it.offeredUnitPrice;
+                    sumIndividualOfferedNet += istTotal;
+                    const posDiff = istTotal - sollTotal;
+                    if (posDiff > 5) {
+                        itemDefects.push(`${it.title} (${it.qty} ${it.unit}): Angebot ${fmt(it.offeredUnitPrice)} € statt Markt-Ø ${fmt(it.dbUnitPrice)} € (-${Math.round(posDiff)} € netto)`);
+                    }
+                } else {
+                    sumIndividualOfferedNet += sollTotal;
+                }
+            });
+
+            const totalInput = document.getElementById('reconstructOfferedTotalInput');
+            const manualTotalNet = totalInput && totalInput.value ? parseFloat(totalInput.value) : 0;
+            const effectiveOfferedNet = manualTotalNet > 0 ? manualTotalNet : (hasAnyIndividual ? sumIndividualOfferedNet : 0);
+            const diffNet = Math.max(0, effectiveOfferedNet - dbTotalNet);
+            const diffGross = Math.round(diffNet * 1.19);
+
+            order.savings = `${diffGross.toLocaleString('de-DE')} €`;
+            order.summary = `Angebots-Rekonstruktion (${reconstructedOfferItems.length} Positionen): Dem vorliegenden Angebotspreis von ${fmt(effectiveOfferedNet)} € netto (${fmt(effectiveOfferedNet * 1.19)} € brutto) steht ein rekonstruierter Markt-Mittelwert von ${fmt(dbTotalNet)} € netto (${fmt(dbTotalNet * 1.19)} € brutto) gegenüber.`;
+
+            if (!Array.isArray(order.defects)) order.defects = [];
+            if (itemDefects.length > 0) {
+                itemDefects.forEach(d => order.defects.push(d));
+            } else if (diffNet > 0) {
+                order.defects.push(`Gesamtpreis-Abgleich (${reconstructedOfferItems.length} rekonstruierte Positionen): +${fmt(diffNet)} € netto über Datenbank-Mittelwert (-${diffGross} € brutto)`);
+            }
+
+            selectedAdminOrderId = order.id;
+            switchAdminTab('active');
+            selectAdminOrder(order.id);
+            alert(`Rekonstruktion wurde in Auftrag ${order.id} übernommen! Klicken Sie im Auftrag unten auf „Speichern“, um die Werte dauerhaft in Firestore zu sichern.`);
         }
 
         function switchAdminTab(tabName, year = null) {
@@ -3463,17 +3932,20 @@
             document.getElementById('tabBtnArchive').className = "px-5 py-3 text-sm font-bold border-b-2 " + (tabName === 'archive' ? "border-emerald-500 text-emerald-400" : "border-transparent text-slate-400 hover:text-white") + " transition";
             document.getElementById('tabBtnCustomers').className = "px-5 py-3 text-sm font-bold border-b-2 " + (tabName === 'customers' ? "border-emerald-500 text-emerald-400" : "border-transparent text-slate-400 hover:text-white") + " transition";
             document.getElementById('tabBtnMarketPrices').className = "px-5 py-3 text-sm font-bold border-b-2 " + (tabName === 'marketprices' ? "border-emerald-500 text-emerald-400" : "border-transparent text-slate-400 hover:text-white") + " transition";
+            document.getElementById('tabBtnReconstruct').className = "px-5 py-3 text-sm font-bold border-b-2 " + (tabName === 'reconstruct' ? "border-emerald-500 text-emerald-400" : "border-transparent text-slate-400 hover:text-white") + " transition";
 
             const selectPrompt = document.getElementById('adminSelectPrompt');
             const editorPanel = document.getElementById('adminEditorPanel');
             const marketPricesPanel = document.getElementById('adminMarketPricesPanel');
             const customersPanel = document.getElementById('adminCustomersPanel');
+            const reconstructPanel = document.getElementById('adminReconstructPanel');
             const searchContainer = document.getElementById('adminSearchContainer');
 
             selectPrompt.classList.add('hidden');
             editorPanel.classList.add('hidden');
             marketPricesPanel.classList.add('hidden');
             customersPanel.classList.add('hidden');
+            reconstructPanel.classList.add('hidden');
             searchContainer.classList.add('hidden');
 
             if (tabName === 'marketprices') {
@@ -3481,6 +3953,13 @@
                 searchContainer.classList.remove('hidden');
                 updateNavbarUI();
                 loadMarketPrices();
+            } else if (tabName === 'reconstruct') {
+                reconstructPanel.classList.remove('hidden');
+                searchContainer.classList.remove('hidden');
+                populateReconstructTargetOrderDropdown();
+                loadMarketPrices();
+                renderReconstructCatalogList();
+                renderReconstructedOffer();
             } else if (tabName === 'customers') {
                 customersPanel.classList.remove('hidden');
                 loadCustomers();
@@ -3622,11 +4101,13 @@
                 listTitle.textContent = "Marktpreise-DB";
                 container.innerHTML = `
                     <div class="bg-slate-900 border border-slate-800 rounded-xl p-4 space-y-2 text-xs text-slate-400">
-                        <p class="text-white font-semibold"><i class="fa-solid fa-database text-emerald-400 mr-1.5"></i>GAEB-Kurztexte & Langtext-Tooltips</p>
+                        <p class="text-white font-semibold"><i class="fa-solid fa-database text-emerald-400 mr-1.5"></i>Fortlaufende Mittelwerte</p>
                         <p>Aktuell gespeicherte Positionen: <strong class="text-white">${marketPrices.length}</strong></p>
-                        <p class="text-slate-400">Bewegen Sie die Maus über das blaue <i class="fa-solid fa-circle-info text-sky-400"></i>-Icon einer Position, um den gespeicherten GAEB-Langtext einzusehen.</p>
+                        <p class="text-slate-400">Neue GAEB-Uploads ergänzen vorhandene Positionen um weitere Preise und aktualisieren den Durchschnittswert automatisch.</p>
                     </div>
                 `;
+            } else if (currentAdminTab === 'reconstruct') {
+                renderReconstructCatalogList();
             }
         }
 
@@ -3776,7 +4257,7 @@
         }
 
         function selectAdminOrder(orderId) {
-            if (currentAdminTab === 'marketprices' || currentAdminTab === 'customers') return;
+            if (currentAdminTab === 'marketprices' || currentAdminTab === 'customers' || currentAdminTab === 'reconstruct') return;
             selectedAdminOrderId = orderId;
             const order = adminOrders.find(o => o.id === orderId);
             if (!order) return;
@@ -3786,6 +4267,7 @@
             document.getElementById('adminSelectPrompt').classList.add('hidden');
             document.getElementById('adminMarketPricesPanel').classList.add('hidden');
             document.getElementById('adminCustomersPanel').classList.add('hidden');
+            document.getElementById('adminReconstructPanel').classList.add('hidden');
             document.getElementById('adminEditorPanel').classList.remove('hidden');
 
             const basePrice = order.price || 149;
@@ -4416,13 +4898,11 @@
             }
         }
 
-        // Login inkl. Demo-Konto ("Demo" / "Demo" -> Admin-Rechte) & Sperrprüfung
         async function handleAuthSubmit(event) {
             event.preventDefault();
             const rawInput = document.getElementById('authEmail').value.trim();
             const password = document.getElementById('authPassword').value;
 
-            // 1. Spezieller Login für Demo-Konto: Benutzer "Demo" + Passwort "Demo"
             if (!isForgotPasswordMode && !isRegisterMode && rawInput.toLowerCase() === DEMO_IDENTIFIER && password === 'Demo') {
                 if (await isAccountBlocked('Demo')) {
                     alert('Das Demo-Konto wurde vom Hauptadmin gesperrt.');
@@ -4442,7 +4922,6 @@
                 return;
             }
 
-            // 2. Prüfen, ob Konto vom Hauptadmin gesperrt wurde
             if (await isAccountBlocked(rawInput)) {
                 alert('Ihr Konto wurde vom Administrator gesperrt. Ein Login ist nicht möglich.');
                 return;
