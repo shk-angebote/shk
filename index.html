@@ -1,0 +1,1775 @@
+<!DOCTYPE html>
+<html lang="de" class="scroll-smooth">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>SHK Angebotsprüfung | Technische & Kaufmännische Analyse</title>
+    <!-- Tailwind CSS CDN -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    colors: {
+                        slate: { 850: '#1e293b', 900: '#0f172a' },
+                        emerald: { 500: '#10b981', 600: '#059669' }
+                    }
+                }
+            }
+        }
+    </script>
+    <!-- FontAwesome Icons -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <!-- SheetJS (XLSX) für Excel-Import -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
+    <!-- jsPDF für Rechnungsgenerator & PDF-Prüfprotokolle -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+    <!-- PDF.js für PDF-Angebotsabgleich -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.min.js"></script>
+</head>
+<body class="bg-slate-900 text-slate-100 font-sans antialiased selection:bg-emerald-500 selection:text-white">
+
+    <!-- Header / Navbar -->
+    <header class="sticky top-0 z-50 bg-slate-900/90 backdrop-blur-md border-b border-slate-800">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 h-20 flex items-center justify-between">
+            <div class="flex items-center space-x-3 cursor-pointer" onclick="switchView('landing')">
+                <div class="w-10 h-10 rounded-xl bg-gradient-to-tr from-emerald-500 to-teal-400 flex items-center justify-center text-slate-950 font-black text-xl shadow-lg shadow-emerald-500/20">
+                    <i class="fa-solid fa-wrench"></i>
+                </div>
+                <div>
+                    <span class="text-xl font-bold tracking-tight text-white">SHK<span class="text-emerald-400">Prüfung</span></span>
+                    <span class="block text-xs text-slate-400 font-medium">Technischer & Kaufmännischer Check</span>
+                </div>
+            </div>
+            
+            <nav class="hidden md:flex items-center space-x-8 text-sm font-medium text-slate-300">
+                <a href="#vorteile" class="hover:text-emerald-400 transition">Vorteile</a>
+                <a href="#ablauf" class="hover:text-emerald-400 transition">Ablauf</a>
+                <a href="#preise" class="hover:text-emerald-400 transition">Pakete</a>
+                <a href="#faq" class="hover:text-emerald-400 transition">FAQ</a>
+            </nav>
+
+            <div class="flex items-center space-x-4">
+                <div id="authNavArea">
+                    <button type="button" onclick="openAuthModal('login')" class="px-4 py-2 text-sm font-medium text-slate-300 hover:text-white transition">Login</button>
+                    <button type="button" onclick="openAuthModal('register')" class="bg-emerald-500 hover:bg-emerald-600 text-slate-950 font-semibold px-4 py-2 rounded-xl text-sm shadow-lg shadow-emerald-500/20 transition">Kundenportal</button>
+                </div>
+                <div id="userNavArea" class="hidden items-center space-x-3">
+                    <div class="hidden sm:flex flex-col items-end">
+                        <span id="navUserEmail" class="text-xs text-slate-300 font-medium"></span>
+                        <span id="navUserRoleBadge" class="text-[10px] text-emerald-400 font-bold uppercase tracking-wider">Kunde</span>
+                    </div>
+                    <button type="button" onclick="openClientPortal()" class="bg-slate-800 hover:bg-slate-700 text-emerald-400 border border-emerald-500/30 px-4 py-2 rounded-xl text-sm font-medium transition">
+                        <i class="fa-solid fa-gauge-high mr-2"></i>Dashboard
+                    </button>
+                    <button type="button" id="adminNavBtn" onclick="openAdminPortal()" class="hidden bg-amber-500 hover:bg-amber-600 text-slate-950 px-3 py-2 rounded-xl text-sm font-bold transition">
+                        <i class="fa-solid fa-shield-halved mr-1"></i>Admin
+                    </button>
+                    <button type="button" onclick="logoutUser()" class="text-slate-400 hover:text-red-400 p-2 transition" title="Abmelden">
+                        <i class="fa-solid fa-right-from-bracket"></i>
+                    </button>
+                </div>
+            </div>
+        </div>
+    </header>
+
+    <!-- Main Container Views -->
+    <main id="appContainer">
+        <!-- LANDING VIEW -->
+        <div id="landingView">
+            <section class="relative pt-20 pb-24 overflow-hidden">
+                <div class="absolute inset-0 bg-[radial-gradient(ellipse_at_top,_var(--tw-gradient-stops))] from-emerald-900/20 via-slate-900 to-slate-900 -z-10"></div>
+                <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 text-center">
+                    <div class="inline-flex items-center space-x-2 bg-emerald-500/10 border border-emerald-500/20 px-3.5 py-1.5 rounded-full text-emerald-400 text-xs font-semibold mb-6">
+                        <i class="fa-solid fa-shield-check"></i>
+                        <span>Unabhängige Handwerker-Angebotsprüfung vom Meister</span>
+                    </div>
+                    <h1 class="text-4xl sm:text-6xl font-extrabold tracking-tight text-white max-w-4xl mx-auto leading-tight">
+                        Schützen Sie sich vor <span class="text-transparent bg-clip-text bg-gradient-to-r from-emerald-400 to-teal-300">teuren Fehlern & Nachtragsfallen</span> im SHK-Bereich.
+                    </h1>
+                    <p class="mt-6 text-lg sm:text-xl text-slate-300 max-w-2xl mx-auto">
+                        Bevor Sie tausende Euro für Heizungsmodernisierung oder Badsanierung unterschreiben: Lassen Sie Ihr Angebot neutral auf technische Plausibilität und faire Preise prüfen.
+                    </p>
+                    <div class="mt-10 flex flex-col sm:flex-row justify-center gap-4">
+                        <a href="#rechner" class="bg-emerald-500 hover:bg-emerald-600 text-slate-950 font-bold px-8 py-4 rounded-xl text-lg shadow-xl shadow-emerald-500/20 transition text-center">
+                            Jetzt Angebot prüfen lassen <i class="fa-solid fa-arrow-right ml-2"></i>
+                        </a>
+                        <button type="button" onclick="openAuthModal('register')" class="bg-slate-800 hover:bg-slate-700 text-white font-semibold px-8 py-4 rounded-xl text-lg border border-slate-700 transition">
+                            Zum Kundenportal
+                        </button>
+                    </div>
+
+                    <div id="vorteile" class="mt-16 pt-12 border-t border-slate-800/80 grid grid-cols-2 md:grid-cols-4 gap-6 text-left max-w-5xl mx-auto">
+                        <div class="flex items-start space-x-3">
+                            <div class="text-emerald-400 text-xl"><i class="fa-solid fa-circle-check"></i></div>
+                            <div>
+                                <h4 class="text-white font-semibold text-sm">100% Unabhängig</h4>
+                                <p class="text-slate-400 text-xs mt-0.5">Keine Provisionen, rein sachlich.</p>
+                            </div>
+                        </div>
+                        <div class="flex items-start space-x-3">
+                            <div class="text-emerald-400 text-xl"><i class="fa-solid fa-user-gear"></i></div>
+                            <div>
+                                <h4 class="text-white font-semibold text-sm">Meister-Kompetenz</h4>
+                                <p class="text-slate-400 text-xs mt-0.5">Geprüft durch erfahrene TGA-Praxis.</p>
+                            </div>
+                        </div>
+                        <div class="flex items-start space-x-3">
+                            <div class="text-emerald-400 text-xl"><i class="fa-solid fa-bolt"></i></div>
+                            <div>
+                                <h4 class="text-white font-semibold text-sm">Schnelle Analyse</h4>
+                                <p class="text-slate-400 text-xs mt-0.5">Ergebnis meist innerhalb von 48h.</p>
+                            </div>
+                        </div>
+                        <div class="flex items-start space-x-3">
+                            <div class="text-emerald-400 text-xl"><i class="fa-solid fa-file-shield"></i></div>
+                            <div>
+                                <h4 class="text-white font-semibold text-sm">Datenschutz</h4>
+                                <p class="text-slate-400 text-xs mt-0.5">Sichere Cloud & DSGVO-konform.</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </section>
+
+            <!-- Pricing & Interactive Calculator Section -->
+            <section id="preise" class="py-20 bg-slate-950/50 border-y border-slate-800/60">
+                <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+                    <div class="text-center max-w-3xl mx-auto mb-16">
+                        <h2 class="text-3xl font-bold text-white">Transparente Pakete & Auftrags-Upload</h2>
+                        <p class="text-slate-400 mt-3">Wählen Sie Ihr Gewerk und laden Sie Ihr Angebot direkt hoch, um den Prüfprozess zu starten.</p>
+                    </div>
+
+                    <div class="grid grid-cols-1 lg:grid-cols-3 gap-8 items-start">
+                        <div class="bg-slate-900 border border-slate-800 rounded-2xl p-8 shadow-xl flex flex-col justify-between">
+                            <div>
+                                <span class="text-emerald-400 font-semibold text-xs uppercase tracking-wider">Basis Check</span>
+                                <h3 class="text-2xl font-bold text-white mt-2">Heizungs-Angebot</h3>
+                                <div class="mt-4 flex items-baseline">
+                                    <span class="text-4xl font-extrabold text-white">149 €</span>
+                                    <span class="text-slate-400 ml-2 text-sm">inkl. MwSt.</span>
+                                </div>
+                                <p class="text-slate-400 text-sm mt-4">Ideal für den schnellen Plausibilitätscheck von Wärmepumpen- oder Heizungsangeboten.</p>
+                                <ul class="mt-6 space-y-3 text-sm text-slate-300">
+                                    <li class="flex items-center"><i class="fa-solid fa-check text-emerald-400 mr-3"></i>Plausibilitätsprüfung der angebotenen Heizleistung</li>
+                                    <li class="flex items-center"><i class="fa-solid fa-check text-emerald-400 mr-3"></i>Einheitspreis-Check (Material & Montage)</li>
+                                    <li class="flex items-center"><i class="fa-solid fa-check text-emerald-400 mr-3"></i>Schriftlicher Prüfbericht als PDF</li>
+                                </ul>
+                            </div>
+                            <button type="button" onclick="selectPackage('Heizungs-Angebot', 149)" class="mt-8 w-full bg-slate-800 hover:bg-emerald-500 hover:text-slate-950 text-white font-semibold py-3 rounded-xl transition">Paket wählen</button>
+                        </div>
+
+                        <div class="bg-slate-900 border-2 border-emerald-500 rounded-2xl p-8 shadow-2xl relative flex flex-col justify-between">
+                            <div class="absolute -top-3.5 left-1/2 transform -translate-x-1/2 bg-emerald-500 text-slate-950 text-xs font-bold uppercase tracking-wider px-3 py-1 rounded-full">Beliebt</div>
+                            <div>
+                                <span class="text-emerald-400 font-semibold text-xs uppercase tracking-wider">Premium Check</span>
+                                <h3 class="text-2xl font-bold text-white mt-2">Komplettbad / Sanitär</h3>
+                                <div class="mt-4 flex items-baseline">
+                                    <span class="text-4xl font-extrabold text-white">249 €</span>
+                                    <span class="text-slate-400 ml-2 text-sm">inkl. MwSt.</span>
+                                </div>
+                                <p class="text-slate-400 text-sm mt-4">Tiefenprüfung für Badsanierungen inklusive Schnittstellen & Nebenleistungen.</p>
+                                <ul class="mt-6 space-y-3 text-sm text-slate-300">
+                                    <li class="flex items-center"><i class="fa-solid fa-check text-emerald-400 mr-3"></i>Vollständigkeitsprüfung Gewerke</li>
+                                    <li class="flex items-center"><i class="fa-solid fa-check text-emerald-400 mr-3"></i>Identifikation erkennbarer Lücken und Nachtragsrisiken</li>
+                                    <li class="flex items-center"><i class="fa-solid fa-check text-emerald-400 mr-3"></i>Detaillierter Maßnahmen- & Einsparkatalog</li>
+                                </ul>
+                            </div>
+                            <button type="button" onclick="selectPackage('Komplettbad / Sanitär', 249)" class="mt-8 w-full bg-emerald-500 hover:bg-emerald-600 text-slate-950 font-bold py-3 rounded-xl transition shadow-lg shadow-emerald-500/20">Paket wählen</button>
+                        </div>
+
+                        <div class="bg-slate-900 border border-slate-800 rounded-2xl p-8 shadow-xl flex flex-col justify-between">
+                            <div>
+                                <span class="text-emerald-400 font-semibold text-xs uppercase tracking-wider">Multi-Angebot</span>
+                                <h3 class="text-2xl font-bold text-white mt-2">Angebotsvergleich</h3>
+                                <div class="mt-4 flex items-baseline">
+                                    <span class="text-4xl font-extrabold text-white">349 €</span>
+                                    <span class="text-slate-400 ml-2 text-sm">inkl. MwSt.</span>
+                                </div>
+                                <p class="text-slate-400 text-sm mt-4">Gegenüberstellung von bis zu 3 konkurrierenden Installateursangeboten.</p>
+                                <ul class="mt-6 space-y-3 text-sm text-slate-300">
+                                    <li class="flex items-center"><i class="fa-solid fa-check text-emerald-400 mr-3"></i>Direkter Leistungs- & Preisvergleich</li>
+                                    <li class="flex items-center"><i class="fa-solid fa-check text-emerald-400 mr-3"></i>Auswertung technischer Differenzen</li>
+                                    <li class="flex items-center"><i class="fa-solid fa-check text-emerald-400 mr-3"></i>Vergabeempfehlung mit Begründung</li>
+                                </ul>
+                            </div>
+                            <button type="button" onclick="selectPackage('Angebotsvergleich', 349)" class="mt-8 w-full bg-slate-800 hover:bg-emerald-500 hover:text-slate-950 text-white font-semibold py-3 rounded-xl transition">Paket wählen</button>
+                        </div>
+                    </div>
+
+                    <!-- Upload & Inquiry Box -->
+                    <div id="rechner" class="mt-16 bg-slate-900 border border-slate-800 rounded-2xl p-8 max-w-3xl mx-auto shadow-2xl">
+                        <h3 class="text-xl font-bold text-white mb-2"><i class="fa-solid fa-cloud-arrow-up text-emerald-400 mr-2"></i>Auftrag einreichen</h3>
+                        <p class="text-slate-400 text-sm mb-6">Füllen Sie die Eckdaten aus und laden Sie Ihr Angebot (PDF oder Bilder) hoch.</p>
+                        
+                        <div id="stammkundenBanner" class="hidden mb-4 bg-emerald-500/10 border border-emerald-500/30 rounded-xl p-3.5 flex items-center justify-between text-xs text-emerald-400 font-semibold">
+                            <span><i class="fa-solid fa-star mr-2"></i>Stammkunden-Status erkannt: Sie erhalten automatisch 5 % Rabatt!</span>
+                            <span class="bg-emerald-500 text-slate-950 font-black px-2 py-0.5 rounded">-5 %</span>
+                        </div>
+
+                        <form id="orderForm" onsubmit="handleOrderSubmission(event)" class="space-y-4">
+                            <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                                <div>
+                                    <label class="block text-xs font-medium text-slate-300 mb-1">Gewähltes Paket</label>
+                                    <input type="text" id="selectedPackageInput" readonly class="w-full bg-slate-950 border border-slate-700 rounded-xl px-4 py-3 text-sm text-emerald-400 font-semibold focus:outline-none" value="Heizungs-Angebot (149 €)">
+                                </div>
+                                <div>
+                                    <label class="block text-xs font-medium text-slate-300 mb-1">E-Mail-Adresse</label>
+                                    <input type="email" id="orderEmail" required onblur="checkEmailForStammkunde(this.value)" placeholder="name@beispiel.de" class="w-full bg-slate-950 border border-slate-700 rounded-xl px-4 py-3 text-sm text-white focus:border-emerald-500 focus:outline-none">
+                                </div>
+                            </div>
+
+                            <div>
+                                <label class="block text-xs font-medium text-slate-300 mb-1">
+                                    <i class="fa-solid fa-folder-tree text-emerald-400 mr-1"></i>Projekt / Bauvorhaben (optional)
+                                </label>
+                                <input type="text" id="orderProjectInput" list="existingProjectsDatalist" placeholder="z. B. Wärmepumpe Neubau..." class="w-full bg-slate-950 border border-slate-700 rounded-xl px-4 py-3 text-sm text-white focus:border-emerald-500 focus:outline-none">
+                                <datalist id="existingProjectsDatalist"></datalist>
+                            </div>
+
+                            <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                                <div>
+                                    <label class="block text-xs font-medium text-slate-300 mb-1">Vorname (nur für Neukunden)</label>
+                                    <input type="text" id="orderFirstName" placeholder="Max" class="w-full bg-slate-950 border border-slate-700 rounded-xl px-4 py-3 text-sm text-white focus:border-emerald-500 focus:outline-none">
+                                </div>
+                                <div>
+                                    <label class="block text-xs font-medium text-slate-300 mb-1">Nachname (nur für Neukunden)</label>
+                                    <input type="text" id="orderLastName" placeholder="Mustermann" class="w-full bg-slate-950 border border-slate-700 rounded-xl px-4 py-3 text-sm text-white focus:border-emerald-500 focus:outline-none">
+                                </div>
+                            </div>
+
+                            <div>
+                                <label class="block text-xs font-medium text-slate-300 mb-1">Passwort (nur für Neukunden Pflicht)</label>
+                                <input type="password" id="orderPasswordInput" placeholder="Passwort (min. 6 Zeichen)" class="w-full bg-slate-950 border border-slate-700 rounded-xl px-4 py-3 text-sm text-white focus:border-emerald-500 focus:outline-none">
+                            </div>
+
+                            <div>
+                                <label class="block text-xs font-medium text-slate-300 mb-1">Rabattcode (optional)</label>
+                                <div class="flex gap-2">
+                                    <input type="text" id="discountCodeInput" placeholder="z. B. Angebot10" class="w-full bg-slate-950 border border-slate-700 rounded-xl px-4 py-2.5 text-sm text-white focus:border-emerald-500 focus:outline-none uppercase">
+                                    <button type="button" onclick="applyDiscountCode()" class="bg-slate-800 hover:bg-slate-700 text-emerald-400 border border-emerald-500/30 font-semibold px-4 py-2.5 rounded-xl text-xs transition whitespace-nowrap">Code anwenden</button>
+                                </div>
+                                <span id="discountFeedback" class="text-xs mt-1 block"></span>
+                            </div>
+
+                            <div>
+                                <label class="block text-xs font-medium text-slate-300 mb-1">Angebotsdatei (PDF, JPG, PNG)</label>
+                                <div class="border-2 border-dashed border-slate-700 hover:border-emerald-500 rounded-xl p-6 text-center cursor-pointer transition bg-slate-950/50">
+                                    <input type="file" id="offerFile" class="hidden" onchange="handleFileSelect(event)">
+                                    <label for="offerFile" class="cursor-pointer">
+                                        <i class="fa-solid fa-file-arrow-up text-3xl text-emerald-400 mb-2"></i>
+                                        <p id="fileNameDisplay" class="text-sm text-slate-300 font-medium">Klicken zum Hochladen oder Datei hierher ziehen</p>
+                                        <span class="text-xs text-slate-500 mt-1 block">Max. Dateigröße 25 MB</span>
+                                    </label>
+                                </div>
+                            </div>
+                            <div>
+                                <label class="block text-xs font-medium text-slate-300 mb-1">Zusätzliche Hinweise / Fragen an den Prüfer</label>
+                                <textarea id="orderNotes" rows="3" placeholder="z. B. Unser Haus ist von 1995..." class="w-full bg-slate-950 border border-slate-700 rounded-xl px-4 py-3 text-sm text-white focus:border-emerald-500 focus:outline-none"></textarea>
+                            </div>
+                            <button type="submit" class="w-full bg-emerald-500 hover:bg-emerald-600 text-slate-950 font-bold py-4 rounded-xl text-base shadow-lg shadow-emerald-500/20 transition">
+                                <i class="fa-solid fa-paper-plane mr-2"></i>Verbindlich anfragen & Kundenportal öffnen
+                            </button>
+                        </form>
+                    </div>
+                </div>
+            </section>
+        </div>
+
+        <!-- CLIENT PORTAL VIEW -->
+        <div id="clientPortalView" class="hidden py-12 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div class="flex flex-col md:flex-row justify-between items-start md:items-center mb-8 pb-6 border-b border-slate-800 gap-4">
+                <div>
+                    <div class="flex items-center gap-3">
+                        <h1 class="text-3xl font-extrabold text-white">Mein Kundenportal</h1>
+                        <span id="clientPortalRoleBadge" class="px-3 py-1 rounded-full text-xs font-bold bg-slate-800 text-emerald-400 border border-emerald-500/30">Kunde</span>
+                    </div>
+                    <p class="text-slate-400 text-sm mt-1">Übersicht Ihrer eingereichten Angebote und Projekte in Echtzeit.</p>
+                </div>
+                <!-- NEU: Direkt neuer Auftrag im Kundenportal -->
+                <button type="button" onclick="openClientNewOrderModal()" class="bg-emerald-500 hover:bg-emerald-600 text-slate-950 px-5 py-2.5 rounded-xl text-sm font-bold shadow-lg shadow-emerald-500/20 transition">
+                    <i class="fa-solid fa-plus mr-2"></i>Neuen Auftrag direkt anlegen
+                </button>
+            </div>
+
+            <div class="grid grid-cols-1 sm:grid-cols-3 gap-4 mb-8">
+                <div class="bg-slate-900 border border-slate-800 rounded-2xl p-5">
+                    <span class="text-xs text-slate-400 block">Sichtbare Angebote</span>
+                    <span id="clientStatTotal" class="text-2xl font-bold text-white mt-1 block">0</span>
+                </div>
+                <div class="bg-slate-900 border border-slate-800 rounded-2xl p-5">
+                    <span class="text-xs text-slate-400 block">Offene Rechnung</span>
+                    <span id="clientStatUnpaid" class="text-2xl font-bold text-rose-400 mt-1 block">0</span>
+                </div>
+                <div class="bg-slate-900 border border-slate-800 rounded-2xl p-5">
+                    <span class="text-xs text-slate-400 block">Abgeschlossene Aufträge</span>
+                    <span id="clientStatDone" class="text-2xl font-bold text-emerald-400 mt-1 block">0</span>
+                </div>
+            </div>
+
+            <div class="grid grid-cols-1 lg:grid-cols-3 gap-8">
+                <div class="lg:col-span-1 space-y-4">
+                    <h2 class="text-lg font-bold text-white">Ihre Aufträge & Projekte</h2>
+                    <div id="clientProjectFilterBar" class="flex flex-wrap gap-1.5 pb-1"></div>
+                    <div id="clientOrdersList" class="space-y-3"></div>
+                </div>
+
+                <div class="lg:col-span-2 space-y-6">
+                    <div id="noActiveOrderPrompt" class="bg-slate-900 border border-slate-800 rounded-2xl p-12 text-center text-slate-400">
+                        <i class="fa-solid fa-folder-open text-4xl text-slate-600 mb-3"></i>
+                        <p>Wählen Sie links einen Auftrag aus oder legen Sie oben einen neuen an.</p>
+                    </div>
+
+                    <div id="activeOrderDetailsPanel" class="hidden space-y-6">
+                        <div id="orderRejectedBanner" class="hidden bg-rose-500/10 border border-rose-500/30 rounded-2xl p-6 shadow-xl space-y-3">
+                            <div class="flex items-start justify-between gap-4">
+                                <div class="flex items-start space-x-4">
+                                    <i class="fa-solid fa-circle-xmark text-rose-400 text-2xl mt-1"></i>
+                                    <div>
+                                        <h3 class="text-lg font-bold text-rose-400">Auftrag abgelehnt</h3>
+                                        <p class="text-xs text-slate-300 mt-1">Leider konnte dieser Auftrag nicht angenommen werden.</p>
+                                    </div>
+                                </div>
+                                <button type="button" onclick="dismissClientOrder(activeOrderId)" class="bg-rose-500/25 hover:bg-rose-500/35 text-rose-200 border border-rose-500/40 px-3 py-1.5 rounded-lg text-xs font-bold transition whitespace-nowrap">Ausblenden</button>
+                            </div>
+                            <div id="clientRejectedReasonBox" class="hidden bg-slate-950/90 border border-rose-500/30 rounded-xl p-3.5 text-xs">
+                                <span class="font-bold text-rose-400 block mb-1">Begründung / Hinweis vom Prüfer:</span>
+                                <p id="clientRejectedReasonText" class="text-slate-200 whitespace-pre-line"></p>
+                            </div>
+                        </div>
+
+                        <div id="orderCancelledBanner" class="hidden bg-amber-500/10 border border-amber-500/30 rounded-2xl p-6 shadow-xl space-y-3">
+                            <div class="flex items-start justify-between gap-4">
+                                <div class="flex items-start space-x-4">
+                                    <i class="fa-solid fa-ban text-amber-400 text-2xl mt-1"></i>
+                                    <div>
+                                        <h3 class="text-lg font-bold text-amber-400">Auftrag storniert</h3>
+                                        <p class="text-xs text-slate-300 mt-1">Dieser Auftrag wurde storniert.</p>
+                                    </div>
+                                </div>
+                                <button type="button" onclick="dismissClientOrder(activeOrderId)" class="bg-amber-500/25 hover:bg-amber-500/35 text-amber-200 border border-amber-500/40 px-3 py-1.5 rounded-lg text-xs font-bold transition whitespace-nowrap">Ausblenden</button>
+                            </div>
+                        </div>
+
+                        <div class="bg-slate-900 border border-slate-800 rounded-2xl p-5 shadow-xl">
+                            <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
+                                <div>
+                                    <label class="text-xs font-bold text-white flex items-center">
+                                        <i class="fa-solid fa-folder-tree text-emerald-400 mr-2"></i>Projekt-Zuordnung
+                                    </label>
+                                </div>
+                                <div class="flex gap-2 w-full sm:w-auto">
+                                    <input type="text" id="clientProjectEditInput" list="existingProjectsDatalist" placeholder="z. B. Badsanierung OG" class="w-full sm:w-56 bg-slate-950 border border-slate-700 rounded-xl px-3.5 py-2 text-xs text-white focus:outline-none">
+                                    <button type="button" onclick="saveClientOrderProject()" class="bg-emerald-500 text-slate-950 font-bold px-4 py-2 rounded-xl text-xs">Speichern</button>
+                                </div>
+                            </div>
+                            <span id="clientProjectSaveFeedback" class="text-[11px] text-emerald-400 font-semibold mt-2 hidden block"></span>
+                        </div>
+
+                        <div id="orderTrackerCard" class="bg-slate-900 border border-slate-800 rounded-2xl p-6 shadow-xl space-y-4">
+                            <div class="flex justify-between items-center mb-6">
+                                <div>
+                                    <div class="flex flex-wrap items-center gap-2">
+                                        <span id="detailOrderPackage" class="text-xs font-bold uppercase tracking-wider text-emerald-400 bg-emerald-500/10 px-3 py-1 rounded-full">Heizung</span>
+                                        <span id="detailOrderProjectBadge" class="text-xs font-semibold text-sky-400 bg-sky-500/10 border border-sky-500/20 px-3 py-1 rounded-full">Projekt: Allgemein</span>
+                                    </div>
+                                    <h3 id="detailOrderId" class="text-xl font-bold text-white mt-2">Auftrag #---</h3>
+                                </div>
+                                <span id="detailOrderStatusBadge" class="px-3 py-1 rounded-full text-xs font-semibold bg-amber-500/10 text-amber-400 border border-amber-500/20">In Fachprüfung</span>
+                            </div>
+
+                            <div class="relative py-4">
+                                <div class="overflow-hidden h-2 mb-4 text-xs flex rounded bg-slate-800">
+                                    <div id="trackerProgressBar" style="width: 25%" class="shadow-none flex flex-col text-center whitespace-nowrap text-white justify-center bg-emerald-500 transition-all duration-500"></div>
+                                </div>
+                                <div class="grid grid-cols-4 text-center text-xs font-medium text-slate-400">
+                                    <div id="step1Label" class="text-emerald-400">1. Eingegangen</div>
+                                    <div id="step2Label" class="">2. Fachprüfung</div>
+                                    <div id="step3Label" class="">3. Bericht</div>
+                                    <div id="step4Label" class="">4. Fertig</div>
+                                </div>
+                            </div>
+
+                            <div id="clientCancelButtonContainer" class="hidden pt-4 border-t border-slate-800 text-right">
+                                <button type="button" onclick="cancelOrderAsClient()" class="bg-rose-500/10 text-rose-400 border border-rose-500/30 font-bold px-4 py-2 rounded-xl text-xs">Auftrag stornieren</button>
+                            </div>
+                        </div>
+
+                        <div class="bg-slate-900 border border-slate-800 rounded-2xl p-6 shadow-xl space-y-4">
+                            <h3 class="text-sm font-bold text-white"><i class="fa-solid fa-folder-open text-emerald-400 mr-2"></i>Unterlagen</h3>
+                            <div id="clientFileList" class="space-y-2 text-xs text-slate-300"></div>
+                            <div class="pt-4 border-t border-slate-800 space-y-2">
+                                <label class="block text-xs font-semibold text-white">Weitere Unterlagen hochladen</label>
+                                <div class="flex gap-2">
+                                    <input type="file" id="clientAdditionalFileInput" class="w-full text-xs text-slate-400 file:mr-4 file:py-2 file:px-4 file:rounded-lg file:border-0 file:text-xs file:font-semibold file:bg-emerald-500 file:text-slate-950 cursor-pointer">
+                                    <button type="button" onclick="uploadAdditionalClientFile()" class="bg-emerald-500 text-slate-950 font-bold px-4 py-2 rounded-lg text-xs">Hochladen</button>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div id="completedReportCard" class="hidden bg-slate-900 border border-emerald-500/50 rounded-2xl p-6 shadow-2xl space-y-6">
+                            <div class="flex justify-between items-center">
+                                <h3 class="text-lg font-bold text-white"><i class="fa-solid fa-file-contract text-emerald-400 mr-2"></i>Ihr technischer Prüfbericht</h3>
+                                <a id="clientReportDownloadBtn" href="#" target="_blank" class="hidden bg-emerald-500 text-slate-950 font-bold px-4 py-2 rounded-xl text-xs shadow-lg">Bericht herunterladen (PDF)</a>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- ADMIN PORTAL VIEW -->
+        <div id="adminPortalView" class="hidden py-12 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div class="flex flex-col sm:flex-row justify-between items-start sm:items-center mb-8 pb-6 border-b border-slate-800 gap-4">
+                <div>
+                    <h1 class="text-3xl font-extrabold text-white"><i class="fa-solid fa-shield-halved text-amber-400 mr-3"></i>Admin-Konsole</h1>
+                </div>
+                <button type="button" onclick="switchView('clientPortal')" class="bg-slate-800 text-white px-4 py-2 rounded-xl text-sm font-medium">Zum Kundenportal</button>
+            </div>
+
+            <!-- Admin Reiter Navigation -->
+            <div class="flex flex-wrap gap-2 border-b border-slate-800 mb-6">
+                <button type="button" onclick="switchAdminTab('active')" id="tabBtnActive" class="px-5 py-3 text-sm font-bold border-b-2 border-emerald-500 text-emerald-400">Aktive Aufträge</button>
+                <button type="button" onclick="switchAdminTab('approvals')" id="tabBtnApprovals" class="px-5 py-3 text-sm font-bold border-b-2 border-transparent text-slate-400">Offene Freigaben</button>
+                <button type="button" onclick="switchAdminTab('rejected')" id="tabBtnRejected" class="px-5 py-3 text-sm font-bold border-b-2 border-transparent text-slate-400">Abgelehnt</button>
+                <button type="button" onclick="switchAdminTab('cancelled')" id="tabBtnCancelled" class="px-5 py-3 text-sm font-bold border-b-2 border-transparent text-slate-400">Storniert</button>
+                <button type="button" onclick="switchAdminTab('archive')" id="tabBtnArchive" class="px-5 py-3 text-sm font-bold border-b-2 border-transparent text-slate-400">Archiv</button>
+                <button type="button" onclick="switchAdminTab('customers')" id="tabBtnCustomers" class="px-5 py-3 text-sm font-bold border-b-2 border-transparent text-slate-400">Kunden & Ränge</button>
+                <button type="button" onclick="switchAdminTab('marketprices')" id="tabBtnMarketPrices" class="px-5 py-3 text-sm font-bold border-b-2 border-transparent text-slate-400">Marktpreise-DB</button>
+                <button type="button" onclick="switchAdminTab('reconstruct')" id="tabBtnReconstruct" class="px-5 py-3 text-sm font-bold border-b-2 border-transparent text-slate-400">Angebot rekonstruieren</button>
+                <button type="button" onclick="switchAdminTab('filecheck')" id="tabBtnFileCheck" class="px-5 py-3 text-sm font-bold border-b-2 border-transparent text-sky-400">GAEB / PDF Abgleich</button>
+            </div>
+
+            <div class="grid grid-cols-1 lg:grid-cols-3 gap-8">
+                <div class="lg:col-span-1 space-y-4">
+                    <div id="adminListHeaderContainer" class="space-y-3">
+                        <h2 id="adminListTitle" class="text-lg font-bold text-white mb-2">Aktive Aufträge</h2>
+                        <div id="adminSearchContainer" class="hidden space-y-2">
+                            <input type="text" id="marketPriceSearchInput" oninput="handleCatalogSearchInput()" placeholder="🔍 Suchen..." class="w-full bg-slate-950 border border-slate-700 rounded-xl px-4 py-2.5 text-xs text-white focus:outline-none">
+                            <div class="flex gap-1">
+                                <button type="button" onclick="filterMarketPricesCategory('Alle')" id="catBtnAlle" class="flex-1 bg-emerald-500 text-slate-950 font-bold py-1.5 rounded text-[11px]">Alle</button>
+                                <button type="button" onclick="filterMarketPricesCategory('Heizung')" id="catBtnHeizung" class="flex-1 bg-slate-800 text-slate-300 py-1.5 rounded text-[11px]">Heizung</button>
+                                <button type="button" onclick="filterMarketPricesCategory('Sanitär')" id="catBtnSanitaer" class="flex-1 bg-slate-800 text-slate-300 py-1.5 rounded text-[11px]">Sanitär</button>
+                                <button type="button" onclick="filterMarketPricesCategory('Allgemein')" id="catBtnAllgemein" class="flex-1 bg-slate-800 text-slate-300 py-1.5 rounded text-[11px]">Allgem.</button>
+                            </div>
+                        </div>
+                    </div>
+                    <div id="adminOrdersList" class="space-y-3 max-h-[680px] overflow-y-auto pr-1"></div>
+                </div>
+
+                <div class="lg:col-span-2">
+                    <div id="adminSelectPrompt" class="bg-slate-900 border border-slate-800 rounded-2xl p-12 text-center text-slate-400">
+                        <p>Wählen Sie links einen Auftrag oder eine Ansicht aus.</p>
+                    </div>
+
+                    <!-- GAEB / PDF Abgleich Panel (inkl. PDF-Export-Button) -->
+                    <div id="adminFileCheckPanel" class="hidden space-y-6">
+                        <div class="bg-slate-900 border border-slate-800 rounded-2xl p-6 shadow-xl space-y-5">
+                            <div class="flex flex-col sm:flex-row sm:items-center justify-between border-b border-slate-800 pb-4 gap-3">
+                                <div>
+                                    <h3 class="text-lg font-bold text-white"><i class="fa-solid fa-file-shield text-sky-400 mr-2"></i>GAEB / PDF Angebots-Abgleich</h3>
+                                    <p class="text-xs text-slate-400 mt-0.5">Unbekannte Positionen stehen auf 0 € für manuelle Eingabe.</p>
+                                </div>
+                                <div class="flex items-center gap-2">
+                                    <!-- NEU: PDF-Export Button -->
+                                    <button type="button" onclick="exportFileCheckToPDF()" class="bg-emerald-500 hover:bg-emerald-600 text-slate-950 font-bold px-3.5 py-2 rounded-xl text-xs transition whitespace-nowrap shadow-lg shadow-emerald-500/20">
+                                        <i class="fa-solid fa-file-pdf mr-1.5"></i>Prüfprotokoll als PDF exportieren
+                                    </button>
+                                    <button type="button" onclick="clearDirectFileCheck()" class="bg-rose-500/10 text-rose-400 border border-rose-500/30 font-bold px-3.5 py-2 rounded-xl text-xs">Prüfliste leeren</button>
+                                </div>
+                            </div>
+
+                            <div class="bg-slate-950 border border-slate-800 rounded-xl p-4 space-y-3">
+                                <div class="flex flex-col sm:flex-row gap-3 items-center">
+                                    <input type="file" id="directCheckFileInput" multiple accept=".pdf,.xml,.x82,.d82,.p82,.x83,.d83,.p83,.x84,.d84,.p84,.x85,.x86,.xlsx,.xls,.csv" class="w-full text-xs text-slate-400 bg-slate-900 rounded-xl border border-slate-700 p-2 cursor-pointer">
+                                    <button type="button" onclick="handleDirectOfferCheckUpload()" class="w-full sm:w-auto bg-sky-500 hover:bg-sky-400 text-slate-950 font-bold px-6 py-2.5 rounded-xl text-xs whitespace-nowrap">Auslesen & prüfen</button>
+                                </div>
+                                <span id="directCheckUploadFeedback" class="text-xs block"></span>
+                            </div>
+
+                            <div class="grid grid-cols-1 lg:grid-cols-12 gap-4 items-center bg-slate-950 p-4 rounded-xl border border-slate-800">
+                                <div class="lg:col-span-7 flex flex-wrap gap-2 text-[11px]">
+                                    <span class="px-2.5 py-1 rounded-lg bg-emerald-500/15 text-emerald-400 border border-emerald-500/30 font-bold">Grün: Im/unter DB</span>
+                                    <span class="px-2.5 py-1 rounded-lg bg-amber-500/15 text-amber-300 border border-amber-500/30 font-bold">Gelb: +0-20%</span>
+                                    <span class="px-2.5 py-1 rounded-lg bg-rose-500/15 text-rose-400 border border-rose-500/30 font-bold">Rot: > 20%</span>
+                                    <span class="px-2.5 py-1 rounded-lg bg-sky-500/15 text-sky-400 border border-sky-500/30 font-bold">Blau: 0 € (Manuell)</span>
+                                </div>
+                                <div class="lg:col-span-5">
+                                    <select id="fileCheckTargetOrderSelect" onchange="selectedAdminOrderId = this.value" class="w-full bg-slate-900 border border-slate-700 rounded-xl px-3 py-2 text-xs text-white focus:outline-none">
+                                        <option value="">-- Optional: Auftrag für Übernahme wählen --</option>
+                                    </select>
+                                </div>
+                            </div>
+
+                            <div class="grid grid-cols-1 sm:grid-cols-3 gap-4">
+                                <div class="bg-slate-950 border border-slate-800 rounded-xl p-4">
+                                    <span class="text-[11px] text-slate-400 uppercase font-semibold block">Angebotssumme</span>
+                                    <span id="fcStatOfferNet" class="text-2xl font-black text-white mt-1 block">0,00 €</span>
+                                    <span id="fcStatOfferGross" class="text-[11px] text-slate-400 block mt-0.5">0,00 € brutto</span>
+                                </div>
+                                <div class="bg-slate-950 border border-emerald-500/30 rounded-xl p-4">
+                                    <span class="text-[11px] text-slate-400 uppercase font-semibold block">Referenzsumme (DB + Manuell)</span>
+                                    <span id="fcStatRefNet" class="text-2xl font-black text-emerald-400 mt-1 block">0,00 €</span>
+                                    <span id="fcStatRefGross" class="text-[11px] text-slate-400 block mt-0.5">0,00 € brutto</span>
+                                </div>
+                                <div class="bg-slate-950 border border-slate-800 rounded-xl p-4">
+                                    <span class="text-[11px] text-slate-400 uppercase font-semibold block">Gesamtabweichung</span>
+                                    <span id="fcStatDiffAmount" class="text-2xl font-black text-slate-300 mt-1 block">0,00 €</span>
+                                    <span id="fcStatDiffPercent" class="text-[11px] text-slate-400 font-semibold block mt-0.5">Noch keine Datei</span>
+                                </div>
+                            </div>
+
+                            <div id="fileCheckVerdictBanner" class="hidden p-4 rounded-xl border text-xs flex justify-between items-center">
+                                <div id="fileCheckVerdictText" class="font-bold"></div>
+                                <button type="button" onclick="transferFileCheckToOrder()" class="bg-emerald-500 text-slate-950 font-bold px-4 py-2 rounded-lg text-xs">In Auftrag übernehmen</button>
+                            </div>
+
+                            <div id="fileCheckTableContainer" class="overflow-x-auto border border-slate-800 rounded-xl"></div>
+
+                            <div class="bg-slate-950 border border-slate-800 rounded-xl p-4 space-y-3">
+                                <span class="text-xs font-bold text-slate-300 block">Weitere Position manuell hinzufügen</span>
+                                <div class="grid grid-cols-1 sm:grid-cols-12 gap-2.5">
+                                    <div class="sm:col-span-4"><input type="text" id="fcManualTitle" placeholder="Beschreibung..." class="w-full bg-slate-900 border border-slate-700 rounded p-2 text-xs text-white"></div>
+                                    <div class="sm:col-span-2"><input type="number" id="fcManualQty" step="0.01" value="1" placeholder="Menge" class="w-full bg-slate-900 border border-slate-700 rounded p-2 text-xs text-white"></div>
+                                    <div class="sm:col-span-2"><input type="text" id="fcManualUnit" value="Stk" placeholder="Einheit" class="w-full bg-slate-900 border border-slate-700 rounded p-2 text-xs text-white"></div>
+                                    <div class="sm:col-span-3"><input type="number" id="fcManualOfferPrice" step="0.01" placeholder="Angebot EP" class="w-full bg-slate-900 border border-slate-700 rounded p-2 text-xs text-white"></div>
+                                    <div class="sm:col-span-1"><button type="button" onclick="addManualRowToFileCheck()" class="w-full h-full bg-slate-800 hover:bg-sky-500 text-sky-400 font-bold rounded"><i class="fa-solid fa-plus"></i></button></div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Angebot rekonstruieren Panel -->
+                    <div id="adminReconstructPanel" class="hidden space-y-6">
+                        <div class="bg-slate-900 border border-slate-800 rounded-2xl p-6 shadow-xl space-y-5">
+                            <div class="flex justify-between items-center border-b border-slate-800 pb-4">
+                                <h3 class="text-lg font-bold text-white">Angebot rekonstruieren</h3>
+                                <button type="button" onclick="clearReconstructedOffer()" class="bg-rose-500/10 text-rose-400 px-3 py-1.5 rounded text-xs font-bold">Auswahl leeren</button>
+                            </div>
+                            <div class="grid grid-cols-1 sm:grid-cols-2 gap-4 bg-slate-950 p-4 rounded-xl border border-slate-800">
+                                <input type="number" id="reconstructOfferedTotalInput" step="0.01" oninput="renderReconstructedOffer()" placeholder="Angebots-Gesamtpreis (€ netto)" class="w-full bg-slate-900 border border-slate-700 rounded-xl px-4 py-2.5 text-sm text-white">
+                                <select id="reconstructTargetOrderSelect" onchange="selectedAdminOrderId = this.value" class="w-full bg-slate-900 border border-slate-700 rounded-xl px-3.5 py-2.5 text-xs text-white">
+                                    <option value="">-- Auftrag wählen --</option>
+                                </select>
+                            </div>
+                            <div class="grid grid-cols-1 sm:grid-cols-3 gap-4">
+                                <div class="bg-slate-950 border border-emerald-500/30 rounded-xl p-4">
+                                    <span class="text-[11px] text-slate-400 block">DB-Mittelwert (Soll)</span>
+                                    <span id="reconStatDbNet" class="text-2xl font-black text-emerald-400">0,00 €</span>
+                                </div>
+                                <div class="bg-slate-950 border border-slate-800 rounded-xl p-4">
+                                    <span class="text-[11px] text-slate-400 block">Angebot (Ist)</span>
+                                    <span id="reconStatOfferNet" class="text-2xl font-black text-white">0,00 €</span>
+                                </div>
+                                <div class="bg-slate-950 border border-slate-800 rounded-xl p-4">
+                                    <span class="text-[11px] text-slate-400 block">Differenz</span>
+                                    <span id="reconStatDiffAmount" class="text-2xl font-black text-slate-300">0,00 €</span>
+                                </div>
+                            </div>
+                            <div id="reconstructVerdictBanner" class="hidden p-4 rounded-xl border text-xs flex justify-between items-center">
+                                <div id="reconstructVerdictText" class="font-bold"></div>
+                                <button type="button" onclick="transferReconstructionToOrder()" class="bg-emerald-500 text-slate-950 font-bold px-4 py-2 rounded-lg text-xs">Übernehmen</button>
+                            </div>
+                            <div id="reconstructTableContainer" class="overflow-x-auto border border-slate-800 rounded-xl"></div>
+                        </div>
+                    </div>
+
+                    <!-- Kunden & Ränge Panel -->
+                    <div id="adminCustomersPanel" class="hidden bg-slate-900 border border-slate-800 rounded-2xl p-6 shadow-xl space-y-6">
+                        <div class="flex justify-between items-center border-b border-slate-800 pb-4">
+                            <h3 class="text-lg font-bold text-white">Kunden & Ränge</h3>
+                            <span id="roleManagementPermissionHint" class="text-xs px-3 py-1 rounded-lg bg-emerald-500/10 text-emerald-400 font-semibold">Aktiv</span>
+                        </div>
+                        <div id="adminCustomersTableContainer" class="overflow-x-auto"></div>
+                    </div>
+
+                    <!-- Marktpreise DB Panel -->
+                    <div id="adminMarketPricesPanel" class="hidden space-y-6">
+                        <div class="bg-slate-900 border border-slate-800 rounded-2xl p-6 shadow-xl space-y-4">
+                            <div class="flex justify-between items-center">
+                                <h4 class="text-sm font-bold text-white">GAEB & Excel Import</h4>
+                                <div class="flex gap-2">
+                                    <button type="button" onclick="exportMarketPricesToCSV()" class="bg-slate-800 text-emerald-400 px-3 py-1 rounded text-xs">Export</button>
+                                    <button type="button" onclick="deleteMissingShortTextPositions()" class="bg-rose-500/10 text-rose-400 px-3 py-1 rounded text-xs font-bold">„Kurztext fehlt“ löschen</button>
+                                    <button type="button" id="btnClearEntireMarketDb" onclick="openClearDbPasswordModal()" class="hidden bg-rose-500 text-white px-3 py-1 rounded text-xs font-bold">DB leeren</button>
+                                </div>
+                            </div>
+                            <div class="flex gap-3">
+                                <input type="file" id="importFile" multiple accept=".xlsx,.xls,.csv,.xml,.x82,.x83,.x84,.x86" class="w-full text-xs bg-slate-950 border border-slate-700 rounded-xl p-2 text-slate-400">
+                                <button type="button" onclick="handleFileImport()" class="bg-emerald-500 text-slate-950 font-bold px-4 py-2 rounded-xl text-xs whitespace-nowrap">Importieren</button>
+                            </div>
+                            <span id="importFeedback" class="text-xs block"></span>
+                        </div>
+                        <div id="marketPricesTableContainer" class="overflow-x-auto"></div>
+                    </div>
+
+                    <!-- Auftrags-Editor Panel -->
+                    <div id="adminEditorPanel" class="hidden bg-slate-900 border border-slate-800 rounded-2xl p-6 shadow-xl space-y-6">
+                        <div class="flex justify-between items-center border-b border-slate-800 pb-4">
+                            <div>
+                                <span id="adminEditOrderId" class="text-xs text-emerald-400 font-bold uppercase">Auftrag</span>
+                                <h3 id="adminEditCustomerEmail" class="text-lg font-bold text-white"></h3>
+                            </div>
+                            <select id="adminStatusSelect" class="bg-slate-950 border border-slate-700 text-white text-xs rounded-lg px-3 py-2">
+                                <option value="1">1. Eingegangen</option>
+                                <option value="2">2. In Fachprüfung</option>
+                                <option value="3">3. Bericht wird erstellt</option>
+                                <option value="4">4. Abgeschlossen</option>
+                                <option value="5" id="statusOptReject">5. Abgelehnt</option>
+                                <option value="6" id="statusOptCancel">6. Storniert</option>
+                            </select>
+                        </div>
+                        <div id="adminFirstInquiryWarningBanner" class="hidden bg-rose-500/10 border-2 border-rose-500/40 rounded-xl p-4 space-y-3">
+                            <span class="text-rose-400 font-extrabold text-xs uppercase block">Neukunde (1. Anfrage) — 50 % Anzahlung vor Start!</span>
+                            <button type="button" onclick="sendInvoiceEmail('50', true)" class="bg-rose-500 text-white font-bold px-4 py-2 rounded-xl text-xs">50 % PDF-Rechnung senden</button>
+                        </div>
+                        <div class="space-y-4">
+                            <textarea id="adminSummaryInput" rows="3" class="w-full bg-slate-950 border border-slate-700 rounded-xl px-4 py-2 text-sm text-white"></textarea>
+                            <textarea id="adminDefectsInput" rows="3" class="w-full bg-slate-950 border border-slate-700 rounded-xl px-4 py-2 text-sm text-white"></textarea>
+                            <button type="button" onclick="saveAdminOrderChanges()" class="w-full bg-emerald-500 text-slate-950 font-bold py-3 rounded-xl text-sm">Speichern</button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </main>
+
+    <!-- Auth Modal -->
+    <div id="authModal" class="fixed inset-0 z-50 flex items-center justify-center bg-slate-950/80 backdrop-blur-sm hidden">
+        <div class="bg-slate-900 border border-slate-800 rounded-2xl p-8 max-w-md w-full mx-4 relative">
+            <button type="button" onclick="closeAuthModal()" class="absolute top-4 right-4 text-slate-400 hover:text-white"><i class="fa-solid fa-xmark"></i></button>
+            <h3 class="text-2xl font-bold text-white mb-2">Login / Demo</h3>
+            <form id="authForm" onsubmit="handleAuthSubmit(event)" class="space-y-4">
+                <input type="text" id="authEmail" required placeholder="E-Mail oder Demo" class="w-full bg-slate-950 border border-slate-700 rounded-xl px-4 py-3 text-sm text-white">
+                <input type="password" id="authPassword" placeholder="Passwort" class="w-full bg-slate-950 border border-slate-700 rounded-xl px-4 py-3 text-sm text-white">
+                <button type="submit" class="w-full bg-emerald-500 text-slate-950 font-bold py-3.5 rounded-xl text-sm">Anmelden</button>
+            </form>
+        </div>
+    </div>
+
+    <!-- Passowrt-Modal für Hauptadmin -->
+    <div id="clearDbPasswordModal" class="fixed inset-0 z-50 flex items-center justify-center bg-slate-950/85 backdrop-blur-sm hidden">
+        <div class="bg-slate-900 border-2 border-rose-500/50 rounded-2xl p-8 max-w-md w-full mx-4 relative space-y-4">
+            <button type="button" onclick="closeClearDbPasswordModal()" class="absolute top-4 right-4 text-slate-400 hover:text-white"><i class="fa-solid fa-xmark text-lg"></i></button>
+            <h3 class="text-xl font-extrabold text-white">Datenbank leeren</h3>
+            <form onsubmit="confirmDeleteAllMarketPrices(event)" class="space-y-4">
+                <input type="password" id="mainAdminClearDbPasswordInput" required placeholder="Hauptadmin-Passwort..." class="w-full bg-slate-950 border border-slate-700 rounded-xl px-4 py-3 text-sm text-white">
+                <button type="submit" id="confirmClearDbSubmitBtn" class="w-full bg-rose-500 text-white font-bold py-3 rounded-xl text-xs">Bestätigen</button>
+            </form>
+        </div>
+    </div>
+
+    <!-- NEU: Modal zum Anlegen eines neuen Auftrags direkt im Kundenportal -->
+    <div id="clientNewOrderModal" class="fixed inset-0 z-50 flex items-center justify-center bg-slate-950/85 backdrop-blur-sm hidden">
+        <div class="bg-slate-900 border border-slate-800 rounded-2xl p-6 sm:p-8 max-w-xl w-full mx-4 shadow-2xl relative max-h-[90vh] overflow-y-auto">
+            <button type="button" onclick="closeClientNewOrderModal()" class="absolute top-4 right-4 text-slate-400 hover:text-white"><i class="fa-solid fa-xmark text-lg"></i></button>
+            <h3 class="text-xl font-bold text-white mb-1"><i class="fa-solid fa-cloud-arrow-up text-emerald-400 mr-2"></i>Neuen Prüfauftrag einreichen</h3>
+            <p class="text-xs text-slate-400 mb-5">Reichen Sie ein weiteres Angebot direkt über Ihr Kundenkonto ein.</p>
+            <div id="portalStammkundenHint" class="hidden mb-4 bg-emerald-500/10 border border-emerald-500/30 rounded-xl p-3 flex items-center justify-between text-xs text-emerald-400 font-semibold">
+                <span><i class="fa-solid fa-star mr-1.5"></i>Ihr Stammkunden-Rabatt (-5 %) wird automatisch abgezogen!</span>
+                <span class="bg-emerald-500 text-slate-950 font-black px-2 py-0.5 rounded">-5 %</span>
+            </div>
+            <form id="portalNewOrderForm" onsubmit="handlePortalOrderSubmission(event)" class="space-y-4">
+                <div>
+                    <label class="block text-xs font-medium text-slate-300 mb-1">Prüfpaket wählen</label>
+                    <select id="portalPackageSelect" onchange="updatePortalOrderPricePreview()" class="w-full bg-slate-950 border border-slate-700 rounded-xl px-4 py-3 text-sm text-white font-semibold focus:outline-none">
+                        <option value="Heizungs-Angebot|149">Basis Check: Heizungs-Angebot (149 €)</option>
+                        <option value="Komplettbad / Sanitär|249">Premium Check: Komplettbad / Sanitär (249 €)</option>
+                        <option value="Angebotsvergleich|349">Multi-Angebot: Angebotsvergleich bis 3 Angebote (349 €)</option>
+                    </select>
+                </div>
+                <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                    <div>
+                        <label class="block text-xs font-medium text-slate-300 mb-1">Projekt / Bauvorhaben</label>
+                        <input type="text" id="portalProjectInput" list="existingProjectsDatalist" placeholder="z. B. Wärmepumpe Neubau..." class="w-full bg-slate-950 border border-slate-700 rounded-xl px-3.5 py-2.5 text-xs text-white focus:outline-none">
+                    </div>
+                    <div>
+                        <label class="block text-xs font-medium text-slate-300 mb-1">Rabattcode (optional)</label>
+                        <input type="text" id="portalDiscountInput" oninput="updatePortalOrderPricePreview()" placeholder="z. B. ANGEBOT10" class="w-full bg-slate-950 border border-slate-700 rounded-xl px-3.5 py-2.5 text-xs text-white uppercase focus:outline-none">
+                    </div>
+                </div>
+                <div class="bg-slate-950 border border-slate-800 rounded-xl p-3.5 flex items-center justify-between">
+                    <span class="text-xs text-slate-400">Berechneter Paketpreis (inkl. MwSt.):</span>
+                    <span id="portalCalculatedPriceBadge" class="text-base font-black text-emerald-400">149 €</span>
+                </div>
+                <div>
+                    <label class="block text-xs font-medium text-slate-300 mb-1">Angebotsdatei (PDF, JPG, PNG)</label>
+                    <input type="file" id="portalOfferFile" required class="w-full text-xs text-slate-400 file:mr-4 file:py-2.5 file:px-4 file:rounded-xl file:border-0 file:text-xs file:font-bold file:bg-emerald-500 file:text-slate-950 cursor-pointer bg-slate-950 border border-slate-700 rounded-xl p-2">
+                </div>
+                <div>
+                    <label class="block text-xs font-medium text-slate-300 mb-1">Hinweise / Fragen an den Prüfer</label>
+                    <textarea id="portalOrderNotes" rows="3" placeholder="Baujahr, besondere Wünsche..." class="w-full bg-slate-950 border border-slate-700 rounded-xl px-4 py-2.5 text-xs text-white focus:outline-none"></textarea>
+                </div>
+                <div class="flex gap-3 pt-2">
+                    <button type="button" onclick="closeClientNewOrderModal()" class="flex-1 bg-slate-800 text-slate-300 font-semibold py-3 rounded-xl text-xs">Abbrechen</button>
+                    <button type="submit" id="portalOrderSubmitBtn" class="flex-1 bg-emerald-500 text-slate-950 font-bold py-3 rounded-xl text-xs">Auftrag jetzt anlegen</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- Firebase SDKs -->
+    <script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-auth-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore-compat.js"></script>
+<script>
+        if (window.pdfjsLib) {
+            window.pdfjsLib.GlobalWorkerOptions.workerSrc = 'https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.worker.min.js';
+        }
+
+        const firebaseConfig = {
+            apiKey: "AIzaSyB_hKknTz9_FM__bneuGv6IKaw_0sbKhIM",
+            authDomain: "shk-angebote-pruefen.firebaseapp.com",
+            databaseURL: "https://shk-angebote-pruefen-default-rtdb.firebaseio.com",
+            projectId: "shk-angebote-pruefen",
+            storageBucket: "shk-angebote-pruefen.firebasestorage.app",
+            messagingSenderId: "161020111334",
+            appId: "1:161020111334:web:81bfc26839a41490220e27",
+            measurementId: "G-1ZPEMKMHWS"
+        };
+
+        let db, auth;
+        try {
+            if (!firebase.apps.length) {
+                firebase.initializeApp(firebaseConfig);
+            }
+            auth = firebase.auth();
+            db = firebase.firestore();
+        } catch (e) {
+            console.warn("Firebase-Konfiguration Fehler:", e);
+        }
+
+        const ADMIN_EMAIL = "admin@shk-angebote-pruefen.web.app";
+        const DEMO_IDENTIFIER = "demo";
+        const STAMMKUNDE_ORDER_THRESHOLD = 10;
+
+        let currentUser = null;
+        let currentUserRole = 'Kunde';
+        let isStammkundeActive = false;
+        let isRegisterMode = false;
+        let isForgotPasswordMode = false;
+        let selectedPackageName = "Heizungs-Angebot";
+        let selectedPackagePrice = 149;
+        let appliedDiscountPercent = 0;
+        let userOrders = [];
+        let activeOrderId = null;
+        let activeClientProjectFilter = 'Alle';
+        let adminOrders = [];
+        let marketPrices = [];
+        let customersList = [];
+        let selectedAdminOrderId = null;
+        let currentAdminTab = 'active';
+        let activeArchiveYear = null;
+        let activeMarketPriceCategory = 'Alle';
+        let activeCustomerRoleFilter = 'Alle';
+        let lastCalculatedCheckDefect = null;
+
+        let reconstructedOfferItems = [];
+        let directFileCheckItems = [];
+
+        function isMainAdminEmail(email) {
+            if (!email) return false;
+            return email.toLowerCase().trim() === ADMIN_EMAIL.toLowerCase().trim();
+        }
+
+        function isMainAdminUser() {
+            return currentUser && isMainAdminEmail(currentUser.email) && currentUserRole === 'Hauptadmin';
+        }
+
+        function hasAdminAccess(role = currentUserRole) {
+            return ['Hauptadmin', 'Admin', 'Sachbearbeiter'].includes(role);
+        }
+
+        function canManageRoles(role = currentUserRole) {
+            return ['Hauptadmin', 'Admin'].includes(role);
+        }
+
+        async function isAccountBlocked(email) {
+            if (!email || isMainAdminEmail(email)) return false;
+            const cleanMail = email.toLowerCase().trim();
+            if (db) {
+                try {
+                    const snapshot = await db.collection('customers').get();
+                    let blocked = false;
+                    snapshot.forEach(doc => {
+                        const d = doc.data();
+                        if (d.email && d.email.toLowerCase().trim() === cleanMail && d.isBlocked === true) {
+                            blocked = true;
+                        }
+                    });
+                    return blocked;
+                } catch (e) {
+                    console.warn("Fehler:", e);
+                }
+            }
+            return false;
+        }
+
+        function isFirstCustomerInquiryOrder(order) {
+            if (!order || !order.email) return false;
+            if (order.isFirstInquiry === true) return true;
+            const cleanMail = order.email.toLowerCase().trim();
+            const customerOrders = adminOrders
+                .filter(o => o.email && o.email.toLowerCase().trim() === cleanMail)
+                .sort((a, b) => new Date(a.createdAt || 0) - new Date(b.createdAt || 0));
+
+            if (customerOrders.length === 1) return true;
+            if (customerOrders.length > 1 && customerOrders[0].id === order.id) return true;
+            return false;
+        }
+
+        function isNewCustomerLockedForWork(order) {
+            if (!order) return false;
+            const isFirst = isFirstCustomerInquiryOrder(order);
+            const isUnpaid = (!order.paymentStatus || order.paymentStatus === 'unpaid');
+            const invoiceNotSent = !order.depositInvoiceSent;
+            return isFirst && isUnpaid && invoiceNotSent;
+        }
+
+        async function checkAndAutoUpgradeStammkunde(email, additionalNewOrder = 0) {
+            if (!db || !email) return 'Kunde';
+            const cleanMail = email.toLowerCase().trim();
+            if (isMainAdminEmail(cleanMail)) return 'Hauptadmin';
+            if (cleanMail === DEMO_IDENTIFIER) return 'Admin';
+
+            try {
+                const ordersSnap = await db.collection('orders').where('email', '==', email.trim()).get();
+                const totalCustomerOrders = ordersSnap.size + additionalNewOrder;
+                const custSnap = await db.collection('customers').get();
+                let targetDoc = null;
+                custSnap.forEach(doc => {
+                    const data = doc.data();
+                    if (data.email && data.email.toLowerCase().trim() === cleanMail) {
+                        targetDoc = { id: doc.id, ...data };
+                    }
+                });
+
+                let currentRole = targetDoc && targetDoc.role ? targetDoc.role : 'Kunde';
+                if (currentRole === 'Kunde' && totalCustomerOrders >= STAMMKUNDE_ORDER_THRESHOLD) {
+                    currentRole = 'Stammkunde';
+                    if (targetDoc) {
+                        await db.collection('customers').doc(targetDoc.id).update({ role: 'Stammkunde' });
+                    }
+                }
+                return currentRole;
+            } catch (e) {
+                return 'Kunde';
+            }
+        }
+
+        async function fetchRoleForEmail(email) {
+            if (!email) return 'Kunde';
+            const cleanMail = email.toLowerCase().trim();
+            if (isMainAdminEmail(cleanMail)) return 'Hauptadmin';
+            if (db) {
+                try {
+                    const snap = await db.collection('customers').get();
+                    let dbRole = null;
+                    snap.forEach(doc => {
+                        const d = doc.data();
+                        if (d.email && d.email.toLowerCase().trim() === cleanMail && d.role) dbRole = d.role;
+                    });
+                    if (cleanMail === DEMO_IDENTIFIER) return dbRole || 'Admin';
+                    return await checkAndAutoUpgradeStammkunde(email, 0);
+                } catch (e) {}
+            }
+            return cleanMail === DEMO_IDENTIFIER ? 'Admin' : 'Kunde';
+        }
+
+        async function ensureCustomerRecord(email, firstName = '', lastName = '', forcedDefaultRole = null) {
+            if (!db || !email) return;
+            const cleanMail = email.toLowerCase().trim();
+            const defaultRole = forcedDefaultRole || (isMainAdminEmail(cleanMail) ? 'Hauptadmin' : (cleanMail === DEMO_IDENTIFIER ? 'Admin' : 'Kunde'));
+
+            try {
+                const snapshot = await db.collection('customers').get();
+                let existingDoc = null;
+                snapshot.forEach(doc => {
+                    const data = doc.data();
+                    if (data.email && data.email.toLowerCase().trim() === cleanMail) existingDoc = { id: doc.id, ...data };
+                });
+
+                if (!existingDoc) {
+                    await db.collection('customers').add({
+                        email: email.trim(),
+                        firstName: firstName || (isMainAdminEmail(cleanMail) ? 'System' : (cleanMail === DEMO_IDENTIFIER ? 'Demo' : '')),
+                        lastName: lastName || (isMainAdminEmail(cleanMail) ? 'Hauptadmin' : (cleanMail === DEMO_IDENTIFIER ? 'Admin-Konto' : '')),
+                        role: defaultRole,
+                        isBlocked: false,
+                        createdAt: new Date().toISOString()
+                    });
+                }
+            } catch (e) {}
+        }
+
+        if (auth) {
+            auth.onAuthStateChanged(async user => {
+                if (!user && sessionStorage.getItem('shk_demo_session') === 'true') {
+                    currentUser = { email: 'Demo', uid: 'demo_admin_uid', isDemo: true };
+                    await ensureCustomerRecord('Demo', 'Demo', 'Admin-Konto', 'Admin');
+                    currentUserRole = await fetchRoleForEmail('Demo');
+                    isStammkundeActive = (currentUserRole === 'Stammkunde');
+                    updateNavbarUI();
+                    loadUserOrders();
+                    if (hasAdminAccess()) {
+                        await loadAdminOrders();
+                        await loadMarketPrices();
+                        await loadCustomers();
+                    }
+                    return;
+                }
+
+                if (user) {
+                    if (await isAccountBlocked(user.email)) {
+                        await auth.signOut();
+                        currentUser = null;
+                        updateNavbarUI();
+                        switchView('landing');
+                        alert('Ihr Konto wurde gesperrt.');
+                        return;
+                    }
+                    currentUser = user;
+                    await ensureCustomerRecord(user.email);
+                    currentUserRole = await fetchRoleForEmail(user.email);
+                    isStammkundeActive = (currentUserRole === 'Stammkunde');
+                    updateNavbarUI();
+                    loadUserOrders();
+                    if (hasAdminAccess()) {
+                        await loadAdminOrders();
+                        await loadMarketPrices();
+                        await loadCustomers();
+                    }
+                } else {
+                    currentUser = null;
+                    currentUserRole = 'Kunde';
+                    isStammkundeActive = false;
+                    updateNavbarUI();
+                }
+            });
+        }
+
+        function updateNavbarUI() {
+            const authNav = document.getElementById('authNavArea');
+            const userNav = document.getElementById('userNavArea');
+            const adminBtn = document.getElementById('adminNavBtn');
+            const emailSpan = document.getElementById('navUserEmail');
+            const roleBadge = document.getElementById('navUserRoleBadge');
+            const clientPortalBadge = document.getElementById('clientPortalRoleBadge');
+            const adminHeaderBadge = document.getElementById('adminHeaderRoleBadge');
+            const clearDbBtn = document.getElementById('btnClearEntireMarketDb');
+
+            if (currentUser) {
+                authNav.classList.add('hidden');
+                userNav.classList.remove('hidden');
+                userNav.classList.add('flex');
+                emailSpan.textContent = currentUser.email;
+                if (roleBadge) roleBadge.textContent = currentUserRole;
+                if (clientPortalBadge) clientPortalBadge.textContent = `Rang: ${currentUserRole}`;
+                if (adminHeaderBadge) adminHeaderBadge.textContent = `Rolle: ${currentUserRole}`;
+                if (hasAdminAccess()) adminBtn.classList.remove('hidden');
+                else adminBtn.classList.add('hidden');
+                if (clearDbBtn) {
+                    if (isMainAdminUser()) clearDbBtn.classList.remove('hidden');
+                    else clearDbBtn.classList.add('hidden');
+                }
+            } else {
+                authNav.classList.remove('hidden');
+                userNav.classList.add('hidden');
+                userNav.classList.remove('flex');
+                if (clearDbBtn) clearDbBtn.classList.add('hidden');
+            }
+        }
+
+        function updateStammkundenBannerUI() {
+            const banner = document.getElementById('stammkundenBanner');
+            if (!banner) return;
+            if (isStammkundeActive) banner.classList.remove('hidden');
+            else banner.classList.add('hidden');
+        }
+
+        async function checkEmailForStammkunde(email) {
+            if (!email || !email.includes('@')) return;
+            const role = await fetchRoleForEmail(email);
+            isStammkundeActive = (role === 'Stammkunde');
+            updateStammkundenBannerUI();
+            updatePackageInputDisplay();
+        }
+
+        function switchView(viewName) {
+            document.getElementById('landingView').classList.add('hidden');
+            document.getElementById('clientPortalView').classList.add('hidden');
+            document.getElementById('adminPortalView').classList.add('hidden');
+
+            if (viewName === 'landing') {
+                document.getElementById('landingView').classList.remove('hidden');
+                window.scrollTo({ top: 0, behavior: 'smooth' });
+            } else if (viewName === 'clientPortal') {
+                if (!currentUser) { openAuthModal('login'); return; }
+                document.getElementById('clientPortalView').classList.remove('hidden');
+                loadUserOrders();
+            } else if (viewName === 'adminPortal') {
+                if (!currentUser || !hasAdminAccess()) { alert('Zugriff verweigert.'); return; }
+                document.getElementById('adminPortalView').classList.remove('hidden');
+                updateNavbarUI();
+                loadAdminOrders();
+                loadMarketPrices();
+                loadCustomers();
+            }
+        }
+
+        function openClientPortal() { switchView('clientPortal'); }
+        function openAdminPortal() { switchView('adminPortal'); }
+
+        function selectPackage(name, price) {
+            selectedPackageName = name;
+            selectedPackagePrice = price;
+            updatePackageInputDisplay();
+            document.getElementById('rechner').scrollIntoView({ behavior: 'smooth' });
+        }
+
+        function getCalculatedOrderPrice(basePrice, stammkundeFlag, codeDiscountPercent) {
+            const stammDiscount = stammkundeFlag ? 0.05 : 0;
+            const totalDiscount = Math.min(1, stammDiscount + codeDiscountPercent);
+            return Number((basePrice * (1 - totalDiscount)).toFixed(2));
+        }
+
+        function updatePackageInputDisplay() {
+            const finalPrice = getCalculatedOrderPrice(selectedPackagePrice, isStammkundeActive, appliedDiscountPercent);
+            document.getElementById('selectedPackageInput').value = `${selectedPackageName} (${finalPrice.toFixed(0)} €)`;
+        }
+
+        function applyDiscountCode() {
+            const code = document.getElementById('discountCodeInput').value.trim().toUpperCase();
+            const feedback = document.getElementById('discountFeedback');
+            if (code === 'ANGEBOT10') {
+                appliedDiscountPercent = 0.10;
+                feedback.textContent = "Rabattcode angewendet (10%)!";
+                feedback.className = "text-xs mt-1 block text-emerald-400 font-semibold";
+            } else {
+                appliedDiscountPercent = 0;
+                feedback.textContent = "Ungültiger Code.";
+                feedback.className = "text-xs mt-1 block text-rose-400";
+            }
+            updatePackageInputDisplay();
+        }
+
+        function handleFileSelect(event) {
+            const file = event.target.files[0];
+            if (file) document.getElementById('fileNameDisplay').textContent = `Ausgewählt: ${file.name}`;
+        }
+
+        // NEU: Funktionen zum direkten Anlegen eines neuen Auftrags im Kundenportal
+        function openClientNewOrderModal() {
+            if (!currentUser) { openAuthModal('login'); return; }
+            const stammHint = document.getElementById('portalStammkundenHint');
+            if (stammHint) {
+                if (isStammkundeActive || currentUserRole === 'Stammkunde') stammHint.classList.remove('hidden');
+                else stammHint.classList.add('hidden');
+            }
+            const projInput = document.getElementById('portalProjectInput');
+            if (projInput && activeClientProjectFilter !== 'Alle') projInput.value = activeClientProjectFilter;
+            updatePortalOrderPricePreview();
+            document.getElementById('clientNewOrderModal').classList.remove('hidden');
+        }
+
+        function closeClientNewOrderModal() {
+            document.getElementById('clientNewOrderModal').classList.add('hidden');
+        }
+
+        function updatePortalOrderPricePreview() {
+            const selectVal = document.getElementById('portalPackageSelect').value || 'Heizungs-Angebot|149';
+            const [_, priceStr] = selectVal.split('|');
+            const basePrice = parseFloat(priceStr) || 149;
+            const code = (document.getElementById('portalDiscountInput').value || '').trim().toUpperCase();
+            const codeDisc = (code === 'ANGEBOT10') ? 0.10 : 0;
+            const stammFlag = (isStammkundeActive || currentUserRole === 'Stammkunde');
+            const finalPrice = getCalculatedOrderPrice(basePrice, stammFlag, codeDisc);
+            document.getElementById('portalCalculatedPriceBadge').textContent = `${finalPrice.toFixed(0)} €`;
+        }
+
+        async function handlePortalOrderSubmission(event) {
+            event.preventDefault();
+            if (!currentUser) return;
+            const file = document.getElementById('portalOfferFile').files[0];
+            if (!file) { alert("Bitte Datei auswählen."); return; }
+
+            const selectVal = document.getElementById('portalPackageSelect').value || 'Heizungs-Angebot|149';
+            const [pkgName, priceStr] = selectVal.split('|');
+            const basePrice = parseFloat(priceStr) || 149;
+            const projectName = (document.getElementById('portalProjectInput').value || '').trim() || 'Allgemein';
+            const notes = (document.getElementById('portalOrderNotes').value || '').trim();
+            const code = (document.getElementById('portalDiscountInput').value || '').trim().toUpperCase();
+            const codeDisc = (code === 'ANGEBOT10') ? 0.10 : 0;
+
+            try {
+                const updatedRole = await checkAndAutoUpgradeStammkunde(currentUser.email, 1);
+                const customerIsStammkunde = (updatedRole === 'Stammkunde');
+                isStammkundeActive = customerIsStammkunde;
+                currentUserRole = updatedRole;
+                updateNavbarUI();
+
+                const isFirstInquiry = (userOrders.length === 0);
+                const finalPrice = getCalculatedOrderPrice(basePrice, customerIsStammkunde, codeDisc);
+                let fName = '', lName = '';
+                const sampleO = userOrders.find(o => o.firstName || o.lastName);
+                if (sampleO) { fName = sampleO.firstName || ''; lName = sampleO.lastName || ''; }
+
+                const reader = new FileReader();
+                reader.readAsDataURL(file);
+                reader.onload = async function() {
+                    const orderId = 'SHK-' + Math.floor(100000 + Math.random() * 900000);
+                    const newOrder = {
+                        id: orderId, packageName: pkgName, projectName: projectName, price: finalPrice, originalPrice: basePrice, discountApplied: customerIsStammkunde ? 'Stammkunde (5%)' : null, email: currentUser.email, firstName: fName, lastName: lName, notes: notes, fileName: file.name, fileData: reader.result, additionalFiles: [], status: 1, paymentStatus: 'unpaid', isFirstInquiry: isFirstInquiry, depositInvoiceSent: false, isArchived: false, hiddenByClient: false, pendingAction: null, createdAt: new Date().toISOString(), userId: currentUser.uid
+                    };
+                    if (db) await db.collection('orders').add(newOrder);
+                    document.getElementById('portalNewOrderForm').reset();
+                    closeClientNewOrderModal();
+                    await loadUserOrders();
+                    selectClientOrder(orderId);
+                    alert(`Auftrag ${orderId} erfolgreich angelegt!`);
+                };
+            } catch (err) {
+                alert("Fehler: " + err.message);
+            }
+        }
+
+        async function handleOrderSubmission(event) {
+            event.preventDefault();
+            const email = document.getElementById('orderEmail').value.trim();
+            const projectName = (document.getElementById('orderProjectInput').value || '').trim() || 'Allgemein';
+            const firstName = document.getElementById('orderFirstName').value.trim();
+            const lastName = document.getElementById('orderLastName').value.trim();
+            const password = document.getElementById('orderPasswordInput').value;
+            const notes = document.getElementById('orderNotes').value;
+            const file = document.getElementById('offerFile').files[0];
+
+            if (!file) { alert("Bitte Datei auswählen."); return; }
+            if (await isAccountBlocked(email)) { alert("Konto gesperrt."); return; }
+
+            try {
+                const methods = await auth.fetchSignInMethodsForEmail(email);
+                const isExistingUser = methods.length > 0;
+                let prevCount = 0;
+                if (db) {
+                    const snap = await db.collection('orders').where('email', '==', email).get();
+                    prevCount = snap.size;
+                }
+                const isFirst = (!isExistingUser || prevCount === 0);
+
+                if (!isExistingUser) {
+                    if (!firstName || !lastName || !password) { alert("Bitte Name und Passwort eingeben."); return; }
+                    await auth.createUserWithEmailAndPassword(email, password);
+                }
+
+                await ensureCustomerRecord(email, firstName, lastName);
+                const role = await checkAndAutoUpgradeStammkunde(email, 1);
+                const isStamm = (role === 'Stammkunde');
+                isStammkundeActive = isStamm;
+
+                const reader = new FileReader();
+                reader.readAsDataURL(file);
+                reader.onload = async function () {
+                    const orderId = 'SHK-' + Math.floor(100000 + Math.random() * 900000);
+                    const finalPrice = getCalculatedOrderPrice(selectedPackagePrice, isStamm, appliedDiscountPercent);
+                    const newOrder = {
+                        id: orderId, packageName: selectedPackageName, projectName: projectName, price: finalPrice, originalPrice: selectedPackagePrice, discountApplied: isStamm ? 'Stammkunde (5%)' : null, email: email, firstName: firstName, lastName: lastName, notes: notes, fileName: file.name, fileData: reader.result, additionalFiles: [], status: 1, paymentStatus: 'unpaid', isFirstInquiry: isFirst, depositInvoiceSent: false, isArchived: false, hiddenByClient: false, pendingAction: null, createdAt: new Date().toISOString(), userId: auth.currentUser ? auth.currentUser.uid : 'anon_' + email
+                    };
+                    if (db) await db.collection('orders').add(newOrder);
+                    alert('Auftrag eingereicht!');
+                    switchView('clientPortal');
+                };
+            } catch (error) {
+                alert("Fehler: " + error.message);
+            }
+        }
+
+        function getVisibleUserOrders() { return userOrders.filter(o => !o.hiddenByClient); }
+
+        async function loadUserOrders() {
+            userOrders = [];
+            if (db && currentUser) {
+                try {
+                    const snapshot = await db.collection('orders').where('email', '==', currentUser.email).get();
+                    snapshot.forEach(doc => userOrders.push({ idDoc: doc.id, ...doc.data() }));
+                } catch(e) {}
+            }
+            updateProjectDatalist();
+            renderClientPortalKPIs();
+            renderClientProjectFilterBar();
+            renderClientOrdersList();
+        }
+
+        function updateProjectDatalist() {
+            const datalist = document.getElementById('existingProjectsDatalist');
+            if (!datalist) return;
+            const projects = [...new Set(getVisibleUserOrders().map(o => (o.projectName || 'Allgemein').trim()).filter(Boolean))];
+            datalist.innerHTML = projects.map(p => `<option value="${p.replace(/"/g, '&quot;')}"></option>`).join('');
+        }
+
+        function renderClientPortalKPIs() {
+            const v = getVisibleUserOrders();
+            document.getElementById('clientStatTotal').textContent = v.length;
+            document.getElementById('clientStatUnpaid').textContent = v.filter(o => o.status != 6 && o.status != 5 && (!o.paymentStatus || o.paymentStatus === 'unpaid')).length;
+            document.getElementById('clientStatDone').textContent = v.filter(o => o.status == 4).length;
+        }
+
+        function renderClientProjectFilterBar() {
+            const bar = document.getElementById('clientProjectFilterBar');
+            if (!bar) return;
+            const v = getVisibleUserOrders();
+            const counts = {};
+            v.forEach(o => { const p = (o.projectName || 'Allgemein').trim() || 'Allgemein'; counts[p] = (counts[p] || 0) + 1; });
+            const names = Object.keys(counts).sort();
+            if (names.length === 0) { bar.innerHTML = ''; return; }
+            let html = `<button type="button" onclick="filterClientOrdersByProject('Alle')" class="px-2.5 py-1 rounded-lg text-[11px] font-bold ${activeClientProjectFilter === 'Alle' ? 'bg-emerald-500 text-slate-950' : 'bg-slate-800 text-slate-300'}">Alle (${v.length})</button>`;
+            names.forEach(p => {
+                html += `<button type="button" onclick="filterClientOrdersByProject('${p.replace(/'/g, "\\'")}')" class="px-2.5 py-1 rounded-lg text-[11px] font-semibold ${activeClientProjectFilter === p ? 'bg-emerald-500 text-slate-950 font-bold' : 'bg-slate-800 text-slate-300'}">${p} (${counts[p]})</button>`;
+            });
+            bar.innerHTML = html;
+        }
+
+        function filterClientOrdersByProject(name) { activeClientProjectFilter = name; renderClientProjectFilterBar(); renderClientOrdersList(); }
+
+        async function dismissClientOrder(orderId, event = null) {
+            if (event) event.stopPropagation();
+            if (!orderId) return;
+            const o = userOrders.find(x => x.id === orderId);
+            if (!o) return;
+            o.hiddenByClient = true;
+            if (db && o.idDoc) await db.collection('orders').doc(o.idDoc).update({ hiddenByClient: true });
+            if (activeOrderId === orderId) { activeOrderId = null; document.getElementById('activeOrderDetailsPanel').classList.add('hidden'); document.getElementById('noActiveOrderPrompt').classList.remove('hidden'); }
+            renderClientPortalKPIs(); renderClientProjectFilterBar(); renderClientOrdersList();
+        }
+
+        async function saveClientOrderProject() {
+            if (!activeOrderId) return;
+            const o = userOrders.find(x => x.id === activeOrderId);
+            if (!o) return;
+            const name = (document.getElementById('clientProjectEditInput').value || '').trim() || 'Allgemein';
+            o.projectName = name;
+            if (db && o.idDoc) await db.collection('orders').doc(o.idDoc).update({ projectName: name });
+            document.getElementById('detailOrderProjectBadge').textContent = `Projekt: ${name}`;
+            renderClientProjectFilterBar(); renderClientOrdersList();
+        }
+
+        function renderClientOrdersList() {
+            const container = document.getElementById('clientOrdersList');
+            const v = getVisibleUserOrders().filter(o => activeClientProjectFilter === 'Alle' || ((o.projectName || 'Allgemein').trim() || 'Allgemein') === activeClientProjectFilter);
+            if (v.length === 0) { container.innerHTML = `<p class="text-xs text-slate-500">Keine Aufträge.</p>`; return; }
+            container.innerHTML = v.map(o => `
+                <div onclick="selectClientOrder('${o.id}')" class="bg-slate-900 border ${activeOrderId === o.id ? 'border-emerald-500' : 'border-slate-800'} rounded-xl p-4 cursor-pointer transition">
+                    <div class="flex justify-between items-center mb-1.5">
+                        <span class="text-xs font-bold text-emerald-400">${o.id}</span>
+                        ${(o.status == 5 || o.status == 6) ? `<button type="button" onclick="dismissClientOrder('${o.id}', event)" class="w-6 h-6 rounded bg-slate-800 text-slate-400 hover:text-rose-400 flex items-center justify-center"><i class="fa-solid fa-xmark"></i></button>` : ''}
+                    </div>
+                    <h4 class="text-white font-semibold text-sm">${o.packageName} (${o.price} €)</h4>
+                </div>
+            `).join('');
+        }
+
+        function selectClientOrder(id) {
+            activeOrderId = id;
+            const o = userOrders.find(x => x.id === id && !x.hiddenByClient);
+            if (!o) return;
+            renderClientOrdersList();
+            document.getElementById('noActiveOrderPrompt').classList.add('hidden');
+            document.getElementById('activeOrderDetailsPanel').classList.remove('hidden');
+            document.getElementById('detailOrderPackage').textContent = `${o.packageName} (${o.price} €)`;
+            document.getElementById('detailOrderId').textContent = `Auftrag ${o.id}`;
+            document.getElementById('clientProjectEditInput').value = o.projectName || 'Allgemein';
+        }
+
+        async function cancelOrderAsClient() {
+            if (!activeOrderId) return;
+            const o = userOrders.find(x => x.id === activeOrderId);
+            if (!o || !o.idDoc) return;
+            o.status = 6;
+            if (db) await db.collection('orders').doc(o.idDoc).update({ status: 6, paymentStatus: 'paid' });
+            loadUserOrders(); selectClientOrder(o.id);
+        }
+
+        async function uploadAdditionalClientFile() {
+            if (!activeOrderId) return;
+            const o = userOrders.find(x => x.id === activeOrderId);
+            const file = document.getElementById('clientAdditionalFileInput').files[0];
+            if (!file) return;
+            const r = new FileReader();
+            r.readAsDataURL(file);
+            r.onload = async function() {
+                if (!o.additionalFiles) o.additionalFiles = [];
+                o.additionalFiles.push({ name: file.name, data: r.result });
+                if (db && o.idDoc) await db.collection('orders').doc(o.idDoc).update({ additionalFiles: o.additionalFiles });
+                selectClientOrder(o.id);
+            };
+        }
+
+        async function loadAdminOrders() {
+            adminOrders = [];
+            if (db) {
+                const snap = await db.collection('orders').get();
+                snap.forEach(doc => adminOrders.push({ idDoc: doc.id, ...doc.data() }));
+            }
+            populateReconstructTargetOrderDropdown();
+            populateFileCheckTargetOrderDropdown();
+            renderAdminDashboard();
+        }
+
+        async function loadMarketPrices() {
+            marketPrices = [];
+            if (db) {
+                const snap = await db.collection('market_prices').get();
+                snap.forEach(doc => marketPrices.push({ idDoc: doc.id, ...doc.data() }));
+            }
+            if (currentAdminTab === 'marketprices') {
+                renderMarketPricesTable();
+                populateBauteilDropdown();
+            } else if (currentAdminTab === 'reconstruct') {
+                renderReconstructCatalogList();
+                renderReconstructedOffer();
+            } else if (currentAdminTab === 'filecheck') {
+                renderDirectFileCheckTable();
+            }
+        }
+
+        async function loadCustomers() {
+            customersList = [];
+            if (db) {
+                const snap = await db.collection('customers').get();
+                snap.forEach(doc => customersList.push({ idDoc: doc.id, ...doc.data() }));
+            }
+            if (currentAdminTab === 'customers') renderCustomersTable();
+        }
+
+        function filterCustomersRole(role) {
+            activeCustomerRoleFilter = role;
+            renderCustomersTable();
+        }
+
+        // GAEB PARSER & IMPORT (Inklusive .x83 Zwischenspeicher & Kurztext-Fallback)
+        let cachedX83PositionsMap = new Map();
+        try {
+            const saved = localStorage.getItem('shk_cached_x83_lv');
+            if (saved) cachedX83PositionsMap = new Map(JSON.parse(saved));
+        } catch(e) {}
+
+        function saveX83CacheToStorage() {
+            try { localStorage.setItem('shk_cached_x83_lv', JSON.stringify(Array.from(cachedX83PositionsMap.entries()))); } catch(e) {}
+        }
+
+        function normalizeOzKey(rawOz) {
+            if (!rawOz) return '';
+            return String(rawOz).trim().split(/[._\-\s/]+/).filter(Boolean).map(p => p.replace(/^0+(?=\d)/, '')).join('_');
+        }
+
+        function getFirstSentenceFromLongText(rawText) {
+            if (!rawText) return '';
+            const lines = String(rawText).split(/\r?\n|\|/).map(l => l.replace(/\s+/g, ' ').trim()).filter(l => l.length > 2 && !/^(pos\.|position|oz|menge|einheit)\b/i.test(l));
+            if (lines.length === 0) return '';
+            const match = lines[0].match(/^(.{6,}?[.!?])(?:\s+|$)/);
+            return (match ? match[1] : lines[0]).substring(0, 120);
+        }
+
+        function parseGAEBXmlContent(xmlContent) {
+            const cleanedXml = String(xmlContent || '').replace(/<(\/?)[a-zA-Z0-9_-]+:/g, '<$1').replace(/\s+xmlns(:[a-zA-Z0-9_-]+)?="[^"]*"/g, '');
+            const parser = new DOMParser();
+            let xmlDoc = parser.parseFromString(cleanedXml, "text/xml");
+            if (xmlDoc.querySelector('parsererror')) xmlDoc = parser.parseFromString(cleanedXml, "text/html");
+
+            const items = xmlDoc.querySelectorAll('Item, BoQItem, LstSatz');
+            const parsedList = [];
+
+            items.forEach((node, idx) => {
+                const itemId = (node.getAttribute('ID') || node.getAttribute('id') || '').trim();
+                const rNoPart = (node.getAttribute('RNoPart') || node.getAttribute('rnopart') || '').trim();
+                const ctgyParts = [];
+                let parent = node.parentElement;
+                while (parent) {
+                    if (parent.tagName && parent.tagName.toLowerCase() === 'boqctgy') {
+                        const pRNo = (parent.getAttribute('RNoPart') || parent.getAttribute('rnopart') || '').trim();
+                        if (pRNo) ctgyParts.unshift(pRNo);
+                    }
+                    parent = parent.parentElement;
+                }
+                if (rNoPart) ctgyParts.push(rNoPart);
+
+                const normOz = normalizeOzKey(ctgyParts.join('_') || itemId || ('idx_' + idx));
+                const longDesc = extractOptionalGAEBLongText(node);
+                let shortTitle = extractStrictGAEBShortText(node);
+                if (!shortTitle && longDesc) shortTitle = getFirstSentenceFromLongText(longDesc);
+
+                const qtyNode = node.querySelector('Qty, Quantity, Menge');
+                const qty = qtyNode ? parseFloat(qtyNode.textContent.trim().replace(',', '.')) || 1 : 1;
+                const unitNode = node.querySelector('QU, Unit, ME');
+                let rawUnit = unitNode && unitNode.textContent ? normalizeGAEBUnit(unitNode.textContent) : '';
+                const priceNode = node.querySelector('UP, UnitPrice, Price, IT');
+                let price = priceNode ? parseFloat(priceNode.textContent.trim().replace(',', '.')) || 0 : 0;
+
+                if (shortTitle) {
+                    const entry = { title: shortTitle, longText: longDesc, unit: rawUnit || 'Stk', qty: qty };
+                    cachedX83PositionsMap.set('oz_' + normOz, entry);
+                    if (itemId) cachedX83PositionsMap.set('id_' + itemId, entry);
+                } else {
+                    const cached = cachedX83PositionsMap.get('oz_' + normOz) || (itemId ? cachedX83PositionsMap.get('id_' + itemId) : null);
+                    if (cached) {
+                        shortTitle = cached.title || '';
+                        if (!longDesc) longDesc = cached.longText || '';
+                        if (!rawUnit) rawUnit = cached.unit || 'Stk';
+                    }
+                }
+
+                parsedList.push({ id: normOz, xmlId: itemId, ozKey: normOz, index: idx, title: shortTitle, longText: longDesc, qty: qty, unit: rawUnit, price: price });
+            });
+            if (cachedX83PositionsMap.size > 0) saveX83CacheToStorage();
+            return parsedList;
+        }
+
+        function extractOptionalGAEBLongText(itemNode) {
+            const nodes = itemNode.querySelectorAll('DetailTxt, CompleteTextDetail, LongText, TextComplement');
+            if (!nodes.length) return '';
+            let c = [];
+            nodes.forEach(n => { const t = (n.textContent || '').replace(/\s+/g, ' ').trim(); if (t) c.push(t); });
+            return c.join(' | ').substring(0, 600);
+        }
+
+        function extractStrictGAEBShortText(itemNode) {
+            const shortNodes = itemNode.querySelectorAll('OutlineText OutlTxt TextOutlTxt, OutlineText TextOutlTxt, OutlTxt TextOutlTxt, OutlTxt, ShortDesc, Kurztext');
+            for (const n of shortNodes) {
+                if (n && n.textContent) { const t = n.textContent.replace(/\s+/g, ' ').trim(); if (t.length > 1) return t.substring(0, 120); }
+            }
+            const long = extractOptionalGAEBLongText(itemNode);
+            if (long) return getFirstSentenceFromLongText(long);
+            return '';
+        }
+
+        async function handleFileImport() {
+            const files = Array.from(document.getElementById('importFile').files || []);
+            const feedback = document.getElementById('importFeedback');
+            if (files.length === 0) { alert("Bitte Datei auswählen."); return; }
+            feedback.textContent = "Importiere und berechne Mittelwerte...";
+            feedback.className = "text-xs block text-amber-400";
+            try {
+                if (db && marketPrices.length === 0) {
+                    const snap = await db.collection('market_prices').get();
+                    snap.forEach(doc => marketPrices.push({ idDoc: doc.id, ...doc.data() }));
+                }
+                const loaded = await Promise.all(files.map(file => {
+                    const lower = file.name.toLowerCase();
+                    const isBin = /\.(xlsx|xls)$/.test(lower);
+                    return new Promise((res, rej) => {
+                        const r = new FileReader();
+                        r.onload = e => res({ name: lower, isBin, data: e.target.result });
+                        r.onerror = rej;
+                        if (isBin) r.readAsArrayBuffer(file);
+                        else r.readAsText(file, "UTF-8");
+                    });
+                }));
+
+                const merged = new Map();
+                loaded.forEach(f => {
+                    if (/\.xlsx|\.xls/.test(f.name)) {
+                        const wb = XLSX.read(f.data, { type: 'array' });
+                        parseTabularRows(XLSX.utils.sheet_to_json(wb.Sheets[wb.SheetNames[0]], { header: 1, defval: '' })).forEach(it => {
+                            merged.set(normalizePositionTitleKey(it.title), { title: it.title, longText: it.longText, unit: it.unit, category: it.category, prices: it.prices });
+                        });
+                    } else if (/\.pdf$/.test(f.name)) {
+                        extractOfferPositionsFromPDF(f.data).then(pdfItems => {
+                            pdfItems.forEach(it => {
+                                merged.set(normalizePositionTitleKey(it.title), { title: it.title, longText: '', unit: it.unit, category: detectSHKCategory(it.title), prices: [it.offeredUnitPrice] });
+                            });
+                        });
+                    } else {
+                        parseGAEBXmlContent(f.data).forEach(it => {
+                            if (it.title && it.price > 0) {
+                                merged.set(normalizePositionTitleKey(it.title), { title: it.title, longText: it.longText, unit: it.unit || 'Stk', category: detectSHKCategory(it.title), prices: [it.price] });
+                            }
+                        });
+                    }
+                });
+
+                setTimeout(async () => {
+                    const lookup = new Map();
+                    marketPrices.forEach(mp => { const k = normalizePositionTitleKey(mp.title); if (k) lookup.set(k, mp); });
+
+                    if (db) {
+                        const batch = db.batch();
+                        merged.forEach((imp, key) => {
+                            const exist = lookup.get(key);
+                            if (exist && exist.idDoc) {
+                                const oldP = (exist.prices || []).filter(p => p > 0);
+                                const comb = [...oldP, ...imp.prices];
+                                const avg = Number((comb.reduce((a,b)=>a+b,0)/comb.length).toFixed(2));
+                                batch.update(db.collection('market_prices').doc(exist.idDoc), { prices: comb, average: avg, unit: imp.unit || exist.unit });
+                            } else {
+                                const avg = Number((imp.prices.reduce((a,b)=>a+b,0)/imp.prices.length).toFixed(2));
+                                batch.set(db.collection('market_prices').doc(), { title: imp.title, longText: imp.longText, unit: imp.unit || 'Stk', category: imp.category, prices: imp.prices, average: avg, updatedAt: new Date().toISOString() });
+                            }
+                        });
+                        await batch.commit();
+                    }
+                    feedback.textContent = "✓ Import erfolgreich!";
+                    feedback.className = "text-xs block text-emerald-400 font-semibold";
+                    loadMarketPrices();
+                }, 300);
+            } catch (err) {
+                feedback.textContent = "⚠ " + err.message;
+                feedback.className = "text-xs block text-rose-400 font-semibold";
+            }
+        }
+
+        // ============================================================================
+        // NEU 2: PDF-EXPORT FÜR DEN GAEB / PDF ABGLEICH
+        // ============================================================================
+
+        function exportFileCheckToPDF() {
+            if (!directFileCheckItems || directFileCheckItems.length === 0) {
+                alert("Keine Positionen in der Prüfliste vorhanden.");
+                return;
+            }
+            if (!window.jspdf || !window.jspdf.jsPDF) {
+                alert("jsPDF nicht geladen.");
+                return;
+            }
+
+            const { jsPDF } = window.jspdf;
+            const doc = new jsPDF({ orientation: 'portrait', unit: 'mm', format: 'a4' });
+            const fmt = (n) => Number(n || 0).toLocaleString('de-DE', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+
+            let totalOfferNet = 0, totalRefNet = 0;
+            directFileCheckItems.forEach(it => {
+                totalOfferNet += (it.qty * it.offeredUnitPrice);
+                if (it.refUnitPrice > 0) totalRefNet += (it.qty * it.refUnitPrice);
+            });
+
+            const diffNet = totalOfferNet - totalRefNet;
+            const diffPct = totalRefNet > 0 ? (((totalOfferNet - totalRefNet) / totalRefNet) * 100) : 0;
+            const todayStr = new Date().toLocaleDateString('de-DE');
+
+            doc.setFont('helvetica', 'bold');
+            doc.setFontSize(16);
+            doc.setTextColor(16, 185, 129);
+            doc.text('SHK Prüfprotokoll — GAEB & PDF Abgleich', 14, 18);
+
+            doc.setFont('helvetica', 'normal');
+            doc.setFontSize(9);
+            doc.setTextColor(100, 116, 139);
+            doc.text(`Datum: ${todayStr}   |   Positionen: ${directFileCheckItems.length}`, 14, 24);
+
+            doc.setFillColor(241, 245, 249);
+            doc.roundedRect(14, 29, 182, 20, 2, 2, 'F');
+            doc.setFontSize(8);
+            doc.setTextColor(71, 85, 105);
+            doc.text('ANGEBOTSSUMME', 18, 35);
+            doc.text('REFERENZSUMME (DB-Ø)', 80, 35);
+            doc.text('GESAMTABWEICHUNG', 144, 35);
+
+            doc.setFont('helvetica', 'bold');
+            doc.setFontSize(10);
+            doc.setTextColor(15, 23, 42);
+            doc.text(`${fmt(totalOfferNet)} €`, 18, 41);
+            doc.setTextColor(5, 150, 105);
+            doc.text(`${fmt(totalRefNet)} €`, 80, 41);
+            doc.setTextColor(diffNet > 0 ? 225 : 5, diffNet > 0 ? 29 : 150, diffNet > 0 ? 72 : 105);
+            doc.text(`${fmt(diffNet)} € (${diffPct.toFixed(1)} %)`, 144, 41);
+
+            let y = 55;
+            const drawHeader = (yPos) => {
+                doc.setFillColor(15, 23, 42);
+                doc.rect(14, yPos, 182, 8, 'F');
+                doc.setFont('helvetica', 'bold');
+                doc.setFontSize(8);
+                doc.setTextColor(255, 255, 255);
+                doc.text('Pos.', 16, yPos + 5.3);
+                doc.text('Position / Beschreibung', 26, yPos + 5.3);
+                doc.text('Menge', 108, yPos + 5.3);
+                doc.text('Angebot EP', 126, yPos + 5.3);
+                doc.text('DB-Ø EP', 148, yPos + 5.3);
+                doc.text('Abw.', 168, yPos + 5.3);
+                doc.text('Diff. Gesamt', 180, yPos + 5.3);
+                return yPos + 8;
+            };
+
+            y = drawHeader(y);
+
+            directFileCheckItems.forEach((it, idx) => {
+                if (y > 275) { doc.addPage(); y = 18; y = drawHeader(y); }
+                const hasRef = it.refUnitPrice > 0;
+                const devPct = hasRef ? (((it.offeredUnitPrice - it.refUnitPrice) / it.refUnitPrice) * 100) : null;
+                const rowDiff = hasRef ? ((it.offeredUnitPrice - it.refUnitPrice) * it.qty) : 0;
+
+                if (!hasRef) doc.setFillColor(224, 242, 254);
+                else if (devPct <= 0) doc.setFillColor(209, 250, 229);
+                else if (devPct <= 20) doc.setFillColor(254, 243, 199);
+                else doc.setFillColor(255, 228, 230);
+
+                doc.rect(14, y, 182, 8, 'F');
+                doc.setFont('helvetica', 'normal');
+                doc.setFontSize(8);
+                doc.setTextColor(15, 23, 42);
+
+                doc.text(String(idx + 1), 16, y + 5.2);
+                doc.text(String(it.title || '').substring(0, 46), 26, y + 5.2);
+                doc.text(`${it.qty} ${it.unit}`, 108, y + 5.2);
+                doc.text(`${fmt(it.offeredUnitPrice)} €`, 126, y + 5.2);
+                doc.text(hasRef ? `${fmt(it.refUnitPrice)} €` : '0,00 €', 148, y + 5.2);
+
+                doc.setFont('helvetica', 'bold');
+                if (!hasRef) {
+                    doc.setTextColor(2, 132, 199);
+                    doc.text('manuell', 168, y + 5.2);
+                    doc.text('-', 180, y + 5.2);
+                } else {
+                    doc.setTextColor(devPct <= 0 ? 5 : (devPct <= 20 ? 180 : 225), devPct <= 0 ? 150 : (devPct <= 20 ? 83 : 29), devPct <= 0 ? 105 : (devPct <= 20 ? 9 : 72));
+                    doc.text(`${devPct > 0 ? '+' : ''}${devPct.toFixed(1)}%`, 168, y + 5.2);
+                    doc.text(`${rowDiff > 0 ? '+' : ''}${Math.round(rowDiff)} €`, 180, y + 5.2);
+                }
+                y += 8.5;
+            });
+
+            doc.save(`SHK_Pruefprotokoll_${todayStr.replace(/\./g, '-')}.pdf`);
+        }
+
+        // Standard-Tabs & Dashboard Switch
+        function switchAdminTab(tabName, year = null) {
+            currentAdminTab = tabName;
+            activeArchiveYear = year;
+
+            ['active', 'approvals', 'rejected', 'cancelled', 'archive', 'customers', 'marketprices', 'reconstruct', 'filecheck'].forEach(t => {
+                const btn = document.getElementById('tabBtn' + t.charAt(0).toUpperCase() + t.slice(1));
+                if (btn) {
+                    if (t === tabName) {
+                        btn.className = "px-5 py-3 text-sm font-bold border-b-2 " + (t === 'filecheck' ? "border-sky-500 text-sky-400" : "border-emerald-500 text-emerald-400");
+                    } else {
+                        btn.className = "px-5 py-3 text-sm font-bold border-b-2 border-transparent text-slate-400 hover:text-white transition";
+                    }
+                }
+            });
+
+            document.getElementById('adminSelectPrompt').classList.add('hidden');
+            document.getElementById('adminEditorPanel').classList.add('hidden');
+            document.getElementById('adminMarketPricesPanel').classList.add('hidden');
+            document.getElementById('adminCustomersPanel').classList.add('hidden');
+            document.getElementById('adminReconstructPanel').classList.add('hidden');
+            document.getElementById('adminFileCheckPanel').classList.add('hidden');
+            document.getElementById('adminSearchContainer').classList.add('hidden');
+
+            if (tabName === 'marketprices') {
+                document.getElementById('adminMarketPricesPanel').classList.remove('hidden');
+                document.getElementById('adminSearchContainer').classList.remove('hidden');
+                loadMarketPrices();
+            } else if (tabName === 'reconstruct') {
+                document.getElementById('adminReconstructPanel').classList.remove('hidden');
+                document.getElementById('adminSearchContainer').classList.remove('hidden');
+                populateReconstructTargetOrderDropdown();
+                loadMarketPrices();
+                renderReconstructCatalogList();
+                renderReconstructedOffer();
+            } else if (tabName === 'filecheck') {
+                document.getElementById('adminFileCheckPanel').classList.remove('hidden');
+                populateFileCheckTargetOrderDropdown();
+                loadMarketPrices();
+                renderDirectFileCheckTable();
+            } else if (tabName === 'customers') {
+                document.getElementById('adminCustomersPanel').classList.remove('hidden');
+                loadCustomers();
+            } else {
+                if (!selectedAdminOrderId) {
+                    document.getElementById('adminSelectPrompt').classList.remove('hidden');
+                } else {
+                    document.getElementById('adminEditorPanel').classList.remove('hidden');
+                }
+            }
+            renderAdminDashboard();
+        }
+
+        function renderAdminDashboard() {
+            let currentRevenue = 0, openRevenue = 0;
+            adminOrders.forEach(o => {
+                if (o.status == 5 || o.status == 6) return;
+                const p = o.price || 149;
+                if (o.paymentStatus === 'paid') currentRevenue += p;
+                else openRevenue += p;
+            });
+            document.getElementById('adminStatCurrentRevenue').textContent = currentRevenue + ' €';
+            document.getElementById('adminStatOpenRevenue').textContent = openRevenue + ' €';
+
+            const container = document.getElementById('adminOrdersList');
+            const listTitle = document.getElementById('adminListTitle');
+            if (!container) return;
+
+            if (currentAdminTab === 'active') {
+                listTitle.textContent = "Aktive Aufträge";
+                const active = adminOrders.filter(o => !o.isArchived && o.status != 5 && o.status != 6);
+                container.innerHTML = active.length === 0 ? `<p class="text-xs text-slate-500">Keine Aufträge.</p>` : active.map(o => renderOrderCard(o)).join('');
+            } else if (currentAdminTab === 'approvals') {
+                listTitle.textContent = "Offene Freigaben";
+                const pending = adminOrders.filter(o => !o.isArchived && (o.pendingAction === 'reject' || o.pendingAction === 'cancel'));
+                container.innerHTML = pending.length === 0 ? `<p class="text-xs text-slate-500">Keine Freigaben.</p>` : pending.map(o => renderOrderCard(o)).join('');
+            } else if (currentAdminTab === 'customers') {
+                listTitle.textContent = "Kunden & Ränge";
+            }
+        }
+
+        function selectAdminOrder(orderId) {
+            if (['marketprices', 'customers', 'reconstruct', 'filecheck'].includes(currentAdminTab)) return;
+            selectedAdminOrderId = orderId;
+            const order = adminOrders.find(o => o.id === orderId);
+            if (!order) return;
+            document.getElementById('adminSelectPrompt').classList.add('hidden');
+            document.getElementById('adminEditorPanel').classList.remove('hidden');
+            document.getElementById('adminEditOrderId').textContent = `Auftrag ${order.id}`;
+            document.getElementById('adminEditCustomerEmail').textContent = order.email;
+        }
+
+        async function saveAdminOrderChanges() {
+            if (!selectedAdminOrderId) return;
+            const order = adminOrders.find(o => o.id === selectedAdminOrderId);
+            if (!order || !order.idDoc) return;
+            order.status = parseInt(document.getElementById('adminStatusSelect').value);
+            order.summary = document.getElementById('adminSummaryInput').value;
+            order.defects = document.getElementById('adminDefectsInput').value.split('\n').filter(Boolean);
+            if (db) {
+                await db.collection('orders').doc(order.idDoc).update({ status: order.status, summary: order.summary, defects: order.defects });
+                alert('Gespeichert!');
+            }
+        }
+
+        async function handleAuthSubmit(event) {
+            event.preventDefault();
+            const rawInput = document.getElementById('authEmail').value.trim();
+            const password = document.getElementById('authPassword').value;
+
+            if (!isForgotPasswordMode && !isRegisterMode && rawInput.toLowerCase() === DEMO_IDENTIFIER && password === 'Demo') {
+                sessionStorage.setItem('shk_demo_session', 'true');
+                currentUser = { email: 'Demo', uid: 'demo_admin_uid' };
+                await ensureCustomerRecord('Demo', 'Demo', 'Admin-Konto', 'Admin');
+                currentUserRole = await fetchRoleForEmail('Demo');
+                updateNavbarUI();
+                closeAuthModal();
+                await loadAdminOrders();
+                await loadMarketPrices();
+                await loadCustomers();
+                openAdminPortal();
+                return;
+            }
+
+            try {
+                sessionStorage.removeItem('shk_demo_session');
+                await auth.signInWithEmailAndPassword(rawInput, password);
+                closeAuthModal();
+                openClientPortal();
+            } catch (error) {
+                alert('Fehler: ' + error.message);
+            }
+        }
+
+        async function logoutUser() {
+            sessionStorage.removeItem('shk_demo_session');
+            if (auth && auth.currentUser) await auth.signOut();
+            currentUser = null;
+            currentUserRole = 'Kunde';
+            updateNavbarUI();
+            switchView('landing');
+        }
+    </script>
+</body>
+</html>
