@@ -1367,7 +1367,7 @@
         // Positionen im Reiter "Angebot rekonstruieren"
         let reconstructedOfferItems = [];
 
-        // NEU: Positionen im Reiter "GAEB / PDF Abgleich"
+        // Positionen im Reiter "GAEB / PDF Abgleich"
         let directFileCheckItems = [];
 
         function isMainAdminEmail(email) {
@@ -2771,149 +2771,33 @@
         }
 
         // ============================================================================
-        // HAUPTADMIN: ALLE POSITIONEN DER DATENBANK MIT PASSWORT-ABFRAGE LÖSCHEN
+        // GAEB-PARSER (MIT VOLLSTÄNDIGEM ORDNUNGSZAHL-PFAD UND INTELLIGENTEM KURZTEXT-FALLBACK)
         // ============================================================================
-
-        function openClearDbPasswordModal() {
-            if (!isMainAdminUser()) {
-                alert('Nur der Hauptadmin ist berechtigt, die gesamte Marktpreise-Datenbank zu leeren.');
-                return;
-            }
-            const pwInput = document.getElementById('mainAdminClearDbPasswordInput');
-            const errSpan = document.getElementById('clearDbModalError');
-            if (pwInput) pwInput.value = '';
-            if (errSpan) {
-                errSpan.textContent = '';
-                errSpan.classList.add('hidden');
-            }
-            document.getElementById('clearDbPasswordModal').classList.remove('hidden');
-            if (pwInput) pwInput.focus();
-        }
-
-        function closeClearDbPasswordModal() {
-            document.getElementById('clearDbPasswordModal').classList.add('hidden');
-        }
-
-        async function confirmDeleteAllMarketPrices(event) {
-            event.preventDefault();
-            if (!isMainAdminUser()) return;
-
-            const pwInput = document.getElementById('mainAdminClearDbPasswordInput');
-            const errSpan = document.getElementById('clearDbModalError');
-            const submitBtn = document.getElementById('confirmClearDbSubmitBtn');
-            const feedback = document.getElementById('importFeedback');
-            const enteredPassword = pwInput ? pwInput.value : '';
-
-            if (!enteredPassword) return;
-
-            if (errSpan) errSpan.classList.add('hidden');
-            if (submitBtn) {
-                submitBtn.disabled = true;
-                submitBtn.textContent = 'Prüfe Passwort & lösche...';
-            }
-
-            try {
-                if (auth && auth.currentUser) {
-                    const cred = firebase.auth.EmailAuthProvider.credential(ADMIN_EMAIL, enteredPassword);
-                    await auth.currentUser.reauthenticateWithCredential(cred);
-                } else if (auth) {
-                    await auth.signInWithEmailAndPassword(ADMIN_EMAIL, enteredPassword);
-                }
-
-                if (db) {
-                    const snap = await db.collection('market_prices').get();
-                    const totalDocs = snap.size;
-
-                    if (totalDocs > 0) {
-                        const docs = snap.docs;
-                        for (let i = 0; i < docs.length; i += 400) {
-                            const batch = db.batch();
-                            docs.slice(i, i + 400).forEach(d => batch.delete(d.ref));
-                            await batch.commit();
-                        }
-                    }
-
-                    closeClearDbPasswordModal();
-                    if (feedback) {
-                        feedback.textContent = `✓ Gesamte Marktpreise-Datenbank wurde durch den Hauptadmin geleert (${totalDocs} Positionen gelöscht).`;
-                        feedback.className = "text-xs block text-emerald-400 font-semibold";
-                    }
-                    await loadMarketPrices();
-                }
-            } catch (err) {
-                console.error("Fehler bei Passwortprüfung / DB-Löschung:", err);
-                if (errSpan) {
-                    errSpan.textContent = '✕ Falsches Hauptadmin-Passwort! Löschvorgang wurde abgebrochen.';
-                    errSpan.classList.remove('hidden');
-                }
-            } finally {
-                if (submitBtn) {
-                    submitBtn.disabled = false;
-                    submitBtn.innerHTML = '<i class="fa-solid fa-trash-can mr-1.5"></i>Jetzt alle löschen';
-                }
-            }
-        }
-
-        // ============================================================================
-        // GAEB-IMPORTER MIT FORTLAUFENDER PREIS-HISTORIE & GESAMT-MITTELWERT
-        // ============================================================================
-
-        function detectSHKCategory(text) {
-            const t = (text || '').toLowerCase();
-            if (/(wärmepumpe|heizkörper|heizkreis|fußbodenheizung|kessel|therme|pufferspeicher|ausdehnungsgefäß|abgleich|ventilunterteil|thermostat|vorlauf|rücklauf|brenner|solar|speicher|heizung)/.test(t)) {
-                return 'Heizung';
-            }
-            if (/(waschtisch|wc|urinale|dusche|badewanne|armatur|mischbatterie|spülkasten|vorwand|abfluss|trinkwasser|eckventil|siphon|rohrbelüfter|wasserzähler|ht-rohr|sanitär|brause)/.test(t)) {
-                return 'Sanitär';
-            }
-            return 'Allgemein';
-        }
-
-        function normalizeGAEBUnit(rawUnit) {
-            if (!rawUnit) return '';
-            const cleaned = String(rawUnit).trim();
-            const u = cleaned.toLowerCase().replace(/\./g, '');
-            if (['st', 'stk', 'stck', 'stück', 'stueck', 'pc', 'pcs'].includes(u)) return 'Stk';
-            if (['psch', 'pausch', 'pau', 'pauschal', 'pl', 'ps'].includes(u)) return 'psch';
-            if (['m', 'lfm', 'lfdm', 'mtr'].includes(u)) return 'm';
-            if (['m2', 'm²', 'qm'].includes(u)) return 'm²';
-            if (['m3', 'm³', 'cbm'].includes(u)) return 'm³';
-            if (['h', 'std', 'stunde', 'stunden'].includes(u)) return 'Std';
-            if (['satz', 'stz', 'set'].includes(u)) return 'Satz';
-            if (['paar', 'pr'].includes(u)) return 'Paar';
-            if (['kg', 'kilogramm'].includes(u)) return 'kg';
-            if (['l', 'ltr', 'liter'].includes(u)) return 'l';
-            return cleaned.substring(0, 12);
-        }
-
-        function normalizePositionTitleKey(title) {
-            return (title || '')
-                .toLowerCase()
-                .replace(/\s+/g, ' ')
-                .replace(/[^a-z0-9äöüß]/g, '')
-                .trim();
-        }
 
         function extractStrictGAEBShortText(itemNode) {
-            const shortTextNode = itemNode.querySelector(
+            const shortTextNodes = itemNode.querySelectorAll(
                 'OutlineText OutlTxt TextOutlTxt, OutlineText TextOutlTxt, OutlTxt TextOutlTxt, OutlineText OutlTxt, OutlTxt, ShortDesc, Kurztext, Headline'
             );
-            if (shortTextNode && shortTextNode.textContent) {
-                const cleaned = shortTextNode.textContent.replace(/\s+/g, ' ').trim();
-                if (cleaned.length > 0) {
-                    return cleaned.substring(0, 120);
+            for (const node of shortTextNodes) {
+                if (node && node.textContent) {
+                    const cleaned = node.textContent.replace(/\s+/g, ' ').trim();
+                    if (cleaned.length > 1) {
+                        return cleaned.substring(0, 120);
+                    }
                 }
             }
 
-            const clone = itemNode.cloneNode(true);
-            clone.querySelectorAll('DetailTxt, TextComplement, CompleteTextDetail, LongText, PerfDescr, UP, QU, Qty, IT').forEach(el => el.remove());
-            const fallbackNode = clone.querySelector('Description, Text');
-            if (fallbackNode && fallbackNode.textContent) {
-                const firstLine = fallbackNode.textContent
-                    .split(/\r?\n/)
-                    .map(l => l.trim())
-                    .filter(Boolean)[0] || '';
-                return firstLine.replace(/\s+/g, ' ').trim().substring(0, 120);
+            const detailNodes = itemNode.querySelectorAll('DetailTxt, CompleteTextDetail, LongText, Description, Text');
+            for (const dNode of detailNodes) {
+                if (dNode && dNode.textContent) {
+                    const lines = dNode.textContent
+                        .split(/\r?\n/)
+                        .map(l => l.replace(/\s+/g, ' ').trim())
+                        .filter(l => l.length > 2 && !/^(pos\.|position|oz|menge|einheit)/i.test(l));
+                    if (lines.length > 0) {
+                        return lines[0].substring(0, 120);
+                    }
+                }
             }
             return '';
         }
@@ -2937,11 +2821,20 @@
 
             items.forEach((node, idx) => {
                 const itemId = node.getAttribute('ID') || '';
-                const rNoPart = node.getAttribute('RNoPart') || '';
-                const parentCtgy = node.closest('BoQCtgy');
-                const parentRNo = parentCtgy ? (parentCtgy.getAttribute('RNoPart') || '') : '';
-                const ozKey = (parentRNo + '_' + rNoPart).replace(/^_+|_+$/g, '') || itemId || ('idx_' + idx);
+                const rNoPart = (node.getAttribute('RNoPart') || '').trim();
 
+                const ctgyParts = [];
+                let parent = node.parentElement;
+                while (parent) {
+                    if (parent.tagName && parent.tagName.toLowerCase() === 'boqctgy') {
+                        const pRNo = (parent.getAttribute('RNoPart') || '').trim();
+                        if (pRNo) ctgyParts.unshift(pRNo);
+                    }
+                    parent = parent.parentElement;
+                }
+                if (rNoPart) ctgyParts.push(rNoPart);
+
+                const ozKey = ctgyParts.join('.') || itemId || ('idx_' + idx);
                 const shortTitle = extractStrictGAEBShortText(node);
                 const longDescription = extractOptionalGAEBLongText(node);
 
@@ -2961,7 +2854,8 @@
                 }
 
                 parsedList.push({
-                    id: itemId,
+                    id: ozKey,
+                    xmlId: itemId,
                     ozKey: ozKey,
                     index: idx,
                     title: shortTitle,
@@ -3066,18 +2960,147 @@
             return results;
         }
 
-        async function handleFileImport() {
-            const fileInput = document.getElementById('importFile');
-            const feedback = document.getElementById('importFeedback');
+        // ============================================================================
+        // NEU: PDF-TEXTERKENNUNG FÜR DIREKTEN GAEB / PDF ABGLEICH
+        // ============================================================================
+
+        async function extractOfferPositionsFromPDF(arrayBuffer) {
+            if (!window.pdfjsLib) {
+                throw new Error("PDF.js Bibliothek ist nicht geladen.");
+            }
+            const pdf = await window.pdfjsLib.getDocument({ data: arrayBuffer }).promise;
+            const extractedLines = [];
+
+            for (let pageNum = 1; pageNum <= pdf.numPages; pageNum++) {
+                const page = await pdf.getPage(pageNum);
+                const textContent = await page.getTextContent();
+                const yMap = new Map();
+
+                textContent.items.forEach(item => {
+                    const str = (item.str || '').trim();
+                    if (!str) return;
+                    const y = Math.round(item.transform[5] / 4) * 4;
+                    if (!yMap.has(y)) yMap.set(y, []);
+                    yMap.get(y).push({ x: item.transform[4], text: str });
+                });
+
+                const sortedY = Array.from(yMap.keys()).sort((a, b) => b - a);
+                sortedY.forEach(y => {
+                    const rowItems = yMap.get(y).sort((a, b) => a.x - b.x);
+                    const lineStr = rowItems.map(r => r.text).join(' ').replace(/\s+/g, ' ').trim();
+                    if (lineStr.length > 4) extractedLines.push(lineStr);
+                });
+            }
+
+            const parsedPositions = [];
+            const ignoreRegex = /(zwischensumme|übertrag|gesamtbetrag|nettobetrag|mehrwertsteuer|mwst|umsatzsteuer|endbetrag|summe|iban|bic|steuernummer|seite\s+\d)/i;
+
+            extractedLines.forEach(line => {
+                if (ignoreRegex.test(line)) return;
+
+                const priceMatches = [...line.matchAll(/(\d{1,3}(?:\.\d{3})*,\d{2}|\d+\.\d{2})\s*€?/g)];
+                if (priceMatches.length === 0) return;
+
+                const firstPriceMatch = priceMatches[0];
+                const firstPriceIdx = firstPriceMatch.index;
+                let descPart = line.substring(0, firstPriceIdx).trim();
+
+                descPart = descPart.replace(/^\d+(?:[.,]\d+)*\s+/, '').trim();
+
+                let qty = 1;
+                let unit = 'Stk';
+                const qtyUnitMatch = descPart.match(/(\d+(?:[.,]\d+)?)\s*(Stk|Stck|Stück|St|psch|pausch|Pauschal|m²|qm|m³|lfm|m|Std|h|Satz|Paar|kg)\b/i);
+                if (qtyUnitMatch) {
+                    qty = parseFloat(qtyUnitMatch[1].replace(',', '.')) || 1;
+                    unit = normalizeGAEBUnit(qtyUnitMatch[2]) || 'Stk';
+                    descPart = descPart.replace(qtyUnitMatch[0], '').trim();
+                }
+
+                const pA = parsePriceNumber(priceMatches[0][1]);
+                const pB = priceMatches.length > 1 ? parsePriceNumber(priceMatches[priceMatches.length - 1][1]) : 0;
+                let unitPrice = pA;
+                if (pB > 0 && qty > 1 && Math.abs((pA * qty) - pB) < 2) {
+                    unitPrice = pA;
+                } else if (pB > 0 && pA > pB) {
+                    unitPrice = pB;
+                }
+
+                if (descPart.length >= 3 && unitPrice > 0) {
+                    parsedPositions.push({
+                        title: descPart.substring(0, 120),
+                        qty: qty,
+                        unit: unit,
+                        offeredUnitPrice: unitPrice
+                    });
+                }
+            });
+
+            return parsedPositions;
+        }
+
+        // ============================================================================
+        // NEU: GAEB / PDF ANGEBOT HOCHLADEN & MIT DB-MITTELWERTEN ABGLEICHEN (REITER 9)
+        // ============================================================================
+
+        function populateFileCheckTargetOrderDropdown() {
+            const select = document.getElementById('fileCheckTargetOrderSelect');
+            if (!select) return;
+            const currentVal = select.value || selectedAdminOrderId || '';
+            const activeOrders = adminOrders.filter(o => !o.isArchived && o.status != 5 && o.status != 6);
+
+            select.innerHTML = '<option value="">-- Optional: Kundenauftrag für Übernahme wählen --</option>';
+            activeOrders.forEach(o => {
+                const name = (o.firstName && o.lastName) ? `${o.firstName} ${o.lastName}` : o.email;
+                select.innerHTML += `<option value="${o.id}" ${currentVal === o.id ? 'selected' : ''}>${o.id} — ${name} (${o.packageName || 'Paket'})</option>`;
+            });
+        }
+
+        function findMatchingMarketPriceItem(rawTitle) {
+            if (!rawTitle || marketPrices.length === 0) return null;
+            const normTarget = normalizePositionTitleKey(rawTitle);
+            if (!normTarget) return null;
+
+            let match = marketPrices.find(m => normalizePositionTitleKey(m.title) === normTarget);
+            if (match) return match;
+
+            const targetWords = rawTitle.toLowerCase().split(/\s+/).filter(w => w.length > 3);
+            let bestCandidate = null;
+            let bestScore = 0;
+
+            marketPrices.forEach(m => {
+                const dbNorm = normalizePositionTitleKey(m.title);
+                if (!dbNorm) return;
+                if (normTarget.includes(dbNorm) || dbNorm.includes(normTarget)) {
+                    const score = Math.min(normTarget.length, dbNorm.length);
+                    if (score > bestScore) {
+                        bestScore = score;
+                        bestCandidate = m;
+                    }
+                } else if (targetWords.length > 0) {
+                    const dbLower = (m.title || '').toLowerCase();
+                    const hitCount = targetWords.filter(w => dbLower.includes(w)).length;
+                    if (hitCount >= 2 && hitCount > bestScore) {
+                        bestScore = hitCount;
+                        bestCandidate = m;
+                    }
+                }
+            });
+
+            return bestCandidate;
+        }
+
+        async function handleDirectOfferCheckUpload() {
+            const fileInput = document.getElementById('directCheckFileInput');
+            const feedback = document.getElementById('directCheckUploadFeedback');
             const files = Array.from(fileInput.files || []);
 
             if (files.length === 0) {
-                alert("Bitte wählen Sie mindestens eine Datei (.xlsx, .xls, .csv, .x82, .x84, .x86 oder Kombi aus .x83 + .x84) aus.");
+                alert("Bitte wählen Sie eine Angebotsdatei (GAEB .x82/.x83+.x84/.x86, PDF oder Excel/CSV) aus.");
                 return;
             }
 
-            feedback.textContent = `${files.length} Datei(en) werden analysiert (Kurztexte, Einheiten & fortlaufende Mittelwert-Bildung)...`;
-            feedback.className = "text-xs block text-amber-400";
+            feedback.textContent = "Angebot wird ausgelesen und mit den Marktpreisen der Datenbank abgeglichen...";
+            feedback.className = "text-xs block text-sky-400 font-semibold";
 
             try {
                 if (db && marketPrices.length === 0) {
@@ -3087,16 +3110,16 @@
 
                 const loadedFiles = await Promise.all(files.map(file => {
                     const lowerName = file.name.toLowerCase();
-                    const isExcelBinary = /\.(xlsx|xls)$/.test(lowerName);
+                    const isBinary = /\.(pdf|xlsx|xls)$/.test(lowerName);
                     return new Promise((resolve, reject) => {
                         const reader = new FileReader();
                         reader.onload = e => resolve({
                             name: lowerName,
-                            isExcel: isExcelBinary,
+                            isBinary: isBinary,
                             data: e.target.result
                         });
                         reader.onerror = err => reject(err);
-                        if (isExcelBinary) {
+                        if (isBinary) {
                             reader.readAsArrayBuffer(file);
                         } else {
                             reader.readAsText(file, "UTF-8");
@@ -3105,79 +3128,64 @@
                 }));
 
                 loadedFiles.sort((a, b) => {
-                    const aIsBase = /\.(x83|d83|p83|x82|d82|p82)$/.test(a.name) ? 0 : 1;
-                    const bIsBase = /\.(x83|d83|p83|x82|d82|p82)$/.test(b.name) ? 0 : 1;
-                    return aIsBase - bIsBase;
+                    const aBase = /\.(x83|d83|p83|x82|d82|p82)$/.test(a.name) ? 0 : 1;
+                    const bBase = /\.(x83|d83|p83|x82|d82|p82)$/.test(b.name) ? 0 : 1;
+                    return aBase - bBase;
                 });
 
-                const mergedPositions = new Map();
-                let x83WarnOnly = false;
+                const rawExtracted = new Map();
 
-                loadedFiles.forEach((fileObj, fIdx) => {
+                for (let fIdx = 0; fIdx < loadedFiles.length; fIdx++) {
+                    const fileObj = loadedFiles[fIdx];
                     const name = fileObj.name;
-                    const isXmlGaeb = /\.(xml|x82|d82|p82|x83|d83|p83|x84|d84|p84|x85|x86)$/.test(name);
 
-                    if (fileObj.isExcel) {
-                        if (typeof XLSX === 'undefined') {
-                            throw new Error("Excel-Bibliothek (SheetJS) konnte nicht geladen werden.");
-                        }
-                        const workbook = XLSX.read(fileObj.data, { type: 'array' });
-                        const firstSheetName = workbook.SheetNames[0];
-                        const worksheet = workbook.Sheets[firstSheetName];
-                        const rows = XLSX.utils.sheet_to_json(worksheet, { header: 1, defval: '' });
-                        const excelItems = parseTabularRows(rows);
-
-                        excelItems.forEach((it, idx) => {
-                            mergedPositions.set(`xlsx_${fIdx}_${idx}_${it.title}`, {
-                                key: `xlsx_${fIdx}_${idx}`,
-                                index: idx,
-                                ozKey: '',
-                                title: it.title,
-                                longText: it.longText || '',
-                                unit: it.unit,
-                                category: it.category,
-                                prices: it.prices
+                    if (name.endsWith('.pdf')) {
+                        const pdfPositions = await extractOfferPositionsFromPDF(fileObj.data);
+                        pdfPositions.forEach((pos, idx) => {
+                            rawExtracted.set(`pdf_${fIdx}_${idx}`, {
+                                title: pos.title,
+                                qty: pos.qty || 1,
+                                unit: pos.unit || 'Stk',
+                                offeredUnitPrice: pos.offeredUnitPrice || 0
                             });
                         });
-                    } else if (isXmlGaeb) {
-                        const parsedItems = parseGAEBXmlContent(fileObj.data);
-                        if (name.endsWith('.x83') || name.endsWith('.d83') || name.endsWith('.p83')) {
-                            x83WarnOnly = true;
-                        }
-
-                        parsedItems.forEach(item => {
+                    } else if (/\.(xlsx|xls)$/.test(name)) {
+                        const workbook = XLSX.read(fileObj.data, { type: 'array' });
+                        const sheet = workbook.Sheets[workbook.SheetNames[0]];
+                        const rows = XLSX.utils.sheet_to_json(sheet, { header: 1, defval: '' });
+                        const excelItems = parseTabularRows(rows);
+                        excelItems.forEach((it, idx) => {
+                            rawExtracted.set(`xlsx_${fIdx}_${idx}`, {
+                                title: it.title,
+                                qty: it.qty || 1,
+                                unit: it.unit || 'Stk',
+                                offeredUnitPrice: it.prices[0] || 0
+                            });
+                        });
+                    } else if (/\.(xml|x82|d82|p82|x83|d83|p83|x84|d84|p84|x85|x86)$/.test(name)) {
+                        const gaebItems = parseGAEBXmlContent(fileObj.data);
+                        gaebItems.forEach(item => {
                             let key = item.id || item.ozKey;
-                            if (!mergedPositions.has(key)) {
-                                const existingByIndex = Array.from(mergedPositions.values()).find(p => p.index === item.index && (p.ozKey === item.ozKey || !item.title));
-                                if (existingByIndex) {
-                                    key = existingByIndex.key;
-                                }
+                            if (!rawExtracted.has(key)) {
+                                const byIdx = Array.from(rawExtracted.entries()).find(([_, v]) => v.index === item.index && (v.ozKey === item.ozKey || !item.title));
+                                if (byIdx) key = byIdx[0];
                             }
 
-                            if (!mergedPositions.has(key)) {
-                                mergedPositions.set(key, {
-                                    key: key,
+                            if (!rawExtracted.has(key)) {
+                                rawExtracted.set(key, {
                                     index: item.index,
                                     ozKey: item.ozKey,
                                     title: item.title || '',
-                                    longText: item.longText || '',
-                                    unit: item.unit || '',
-                                    prices: item.price > 0 ? [item.price] : []
+                                    qty: item.qty || 1,
+                                    unit: item.unit || 'Stk',
+                                    offeredUnitPrice: item.price || 0
                                 });
                             } else {
-                                const entry = mergedPositions.get(key);
-                                if (!entry.title && item.title) {
-                                    entry.title = item.title;
-                                }
-                                if (!entry.longText && item.longText) {
-                                    entry.longText = item.longText;
-                                }
-                                if (!entry.unit && item.unit) {
-                                    entry.unit = item.unit;
-                                }
-                                if (item.price > 0) {
-                                    entry.prices.push(item.price);
-                                }
+                                const entry = rawExtracted.get(key);
+                                if (!entry.title && item.title) entry.title = item.title;
+                                if ((!entry.unit || entry.unit === 'Stk') && item.unit) entry.unit = item.unit;
+                                if (entry.qty === 1 && item.qty > 1) entry.qty = item.qty;
+                                if (item.price > 0) entry.offeredUnitPrice = item.price;
                             }
                         });
                     } else {
@@ -3188,466 +3196,241 @@
                         });
                         const csvItems = parseTabularRows(rows);
                         csvItems.forEach((it, idx) => {
-                            mergedPositions.set(`csv_${fIdx}_${idx}_${it.title}`, {
-                                key: `csv_${fIdx}_${idx}`,
-                                index: idx,
-                                ozKey: '',
+                            rawExtracted.set(`csv_${fIdx}_${idx}`, {
                                 title: it.title,
-                                longText: it.longText || '',
-                                unit: it.unit,
-                                category: it.category,
-                                prices: it.prices
+                                qty: it.qty || 1,
+                                unit: it.unit || 'Stk',
+                                offeredUnitPrice: it.prices[0] || 0
                             });
                         });
                     }
-                });
+                }
 
-                const consolidatedImportMap = new Map();
-                let missingPriceCount = 0;
+                directFileCheckItems = [];
+                let matchedCount = 0;
+                let missingInDbCount = 0;
 
-                mergedPositions.forEach(pos => {
-                    if (!pos.prices || pos.prices.length === 0) {
-                        missingPriceCount++;
-                        return;
-                    }
-
-                    const finalTitle = pos.title && pos.title.length > 2
+                rawExtracted.forEach((pos, idxKey) => {
+                    const finalTitle = (pos.title && pos.title.length > 1)
                         ? pos.title
-                        : `Position OZ ${pos.ozKey || (pos.index + 1)} (Kurztext fehlt)`;
-                    const finalUnit = pos.unit || 'Stk';
-                    const normKey = normalizePositionTitleKey(finalTitle);
+                        : `Position ${pos.ozKey || (directFileCheckItems.length + 1)}`;
 
-                    if (!consolidatedImportMap.has(normKey)) {
-                        consolidatedImportMap.set(normKey, {
-                            title: finalTitle,
-                            longText: pos.longText || '',
-                            unit: finalUnit,
-                            category: pos.category || detectSHKCategory(finalTitle),
-                            prices: pos.prices.filter(p => p > 0)
-                        });
+                    const dbMatch = findMatchingMarketPriceItem(finalTitle);
+                    const refPrice = dbMatch ? Number(dbMatch.average || 0) : 0;
+
+                    if (dbMatch && refPrice > 0) {
+                        matchedCount++;
                     } else {
-                        const existingInBatch = consolidatedImportMap.get(normKey);
-                        if ((!existingInBatch.unit || existingInBatch.unit === 'Stk') && pos.unit) {
-                            existingInBatch.unit = pos.unit;
-                        }
-                        if (!existingInBatch.longText && pos.longText) {
-                            existingInBatch.longText = pos.longText;
-                        }
-                        pos.prices.forEach(p => {
-                            if (p > 0) {
-                                existingInBatch.prices.push(p);
-                            }
-                        });
+                        missingInDbCount++;
                     }
-                });
 
-                if (consolidatedImportMap.size === 0) {
-                    if (x83WarnOnly && files.length === 1) {
-                        throw new Error("Sie haben nur eine .x83-Datei (ohne Preise) gewählt. Bitte laden Sie eine .x82 / .x84 / .x86 / Excel-Datei hoch oder wählen Sie die .x83 zusammen mit einer .x84-Datei aus!");
-                    }
-                    throw new Error("Es wurden keine Positionen mit gültigen Preisen (> 0 €) in den gewählten Dateien gefunden.");
-                }
-
-                const existingLookup = new Map();
-                marketPrices.forEach(mp => {
-                    const k = normalizePositionTitleKey(mp.title);
-                    if (k) existingLookup.set(k, mp);
-                });
-
-                let createdCount = 0;
-                let updatedCount = 0;
-
-                if (db) {
-                    const batch = db.batch();
-
-                    consolidatedImportMap.forEach((impItem, normKey) => {
-                        const existingDbItem = existingLookup.get(normKey);
-
-                        if (existingDbItem && existingDbItem.idDoc) {
-                            const oldValidPrices = (existingDbItem.prices || []).filter(p => p > 0);
-                            const newValidPrices = (impItem.prices || []).filter(p => p > 0);
-                            const allPricesHistory = [...oldValidPrices, ...newValidPrices];
-
-                            const avg = allPricesHistory.length > 0
-                                ? Number((allPricesHistory.reduce((a, b) => a + b, 0) / allPricesHistory.length).toFixed(2))
-                                : 0;
-
-                            const updatedUnit = impItem.unit || existingDbItem.unit || 'Stk';
-                            const updatedLongText = impItem.longText || existingDbItem.longText || '';
-
-                            const docRef = db.collection('market_prices').doc(existingDbItem.idDoc);
-                            batch.update(docRef, {
-                                unit: updatedUnit,
-                                longText: updatedLongText,
-                                category: existingDbItem.category || impItem.category,
-                                prices: allPricesHistory,
-                                average: avg,
-                                updatedAt: new Date().toISOString()
-                            });
-                            updatedCount++;
-                        } else {
-                            const validPrices = (impItem.prices || []).filter(p => p > 0);
-                            const avg = validPrices.length > 0
-                                ? Number((validPrices.reduce((a, b) => a + b, 0) / validPrices.length).toFixed(2))
-                                : 0;
-
-                            const newDocRef = db.collection('market_prices').doc();
-                            batch.set(newDocRef, {
-                                title: impItem.title,
-                                longText: impItem.longText || '',
-                                unit: impItem.unit || 'Stk',
-                                category: impItem.category,
-                                prices: validPrices,
-                                average: avg,
-                                updatedAt: new Date().toISOString()
-                            });
-                            createdCount++;
-                        }
+                    directFileCheckItems.push({
+                        rowId: 'fc_' + Date.now() + '_' + Math.random().toString(36).substring(2, 7),
+                        title: finalTitle,
+                        qty: pos.qty || 1,
+                        unit: pos.unit || (dbMatch ? dbMatch.unit : 'Stk') || 'Stk',
+                        offeredUnitPrice: Number(pos.offeredUnitPrice || 0),
+                        refUnitPrice: refPrice, // Steht auf 0, wenn nicht in DB!
+                        inDb: Boolean(dbMatch && refPrice > 0),
+                        matchedDbTitle: dbMatch ? dbMatch.title : null,
+                        matchedDbId: dbMatch ? dbMatch.idDoc : null
                     });
+                });
 
-                    await batch.commit();
+                if (directFileCheckItems.length === 0) {
+                    throw new Error("Es konnten keine Positionen automatisch aus der Datei erkannt werden. Nutzen Sie bei gescannten PDFs ohne Textebene bitte die manuelle Zeile unten.");
                 }
 
-                let summaryParts = [];
-                if (createdCount > 0) summaryParts.push(`${createdCount} neu angelegt`);
-                if (updatedCount > 0) summaryParts.push(`${updatedCount} bestehende Positionen um neue Preise ergänzt & Mittelwert neu berechnet`);
-                if (missingPriceCount > 0) summaryParts.push(`${missingPriceCount} unbepreiste übersprungen`);
-
-                feedback.textContent = `✓ Import abgeschlossen: ${summaryParts.join(', ')}!`;
+                feedback.textContent = `✓ ${directFileCheckItems.length} Positionen geladen: ${matchedCount} automatisch in DB gefunden, ${missingInDbCount} nicht in DB (stehen auf 0 € für manuelle Eingabe).`;
                 feedback.className = "text-xs block text-emerald-400 font-semibold";
                 fileInput.value = '';
-                await loadMarketPrices();
+                renderDirectFileCheckTable();
 
-            } catch (error) {
-                console.error("Import-Fehler:", error);
-                feedback.textContent = "⚠ " + error.message;
+            } catch (err) {
+                console.error("Fehler beim Angebots-Abgleich:", err);
+                feedback.textContent = "⚠ " + err.message;
                 feedback.className = "text-xs block text-rose-400 font-semibold";
             }
         }
 
-        async function cleanupOldPlaceholders() {
-            const feedback = document.getElementById('importFeedback');
-            if (!db) return;
-
-            try {
-                const snap = await db.collection('market_prices').get();
-                const docsToDelete = [];
-
-                snap.forEach(doc => {
-                    const data = doc.data();
-                    const prices = Array.isArray(data.prices) ? data.prices : [];
-                    const validPrices = prices.filter(p => p > 0);
-                    const avg = Number(data.average || 0);
-
-                    const isUnpricedPlaceholder = (validPrices.length === 0) || (avg <= 0);
-                    const isOldX83Dummy = (avg === 100 && validPrices.every(p => p === 100) && !data.unit);
-
-                    if (isUnpricedPlaceholder || isOldX83Dummy) {
-                        docsToDelete.push(doc.ref);
-                    }
-                });
-
-                if (docsToDelete.length === 0) {
-                    feedback.textContent = "✓ Keine alten 100-€- oder 0-€-Platzhalter in der Datenbank gefunden – alles sauber!";
-                    feedback.className = "text-xs block text-emerald-400 font-semibold";
-                    return;
-                }
-
-                const batch = db.batch();
-                docsToDelete.forEach(ref => batch.delete(ref));
-                await batch.commit();
-
-                feedback.textContent = `✓ Bereinigung erfolgreich: ${docsToDelete.length} alte Platzhalter-Einträge wurden aus der Datenbank gelöscht!`;
-                feedback.className = "text-xs block text-emerald-400 font-semibold";
-                await loadMarketPrices();
-            } catch (e) {
-                console.error("Fehler bei der Bereinigung:", e);
-                feedback.textContent = "⚠ Fehler bei der Bereinigung: " + e.message;
-                feedback.className = "text-xs block text-rose-400 font-semibold";
-            }
-        }
-
-        function exportMarketPricesToCSV() {
-            if (marketPrices.length === 0) {
-                alert("Die Marktpreise-Datenbank ist noch leer.");
-                return;
-            }
-            const header = ["Position", "Alle erfassten Preise (€)", "Anzahl Preise", "Mittelwert", "Einheit", "Kategorie", "Langtext"];
-            const rows = marketPrices.map(m => {
-                const validPrices = (m.prices || []).filter(p => p > 0);
-                const pricesJoined = validPrices.map(p => String(p.toFixed(2)).replace('.', ',')).join(' | ');
-                const avg = m.average ? String(m.average.toFixed(2)).replace('.', ',') : '0,00';
-                const cleanTitle = `"${(m.title || '').replace(/"/g, '""')}"`;
-                const cleanLong = `"${(m.longText || '').replace(/"/g, '""')}"`;
-                return [cleanTitle, `"${pricesJoined}"`, validPrices.length, avg, m.unit || 'Stk', m.category || 'Allgemein', cleanLong].join(';');
-            });
-
-            const csvContent = "\uFEFF" + [header.join(';'), ...rows].join('\r\n');
-            const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
-            const url = URL.createObjectURL(blob);
-            const a = document.createElement('a');
-            a.href = url;
-            a.download = `SHK_Marktpreise_${new Date().toISOString().slice(0, 10)}.csv`;
-            a.click();
-            URL.revokeObjectURL(url);
-        }
-
-        function populateBauteilDropdown() {
-            const select = document.getElementById('selectBauteil');
-            if (!select) return;
-            select.innerHTML = '<option value="">-- Bitte wählen --</option>';
-            marketPrices.forEach(m => {
-                const unitLabel = m.unit || 'Stk';
-                select.innerHTML += `<option value="${m.idDoc}">${m.title} [${unitLabel}] (Ø ${(m.average || 0).toFixed(2)} €)</option>`;
-            });
-        }
-
-        function pruefePositionGegenMarktwert() {
-            const selectId = document.getElementById('selectBauteil').value;
-            const mengeInput = parseFloat(document.getElementById('inputPruefMenge').value);
-            const menge = (!isNaN(mengeInput) && mengeInput > 0) ? mengeInput : 1;
-            const angebotspreis = parseFloat(document.getElementById('inputAngebotspreis').value);
-            const ergebnisBox = document.getElementById('ergebnisBox');
-
-            if (!selectId || isNaN(angebotspreis)) {
-                ergebnisBox.innerHTML = `<div class="text-center font-bold">Bitte Bauteil auswählen und gültigen Einheitspreis eingeben.</div>`;
-                ergebnisBox.className = "p-3 rounded-xl border text-xs bg-amber-500/10 border-amber-500/30 text-amber-400";
-                ergebnisBox.classList.remove('hidden');
-                return;
-            }
-
-            const item = marketPrices.find(m => m.idDoc === selectId);
+        function updateFileCheckRowRefPrice(rowId, newVal) {
+            const item = directFileCheckItems.find(it => it.rowId === rowId);
             if (!item) return;
+            const parsed = parseFloat(newVal);
+            item.refUnitPrice = (!isNaN(parsed) && parsed >= 0) ? parsed : 0;
+            renderDirectFileCheckTable();
+        }
 
-            const unitLabel = item.unit || 'Stk';
-            const marktEP = item.average || 0;
-            const maxErlaubtEP = marktEP * 1.25;
+        function updateFileCheckRowOfferPrice(rowId, newVal) {
+            const item = directFileCheckItems.find(it => it.rowId === rowId);
+            if (!item) return;
+            const parsed = parseFloat(newVal);
+            item.offeredUnitPrice = (!isNaN(parsed) && parsed >= 0) ? parsed : 0;
+            renderDirectFileCheckTable();
+        }
 
-            const gesamtAngebot = angebotspreis * menge;
-            const gesamtMarkt = marktEP * menge;
-            const gesamtDifferenz = gesamtAngebot - gesamtMarkt;
+        function updateFileCheckRowQty(rowId, newVal) {
+            const item = directFileCheckItems.find(it => it.rowId === rowId);
+            if (!item) return;
+            const parsed = parseFloat(newVal);
+            item.qty = (!isNaN(parsed) && parsed > 0) ? parsed : 1;
+            renderDirectFileCheckTable();
+        }
+
+        function removeFileCheckRow(rowId) {
+            directFileCheckItems = directFileCheckItems.filter(it => it.rowId !== rowId);
+            renderDirectFileCheckTable();
+        }
+
+        function clearDirectFileCheck() {
+            directFileCheckItems = [];
+            const feedback = document.getElementById('directCheckUploadFeedback');
+            if (feedback) feedback.textContent = '';
+            renderDirectFileCheckTable();
+        }
+
+        function addManualRowToFileCheck() {
+            const titleEl = document.getElementById('fcManualTitle');
+            const qtyEl = document.getElementById('fcManualQty');
+            const unitEl = document.getElementById('fcManualUnit');
+            const offerPriceEl = document.getElementById('fcManualOfferPrice');
+
+            const title = (titleEl.value || '').trim();
+            const qty = parseFloat(qtyEl.value) || 1;
+            const unit = normalizeGAEBUnit(unitEl.value) || 'Stk';
+            const offerPrice = parseFloat(offerPriceEl.value) || 0;
+
+            if (!title) {
+                alert("Bitte geben Sie eine Positionsbeschreibung ein.");
+                return;
+            }
+
+            const dbMatch = findMatchingMarketPriceItem(title);
+            const refPrice = dbMatch ? Number(dbMatch.average || 0) : 0;
+
+            directFileCheckItems.push({
+                rowId: 'fc_man_' + Date.now(),
+                title: title,
+                qty: qty,
+                unit: unit,
+                offeredUnitPrice: offerPrice,
+                refUnitPrice: refPrice,
+                inDb: Boolean(dbMatch && refPrice > 0),
+                matchedDbTitle: dbMatch ? dbMatch.title : null,
+                matchedDbId: dbMatch ? dbMatch.idDoc : null
+            });
+
+            titleEl.value = '';
+            qtyEl.value = '1';
+            offerPriceEl.value = '';
+            renderDirectFileCheckTable();
+        }
+
+        async function saveManualRefPriceToDatabase(rowId) {
+            const item = directFileCheckItems.find(it => it.rowId === rowId);
+            if (!item || item.refUnitPrice <= 0) {
+                alert("Bitte tragen Sie zuerst einen Referenzpreis größer 0 € in das Feld ein.");
+                return;
+            }
+
+            if (db) {
+                try {
+                    const newDoc = await db.collection('market_prices').add({
+                        title: item.title,
+                        longText: '',
+                        unit: item.unit || 'Stk',
+                        category: detectSHKCategory(item.title),
+                        prices: [item.refUnitPrice],
+                        average: Number(item.refUnitPrice.toFixed(2)),
+                        updatedAt: new Date().toISOString()
+                    });
+                    item.inDb = true;
+                    item.matchedDbId = newDoc.id;
+                    item.matchedDbTitle = item.title;
+                    await loadMarketPrices();
+                    renderDirectFileCheckTable();
+                } catch (e) {
+                    alert("Fehler beim Speichern in die Datenbank: " + e.message);
+                }
+            }
+        }
+
+        function renderDirectFileCheckTable() {
+            const container = document.getElementById('fileCheckTableContainer');
+            const statsBadge = document.getElementById('fileCheckPosStatsBadge');
+            const verdictBanner = document.getElementById('fileCheckVerdictBanner');
+            const verdictText = document.getElementById('fileCheckVerdictText');
+            if (!container) return;
 
             const fmt = (n) => n.toLocaleString('de-DE', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
 
-            let statusHtml = '';
-            let boxClasses = '';
+            let totalOfferNet = 0;
+            let totalRefNet = 0;
+            let missingRefCount = 0;
 
-            if (angebotspreis <= marktEP) {
-                boxClasses = "p-4 rounded-xl border text-xs space-y-2 bg-emerald-500/10 border-emerald-500/30 text-emerald-400";
-                statusHtml = `<div class="font-bold text-sm">✓ Plausibel! Der Einheitspreis (${fmt(angebotspreis)} € / ${unitLabel}) liegt im oder unter dem Markt-Mittelwert (${fmt(marktEP)} € / ${unitLabel}).</div>`;
-                lastCalculatedCheckDefect = null;
-            } else if (angebotspreis <= maxErlaubtEP) {
-                boxClasses = "p-4 rounded-xl border text-xs space-y-2 bg-amber-500/10 border-amber-500/30 text-amber-300";
-                statusHtml = `<div class="font-bold text-sm">⚠ Etwas erhöht (+${(((angebotspreis / marktEP) - 1) * 100).toFixed(0)} % über Marktschnitt), liegt aber noch im Toleranzbereich (bis +25 %).</div>`;
-                lastCalculatedCheckDefect = {
-                    text: `${item.title} (${menge} ${unitLabel} à ${fmt(angebotspreis)} € statt Ø ${fmt(marktEP)} € -> Mehrpreis -${fmt(gesamtDifferenz)} €)`,
-                    savings: Math.round(gesamtDifferenz)
-                };
-            } else {
-                boxClasses = "p-4 rounded-xl border text-xs space-y-2 bg-rose-500/10 border-rose-500/30 text-rose-300";
-                statusHtml = `<div class="font-bold text-sm">✕ Deutlich überhöht (+${(((angebotspreis / marktEP) - 1) * 100).toFixed(0)} % über Marktwert)!</div>`;
-                lastCalculatedCheckDefect = {
-                    text: `${item.title}: ${menge} ${unitLabel} à ${fmt(angebotspreis)} € angeboten (Markt-Ø ${fmt(marktEP)} €/${unitLabel} -> Einsparpotenzial -${fmt(gesamtDifferenz)} €)`,
-                    savings: Math.round(gesamtDifferenz)
-                };
-            }
-
-            const summaryGridHtml = `
-                <div class="grid grid-cols-1 sm:grid-cols-3 gap-2 pt-2 border-t border-slate-800/80 text-slate-200">
-                    <div class="bg-slate-950/70 p-2.5 rounded-lg">
-                        <span class="text-[10px] text-slate-400 uppercase block">Angebot (${menge} ${unitLabel})</span>
-                        <span class="font-bold text-sm text-white">${fmt(gesamtAngebot)} €</span>
-                        <span class="text-[10px] text-slate-400 block">(${fmt(angebotspreis)} € / ${unitLabel})</span>
-                    </div>
-                    <div class="bg-slate-950/70 p-2.5 rounded-lg">
-                        <span class="text-[10px] text-slate-400 uppercase block">Markt-Mittelwert (${menge} ${unitLabel})</span>
-                        <span class="font-bold text-sm text-emerald-400">${fmt(gesamtMarkt)} €</span>
-                        <span class="text-[10px] text-slate-400 block">(Ø ${fmt(marktEP)} € / ${unitLabel})</span>
-                    </div>
-                    <div class="bg-slate-950/70 p-2.5 rounded-lg">
-                        <span class="text-[10px] text-slate-400 uppercase block">${gesamtDifferenz > 0 ? 'Einsparpotenzial (Gesamt)' : 'Preisvorteil'}</span>
-                        <span class="font-black text-sm ${gesamtDifferenz > 0 ? 'text-rose-400' : 'text-emerald-400'}">${gesamtDifferenz > 0 ? '+' + fmt(gesamtDifferenz) + ' € über Ø' : fmt(Math.abs(gesamtDifferenz)) + ' € unter Ø'}</span>
-                    </div>
-                </div>
-            `;
-
-            const transferBtnHtml = (gesamtDifferenz > 0 && selectedAdminOrderId)
-                ? `<div class="pt-2 text-right">
-                    <button type="button" onclick="transferCheckResultToActiveOrder()" class="bg-emerald-500 hover:bg-emerald-600 text-slate-950 font-bold px-3.5 py-1.5 rounded-lg text-xs transition">
-                        <i class="fa-solid fa-file-import mr-1"></i>In ausgewählten Auftrag (${selectedAdminOrderId}) als Mangel übernehmen
-                    </button>
-                   </div>`
-                : '';
-
-            ergebnisBox.className = boxClasses;
-            ergebnisBox.innerHTML = statusHtml + summaryGridHtml + transferBtnHtml;
-            ergebnisBox.classList.remove('hidden');
-        }
-
-        function transferCheckResultToActiveOrder() {
-            if (!lastCalculatedCheckDefect || !selectedAdminOrderId) return;
-            const order = adminOrders.find(o => o.id === selectedAdminOrderId);
-            if (!order) return;
-
-            if (!Array.isArray(order.defects)) order.defects = [];
-            order.defects.push(lastCalculatedCheckDefect.text);
-
-            const currentSavingsNum = parseInt(String(order.savings || '0').replace(/[^0-9]/g, '')) || 0;
-            const newSavingsNum = currentSavingsNum + (lastCalculatedCheckDefect.savings || 0);
-            order.savings = `${newSavingsNum.toLocaleString('de-DE')} €`;
-
-            alert(`Position wurde in die Mängelliste von Auftrag ${order.id} übernommen! Öffnen Sie den Auftrag zum Speichern.`);
-            switchAdminTab('active');
-            selectAdminOrder(order.id);
-        }
-
-        async function saveMarketPriceItem(event) {
-            event.preventDefault();
-            let docId = document.getElementById('marketPriceDocId').value;
-            const title = document.getElementById('mpTitle').value.trim();
-            const rawUnit = document.getElementById('mpUnit').value.trim();
-            const unit = normalizeGAEBUnit(rawUnit) || 'Stk';
-            const category = document.getElementById('mpCategory').value;
-            const longTextEl = document.getElementById('mpLongText');
-            const longText = longTextEl ? longTextEl.value.trim() : '';
-            const p1 = parseFloat(document.getElementById('mpPrice1').value) || 0;
-            const p2 = parseFloat(document.getElementById('mpPrice2').value) || 0;
-            const p3 = parseFloat(document.getElementById('mpPrice3').value) || 0;
-
-            let enteredPrices = [p1, p2, p3].filter(p => p > 0);
-            let finalPrices = [...enteredPrices];
-
-            if (!docId) {
-                const normKey = normalizePositionTitleKey(title);
-                const existing = marketPrices.find(m => normalizePositionTitleKey(m.title) === normKey);
-                if (existing && existing.idDoc) {
-                    docId = existing.idDoc;
-                    const oldPrices = (existing.prices || []).filter(p => p > 0);
-                    finalPrices = [...oldPrices, ...enteredPrices];
-                }
-            } else {
-                const existing = marketPrices.find(m => m.idDoc === docId);
-                if (existing && Array.isArray(existing.prices) && existing.prices.length > 3) {
-                    const olderPrices = existing.prices.slice(3).filter(p => p > 0);
-                    finalPrices = [...enteredPrices, ...olderPrices];
-                }
-            }
-
-            let avg = finalPrices.length > 0 ? Number((finalPrices.reduce((a,b) => a+b, 0) / finalPrices.length).toFixed(2)) : 0;
-
-            const itemData = {
-                title: title,
-                longText: longText,
-                unit: unit,
-                category: category,
-                prices: finalPrices,
-                average: avg,
-                updatedAt: new Date().toISOString()
-            };
-
-            if (db) {
-                try {
-                    if (docId) {
-                        await db.collection('market_prices').doc(docId).update(itemData);
-                    } else {
-                        await db.collection('market_prices').add(itemData);
-                    }
-                    alert('Marktpreis erfolgreich gespeichert und Mittelwert aktualisiert!');
-                    resetMarketPriceForm();
-                    loadMarketPrices();
-                } catch(e) {
-                    alert('Fehler beim Speichern: ' + e.message);
-                }
-            }
-        }
-
-        function editMarketPrice(idDoc) {
-            const item = marketPrices.find(m => m.idDoc === idDoc);
-            if (!item) return;
-
-            document.getElementById('marketPriceDocId').value = item.idDoc;
-            document.getElementById('mpTitle').value = item.title;
-            document.getElementById('mpUnit').value = item.unit || 'Stk';
-            document.getElementById('mpCategory').value = item.category || 'Allgemein';
-            const longTextEl = document.getElementById('mpLongText');
-            if (longTextEl) longTextEl.value = item.longText || '';
-            const validPrices = (item.prices || []).filter(p => p > 0);
-            document.getElementById('mpPrice1').value = validPrices[0] || '';
-            document.getElementById('mpPrice2').value = validPrices[1] || '';
-            document.getElementById('mpPrice3').value = validPrices[2] || '';
-        }
-
-        async function deleteMarketPrice(idDoc) {
-            if (db) {
-                try {
-                    await db.collection('market_prices').doc(idDoc).delete();
-                    loadMarketPrices();
-                } catch(e) {
-                    alert('Fehler: ' + e.message);
-                }
-            }
-        }
-
-        function resetMarketPriceForm() {
-            document.getElementById('marketPriceDocId').value = '';
-            document.getElementById('mpTitle').value = '';
-            document.getElementById('mpUnit').value = 'Stk';
-            document.getElementById('mpCategory').value = 'Heizung';
-            const longTextEl = document.getElementById('mpLongText');
-            if (longTextEl) longTextEl.value = '';
-            document.getElementById('mpPrice1').value = '';
-            document.getElementById('mpPrice2').value = '';
-            document.getElementById('mpPrice3').value = '';
-        }
-
-        function handleCatalogSearchInput() {
-            if (currentAdminTab === 'reconstruct') {
-                renderReconstructCatalogList();
-            } else {
-                renderMarketPricesTable();
-            }
-        }
-
-        function filterMarketPricesCategory(cat) {
-            activeMarketPriceCategory = cat;
-            ['Alle', 'Heizung', 'Sanitär', 'Allgemein'].forEach(c => {
-                const btn = document.getElementById('catBtn' + (c === 'Allgemein' ? 'Allgemein' : c));
-                if (btn) {
-                    if (c === cat) {
-                        btn.className = "flex-1 bg-emerald-500 text-slate-950 font-bold py-1.5 rounded-lg text-[11px] transition";
-                    } else {
-                        btn.className = "flex-1 bg-slate-800 text-slate-300 hover:bg-slate-700 font-semibold py-1.5 rounded-lg text-[11px] transition";
-                    }
+            directFileCheckItems.forEach(it => {
+                totalOfferNet += (it.qty * it.offeredUnitPrice);
+                totalRefNet += (it.qty * it.refUnitPrice);
+                if (!it.refUnitPrice || it.refUnitPrice <= 0) {
+                    missingRefCount++;
                 }
             });
-            if (currentAdminTab === 'reconstruct') {
-                renderReconstructCatalogList();
-            } else {
-                renderMarketPricesTable();
+
+            const totalDiffNet = totalOfferNet - totalRefNet;
+            const totalDiffPercent = totalRefNet > 0 ? (((totalOfferNet - totalRefNet) / totalRefNet) * 100) : 0;
+
+            document.getElementById('fcStatOfferNet').textContent = `${fmt(totalOfferNet)} €`;
+            document.getElementById('fcStatOfferGross').textContent = `${fmt(totalOfferNet * 1.19)} € brutto (inkl. 19% MwSt.)`;
+            document.getElementById('fcStatRefNet').textContent = `${fmt(totalRefNet)} €`;
+            document.getElementById('fcStatRefGross').textContent = `${fmt(totalRefNet * 1.19)} € brutto (inkl. 19% MwSt.)`;
+
+            const diffAmountEl = document.getElementById('fcStatDiffAmount');
+            const diffPercentEl = document.getElementById('fcStatDiffPercent');
+
+            if (statsBadge) {
+                statsBadge.textContent = `${directFileCheckItems.length} Positionen (${missingRefCount} noch auf 0 € / manuell auszufüllen)`;
             }
-        }
 
-        function getFilteredMarketPricesList() {
-            const searchInput = document.getElementById('marketPriceSearchInput');
-            const query = searchInput ? searchInput.value.toLowerCase().trim() : '';
-
-            return marketPrices.filter(m => {
-                if (activeMarketPriceCategory !== 'Alle' && m.category !== activeMarketPriceCategory) {
-                    return false;
+            if (directFileCheckItems.length > 0 && totalRefNet > 0) {
+                verdictBanner.classList.remove('hidden');
+                const sign = totalDiffPercent > 0 ? '+' : '';
+                if (totalDiffPercent <= 0) {
+                    diffAmountEl.textContent = `${fmt(totalDiffNet)} €`;
+                    diffAmountEl.className = "text-2xl font-black text-emerald-400 mt-1 block";
+                    diffPercentEl.textContent = `${sign}${totalDiffPercent.toFixed(1)} % (Unter/im Marktschnitt)`;
+                    diffPercentEl.className = "text-[11px] text-emerald-400 font-bold block mt-0.5";
+                    verdictBanner.className = "p-4 rounded-xl border text-xs flex flex-col sm:flex-row sm:items-center justify-between gap-3 bg-emerald-500/10 border-emerald-500/30 text-emerald-300";
+                    verdictText.innerHTML = `<i class="fa-solid fa-circle-check mr-1.5"></i><strong>Gesamtbewertung Grün (${sign}${totalDiffPercent.toFixed(1)} %):</strong> Das Angebot liegt insgesamt im oder unter dem Referenz-Mittelwert.`;
+                } else if (totalDiffPercent <= 20) {
+                    diffAmountEl.textContent = `+${fmt(totalDiffNet)} €`;
+                    diffAmountEl.className = "text-2xl font-black text-amber-400 mt-1 block";
+                    diffPercentEl.textContent = `+${totalDiffPercent.toFixed(1)} % (Leicht erhöht)`;
+                    diffPercentEl.className = "text-[11px] text-amber-400 font-bold block mt-0.5";
+                    verdictBanner.className = "p-4 rounded-xl border text-xs flex flex-col sm:flex-row sm:items-center justify-between gap-3 bg-amber-500/10 border-amber-500/30 text-amber-300";
+                    verdictText.innerHTML = `<i class="fa-solid fa-triangle-exclamation mr-1.5"></i><strong>Gesamtbewertung Gelb (+${totalDiffPercent.toFixed(1)} %):</strong> Das Angebot liegt um <strong>${fmt(totalDiffNet)} € netto</strong> (${fmt(totalDiffNet * 1.19)} € brutto) über den Referenzwerten.`;
+                } else {
+                    diffAmountEl.textContent = `+${fmt(totalDiffNet)} €`;
+                    diffAmountEl.className = "text-2xl font-black text-rose-400 mt-1 block";
+                    diffPercentEl.textContent = `+${totalDiffPercent.toFixed(1)} % (Deutlich überhöht!)`;
+                    diffPercentEl.className = "text-[11px] text-rose-400 font-bold block mt-0.5";
+                    verdictBanner.className = "p-4 rounded-xl border text-xs flex flex-col sm:flex-row sm:items-center justify-between gap-3 bg-rose-500/10 border-rose-500/30 text-rose-300";
+                    verdictText.innerHTML = `<i class="fa-solid fa-circle-xmark mr-1.5"></i><strong>Gesamtbewertung Rot (+${totalDiffPercent.toFixed(1)} %):</strong> Deutliches Einsparpotenzial von <strong>${fmt(totalDiffNet)} € netto</strong> (${fmt(totalDiffNet * 1.19)} € brutto) erkannt!`;
                 }
-                if (!query) return true;
-                const haystack = `${m.title || ''} ${m.longText || ''} ${m.unit || 'Stk'} ${m.category || ''}`.toLowerCase();
-                const words = query.split(/\s+/);
-                return words.every(word => haystack.includes(word));
-            });
-        }
+            } else {
+                diffAmountEl.textContent = `0,00 €`;
+                diffAmountEl.className = "text-2xl font-black text-slate-400 mt-1 block";
+                diffPercentEl.textContent = `Noch keine Referenzsumme`;
+                diffPercentEl.className = "text-[11px] text-slate-400 font-semibold block mt-0.5";
+                verdictBanner.classList.add('hidden');
+            }
 
-        function renderMarketPricesTable() {
-            const container = document.getElementById('marketPricesTableContainer');
-            const filteredPrices = getFilteredMarketPricesList();
-
-            if (filteredPrices.length === 0) {
-                container.innerHTML = `<p class="text-xs text-slate-500 py-4 text-center">Keine passenden Marktpreise gefunden.</p>`;
+            if (directFileCheckItems.length === 0) {
+                container.innerHTML = `
+                    <div class="p-8 text-center text-xs text-slate-400 bg-slate-950/60">
+                        <i class="fa-solid fa-file-arrow-up text-2xl text-sky-400 mb-2 block"></i>
+                        Laden Sie oben eine <strong>GAEB-Datei (.x82, .x83+.x84, .x86)</strong> oder ein <strong>PDF-Angebot</strong> hoch, um alle Positionen automatisch mit den DB-Mittelwerten zu vergleichen.
+                    </div>
+                `;
                 return;
             }
 
@@ -3655,54 +3438,77 @@
                 <table class="w-full text-left text-xs text-slate-300">
                     <thead class="bg-slate-950 text-slate-400 uppercase border-b border-slate-800">
                         <tr>
-                            <th class="p-3">Position (Kurztext & Tooltip)</th>
-                            <th class="p-3">Einheit</th>
-                            <th class="p-3">Kategorie</th>
-                            <th class="p-3">Erfasste Preise (€)</th>
-                            <th class="p-3 text-emerald-400 font-bold">Mittelwert (Ø)</th>
+                            <th class="p-3">Position / Status</th>
+                            <th class="p-3 w-24">Menge</th>
+                            <th class="p-3 w-28">Angebot EP (€)</th>
+                            <th class="p-3 w-40">DB-Mittelwert / Manuell (€)</th>
+                            <th class="p-3 text-center">% Abweichung</th>
+                            <th class="p-3 text-right">Diff. Gesamt</th>
                             <th class="p-3 text-right">Aktion</th>
                         </tr>
                     </thead>
                     <tbody class="divide-y divide-slate-800">
-                        ${filteredPrices.map(m => {
-                            const safeLongText = (m.longText || '')
-                                .replace(/&/g, '&amp;')
-                                .replace(/</g, '&lt;')
-                                .replace(/>/g, '&gt;')
-                                .replace(/"/g, '&quot;');
+                        ${directFileCheckItems.map((it, idx) => {
+                            const hasRef = it.refUnitPrice > 0;
+                            const devPercent = hasRef ? (((it.offeredUnitPrice - it.refUnitPrice) / it.refUnitPrice) * 100) : null;
+                            const rowDiffTotal = hasRef ? ((it.offeredUnitPrice - it.refUnitPrice) * it.qty) : 0;
 
-                            const tooltipHtml = safeLongText
-                                ? `<span class="relative group inline-flex items-center cursor-help text-sky-400 hover:text-sky-300 ml-1.5">
-                                        <i class="fa-solid fa-circle-info"></i>
-                                        <span class="hidden group-hover:block absolute left-0 bottom-full mb-2 w-72 sm:w-96 p-3 rounded-xl bg-slate-950 border border-sky-500/40 text-[11px] font-normal text-slate-200 shadow-2xl z-50 whitespace-normal leading-relaxed pointer-events-none">
-                                            <strong class="text-sky-400 block mb-1 uppercase tracking-wider text-[10px]">GAEB-Langtext / Details:</strong>
-                                            ${safeLongText}
-                                        </span>
-                                   </span>`
-                                : '';
+                            let rowBgClass = "bg-sky-950/20 hover:bg-sky-950/30 border-l-4 border-l-sky-500";
+                            let devBadgeHtml = `<span class="inline-flex items-center px-2.5 py-1 rounded-lg text-[11px] font-bold bg-sky-500/20 text-sky-300 border border-sky-500/40"><i class="fa-solid fa-pen mr-1"></i>0 € (Manuell)</span>`;
 
-                            const validPrices = (m.prices || []).filter(p => p > 0);
-                            const lastPricesDisplay = validPrices.slice(-4).map(p => p.toLocaleString('de-DE', {minimumFractionDigits: 2, maximumFractionDigits: 2}) + ' €').join(' / ');
-                            const countBadge = validPrices.length > 4
-                                ? `<span class="ml-1.5 px-1.5 py-0.5 rounded bg-slate-800 text-emerald-400 font-bold text-[10px]" title="Alle ${validPrices.length} Preise fließen in den Mittelwert ein">(${validPrices.length} Werte)</span>`
-                                : `<span class="ml-1 text-[10px] text-slate-500">(${validPrices.length}x)</span>`;
+                            if (hasRef) {
+                                const sign = devPercent > 0 ? '+' : '';
+                                if (devPercent <= 0) {
+                                    rowBgClass = "bg-emerald-950/15 hover:bg-emerald-950/25 border-l-4 border-l-emerald-500";
+                                    devBadgeHtml = `<span class="inline-flex items-center px-2.5 py-1 rounded-lg text-xs font-black bg-emerald-500/20 text-emerald-400 border border-emerald-500/40"><i class="fa-solid fa-check mr-1"></i>${sign}${devPercent.toFixed(1)} %</span>`;
+                                } else if (devPercent <= 20) {
+                                    rowBgClass = "bg-amber-950/15 hover:bg-amber-950/25 border-l-4 border-l-amber-500";
+                                    devBadgeHtml = `<span class="inline-flex items-center px-2.5 py-1 rounded-lg text-xs font-black bg-amber-500/20 text-amber-300 border border-amber-500/40"><i class="fa-solid fa-triangle-exclamation mr-1"></i>+${devPercent.toFixed(1)} %</span>`;
+                                } else {
+                                    rowBgClass = "bg-rose-950/20 hover:bg-rose-950/30 border-l-4 border-l-rose-500";
+                                    devBadgeHtml = `<span class="inline-flex items-center px-2.5 py-1 rounded-lg text-xs font-black bg-rose-500/25 text-rose-400 border border-rose-500/40"><i class="fa-solid fa-circle-xmark mr-1"></i>+${devPercent.toFixed(1)} %</span>`;
+                                }
+                            }
+
+                            const dbStatusSubline = it.inDb
+                                ? `<span class="text-[10px] text-emerald-400 block mt-0.5"><i class="fa-solid fa-database mr-1"></i>DB-Treffer: ${it.matchedDbTitle || it.title}</span>`
+                                : `<span class="text-[10px] text-sky-400 font-semibold block mt-0.5"><i class="fa-solid fa-circle-exclamation mr-1"></i>Nicht in DB – steht auf 0 €, bitte Referenzpreis eintragen!</span>`;
 
                             return `
-                                <tr class="hover:bg-slate-950/50">
-                                    <td class="p-3 font-semibold text-white">
-                                        <div class="flex items-center">
-                                            <span>${m.title}</span>
-                                            ${tooltipHtml}
+                                <tr class="${rowBgClass} transition">
+                                    <td class="p-3">
+                                        <span class="font-semibold text-white"><span class="text-slate-500 mr-1">${idx + 1}.</span>${it.title}</span>
+                                        ${dbStatusSubline}
+                                    </td>
+                                    <td class="p-3">
+                                        <div class="flex items-center gap-1">
+                                            <input type="number" step="0.5" min="0.1" value="${it.qty}" onchange="updateFileCheckRowQty('${it.rowId}', this.value)" class="w-14 bg-slate-950 border border-slate-700 rounded-lg px-2 py-1 text-xs text-white focus:border-sky-500 focus:outline-none">
+                                            <span class="text-[10px] text-sky-400 font-bold">${it.unit}</span>
                                         </div>
                                     </td>
-                                    <td class="p-3"><span class="bg-slate-800 border border-slate-700 px-2 py-0.5 rounded text-[11px] font-bold text-sky-400">${m.unit || 'Stk'}</span></td>
-                                    <td class="p-3"><span class="bg-slate-800 px-2 py-0.5 rounded text-[10px] text-emerald-400">${m.category || 'Allgemein'}</span></td>
-                                    <td class="p-3">${lastPricesDisplay}${countBadge}</td>
-                                    <td class="p-3 text-emerald-400 font-black">${(m.average || 0).toLocaleString('de-DE', {minimumFractionDigits: 2, maximumFractionDigits: 2})} € / ${m.unit || 'Stk'}</td>
-                                    <td class="p-3 text-right space-x-2 whitespace-nowrap">
-                                        <button type="button" onclick="addPositionToReconstruction('${m.idDoc}', 1)" class="text-emerald-400 hover:underline mr-1" title="In Angebots-Rekonstruktion übernehmen"><i class="fa-solid fa-wand-magic-sparkles"></i></button>
-                                        <button type="button" onclick="editMarketPrice('${m.idDoc}')" class="text-amber-400 hover:underline" title="Bearbeiten"><i class="fa-solid fa-pen"></i></button>
-                                        <button type="button" onclick="deleteMarketPrice('${m.idDoc}')" class="text-rose-400 hover:underline" title="Löschen"><i class="fa-solid fa-trash"></i></button>
+                                    <td class="p-3">
+                                        <input type="number" step="0.01" value="${it.offeredUnitPrice}" onchange="updateFileCheckRowOfferPrice('${it.rowId}', this.value)" class="w-24 bg-slate-950 border border-slate-700 rounded-lg px-2 py-1 text-xs text-white font-bold focus:border-sky-500 focus:outline-none">
+                                    </td>
+                                    <td class="p-3">
+                                        <div class="flex items-center gap-1.5">
+                                            <input type="number" step="0.01" value="${it.refUnitPrice}" onchange="updateFileCheckRowRefPrice('${it.rowId}', this.value)" class="w-24 bg-slate-950 border-2 ${hasRef ? 'border-emerald-500/40 text-emerald-300' : 'border-sky-500 text-sky-300'} rounded-lg px-2 py-1 text-xs font-black focus:outline-none">
+                                            ${!it.inDb && it.refUnitPrice > 0 ? `
+                                                <button type="button" onclick="saveManualRefPriceToDatabase('${it.rowId}')" title="Diesen manuellen Preis dauerhaft in die Marktpreise-DB übernehmen" class="px-2 py-1 rounded bg-emerald-500/20 hover:bg-emerald-500/30 text-emerald-400 border border-emerald-500/30 text-[10px] font-bold transition">
+                                                    <i class="fa-solid fa-floppy-disk"></i> DB
+                                                </button>
+                                            ` : ''}
+                                        </div>
+                                    </td>
+                                    <td class="p-3 text-center whitespace-nowrap">
+                                        ${devBadgeHtml}
+                                    </td>
+                                    <td class="p-3 text-right font-bold whitespace-nowrap ${rowDiffTotal > 0 ? 'text-rose-400' : (hasRef ? 'text-emerald-400' : 'text-slate-500')}">
+                                        ${hasRef ? (rowDiffTotal > 0 ? '+' : '') + fmt(rowDiffTotal) + ' €' : '-'}
+                                    </td>
+                                    <td class="p-3 text-right">
+                                        <button type="button" onclick="removeFileCheckRow('${it.rowId}')" class="text-rose-400 hover:text-rose-300 p-1" title="Zeile entfernen">
+                                            <i class="fa-solid fa-xmark"></i>
+                                        </button>
                                     </td>
                                 </tr>
                             `;
@@ -3710,11 +3516,55 @@
                     </tbody>
                 </table>
             `;
-            populateBauteilDropdown();
+        }
+
+        function transferFileCheckToOrder() {
+            const select = document.getElementById('fileCheckTargetOrderSelect');
+            const targetOrderId = (select && select.value) ? select.value : selectedAdminOrderId;
+
+            if (!targetOrderId) {
+                alert("Bitte wählen Sie rechts über der Tabelle zuerst den gewünschten Kundenauftrag für die Übernahme aus.");
+                return;
+            }
+
+            const order = adminOrders.find(o => o.id === targetOrderId);
+            if (!order) return;
+
+            const fmt = (n) => n.toLocaleString('de-DE', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+            let totalOfferNet = 0;
+            let totalRefNet = 0;
+            const overPricedDefects = [];
+
+            directFileCheckItems.forEach(it => {
+                totalOfferNet += (it.qty * it.offeredUnitPrice);
+                if (it.refUnitPrice > 0) {
+                    totalRefNet += (it.qty * it.refUnitPrice);
+                    const devPct = ((it.offeredUnitPrice - it.refUnitPrice) / it.refUnitPrice) * 100;
+                    const diffPos = (it.offeredUnitPrice - it.refUnitPrice) * it.qty;
+                    if (devPct > 10 && diffPos > 5) {
+                        overPricedDefects.push(`${it.title} (${it.qty} ${it.unit}): ${fmt(it.offeredUnitPrice)} € statt Ø ${fmt(it.refUnitPrice)} € (+${devPct.toFixed(1)} % / -${Math.round(diffPos)} € netto)`);
+                    }
+                }
+            });
+
+            const diffNet = Math.max(0, totalOfferNet - totalRefNet);
+            const diffGross = Math.round(diffNet * 1.19);
+            const totalDevPct = totalRefNet > 0 ? (((totalOfferNet - totalRefNet) / totalRefNet) * 100) : 0;
+
+            order.savings = `${diffGross.toLocaleString('de-DE')} €`;
+            order.summary = `Automatischer GAEB-/PDF-Positionsabgleich (${directFileCheckItems.length} Positionen): Angebotssumme ${fmt(totalOfferNet)} € netto gegenüber Referenz-Mittelwert ${fmt(totalRefNet)} € netto (Gesamtabweichung: ${totalDevPct > 0 ? '+' : ''}${totalDevPct.toFixed(1)} %).`;
+
+            if (!Array.isArray(order.defects)) order.defects = [];
+            overPricedDefects.forEach(d => order.defects.push(d));
+
+            selectedAdminOrderId = order.id;
+            switchAdminTab('active');
+            selectAdminOrder(order.id);
+            alert(`GAEB-/PDF-Abgleich wurde in Auftrag ${order.id} übernommen! Klicken Sie unten im Auftrag auf „Speichern“, um die Änderungen in Firestore zu sichern.`);
         }
 
         // ============================================================================
-        // ANGEBOT REKONSTRUIEREN & GESAMTPREIS-ABGLEICH AUS DATENBANK-POSITIONEN
+        // ANGEBOT REKONSTRUIEREN & GESAMTPREIS-ABGLEICH AUS DB-POSITIONEN
         // ============================================================================
 
         function populateReconstructTargetOrderDropdown() {
@@ -4055,1553 +3905,8 @@
         }
 
         // ============================================================================
-        // NEU: GAEB / PDF ANGEBOT HOCHLADEN & MIT DB-MITTELWERTEN ABGLEICHEN
+        // STANDARD-LOGIN & DEMO-ADMIN
         // ============================================================================
-
-        function populateFileCheckTargetOrderDropdown() {
-            const select = document.getElementById('fileCheckTargetOrderSelect');
-            if (!select) return;
-            const currentVal = select.value || selectedAdminOrderId || '';
-            const activeOrders = adminOrders.filter(o => !o.isArchived && o.status != 5 && o.status != 6);
-
-            select.innerHTML = '<option value="">-- Optional: Kundenauftrag für Übernahme wählen --</option>';
-            activeOrders.forEach(o => {
-                const name = (o.firstName && o.lastName) ? `${o.firstName} ${o.lastName}` : o.email;
-                select.innerHTML += `<option value="${o.id}" ${currentVal === o.id ? 'selected' : ''}>${o.id} — ${name} (${o.packageName || 'Paket'})</option>`;
-            });
-        }
-
-        // Sucht eine Position in der Marktpreise-DB (exakt oder über Teilbegriffe) und gibt sonst 0 zurück
-        function findMatchingMarketPriceItem(rawTitle) {
-            if (!rawTitle || marketPrices.length === 0) return null;
-            const normTarget = normalizePositionTitleKey(rawTitle);
-            if (!normTarget) return null;
-
-            // 1. Exakter Treffer auf normalisiertem Schlüssel
-            let match = marketPrices.find(m => normalizePositionTitleKey(m.title) === normTarget);
-            if (match) return match;
-
-            // 2. Teilstring- oder Wort-Übereinstimmung
-            const targetWords = rawTitle.toLowerCase().split(/\s+/).filter(w => w.length > 3);
-            let bestCandidate = null;
-            let bestScore = 0;
-
-            marketPrices.forEach(m => {
-                const dbNorm = normalizePositionTitleKey(m.title);
-                if (!dbNorm) return;
-                if (normTarget.includes(dbNorm) || dbNorm.includes(normTarget)) {
-                    const score = Math.min(normTarget.length, dbNorm.length);
-                    if (score > bestScore) {
-                        bestScore = score;
-                        bestCandidate = m;
-                    }
-                } else if (targetWords.length > 0) {
-                    const dbLower = (m.title || '').toLowerCase();
-                    const hitCount = targetWords.filter(w => dbLower.includes(w)).length;
-                    if (hitCount >= 2 && hitCount > bestScore) {
-                        bestScore = hitCount;
-                        bestCandidate = m;
-                    }
-                }
-            });
-
-            return bestCandidate;
-        }
-
-        // Liest Text und Angebotspositionen aus einer PDF-Datei über PDF.js aus
-        async function extractOfferPositionsFromPDF(arrayBuffer) {
-            if (!window.pdfjsLib) {
-                throw new Error("PDF.js Bibliothek ist nicht geladen.");
-            }
-            const pdf = await window.pdfjsLib.getDocument({ data: arrayBuffer }).promise;
-            const extractedLines = [];
-
-            for (let pageNum = 1; pageNum <= pdf.numPages; pageNum++) {
-                const page = await pdf.getPage(pageNum);
-                const textContent = await page.getTextContent();
-                const yMap = new Map();
-
-                textContent.items.forEach(item => {
-                    const str = (item.str || '').trim();
-                    if (!str) return;
-                    const y = Math.round(item.transform[5] / 4) * 4;
-                    if (!yMap.has(y)) yMap.set(y, []);
-                    yMap.get(y).push({ x: item.transform[4], text: str });
-                });
-
-                const sortedY = Array.from(yMap.keys()).sort((a, b) => b - a);
-                sortedY.forEach(y => {
-                    const rowItems = yMap.get(y).sort((a, b) => a.x - b.x);
-                    const lineStr = rowItems.map(r => r.text).join(' ').replace(/\s+/g, ' ').trim();
-                    if (lineStr.length > 4) extractedLines.push(lineStr);
-                });
-            }
-
-            const parsedPositions = [];
-            const ignoreRegex = /(zwischensumme|übertrag|gesamtbetrag|nettobetrag|mehrwertsteuer|mwst|umsatzsteuer|endbetrag|summe|iban|bic|steuernummer|seite\s+\d)/i;
-
-            extractedLines.forEach(line => {
-                if (ignoreRegex.test(line)) return;
-
-                // Preise am Zeilenende erkennen (z.B. "149,50" oder "1.250,00 €")
-                const priceMatches = [...line.matchAll(/(\d{1,3}(?:\.\d{3})*,\d{2}|\d+\.\d{2})\s*€?/g)];
-                if (priceMatches.length === 0) return;
-
-                const firstPriceMatch = priceMatches[0];
-                const firstPriceIdx = firstPriceMatch.index;
-                let descPart = line.substring(0, firstPriceIdx).trim();
-
-                // Führende Positionsnummer entfernen (z. B. "01.02.0010")
-                descPart = descPart.replace(/^\d+(?:[.,]\d+)*\s+/, '').trim();
-
-                // Menge und Einheit am Ende des Beschreibungsteils suchen (z. B. "12,00 Stk" oder "1 psch")
-                let qty = 1;
-                let unit = 'Stk';
-                const qtyUnitMatch = descPart.match(/(\d+(?:[.,]\d+)?)\s*(Stk|Stck|Stück|St|psch|pausch|Pauschal|m²|qm|m³|lfm|m|Std|h|Satz|Paar|kg)\b/i);
-                if (qtyUnitMatch) {
-                    qty = parseFloat(qtyUnitMatch[1].replace(',', '.')) || 1;
-                    unit = normalizeGAEBUnit(qtyUnitMatch[2]) || 'Stk';
-                    descPart = descPart.replace(qtyUnitMatch[0], '').trim();
-                }
-
-                // Falls zwei Preise in der Zeile stehen (Einheitspreis + Gesamtpreis), den kleineren/ersten als EP nutzen
-                const pA = parsePriceNumber(priceMatches[0][1]);
-                const pB = priceMatches.length > 1 ? parsePriceNumber(priceMatches[priceMatches.length - 1][1]) : 0;
-                let unitPrice = pA;
-                if (pB > 0 && qty > 1 && Math.abs((pA * qty) - pB) < 2) {
-                    unitPrice = pA;
-                } else if (pB > 0 && pA > pB) {
-                    unitPrice = pB;
-                }
-
-                if (descPart.length >= 3 && unitPrice > 0) {
-                    parsedPositions.push({
-                        title: descPart.substring(0, 120),
-                        qty: qty,
-                        unit: unit,
-                        offeredUnitPrice: unitPrice
-                    });
-                }
-            });
-
-            return parsedPositions;
-        }
-
-        // Hauptfunktion zum Hochladen & Auswerten eines Angebots (GAEB, PDF, Excel, CSV) im Reiter "GAEB / PDF Abgleich"
-        async function handleDirectOfferCheckUpload() {
-            const fileInput = document.getElementById('directCheckFileInput');
-            const feedback = document.getElementById('directCheckUploadFeedback');
-            const files = Array.from(fileInput.files || []);
-
-            if (files.length === 0) {
-                alert("Bitte wählen Sie eine Angebotsdatei (GAEB .x82/.x83+.x84/.x86, PDF oder Excel/CSV) aus.");
-                return;
-            }
-
-            feedback.textContent = "Angebot wird ausgelesen und mit den Marktpreisen der Datenbank abgeglichen...";
-            feedback.className = "text-xs block text-sky-400 font-semibold";
-
-            try {
-                if (db && marketPrices.length === 0) {
-                    const snap = await db.collection('market_prices').get();
-                    snap.forEach(doc => marketPrices.push({ idDoc: doc.id, ...doc.data() }));
-                }
-
-                const loadedFiles = await Promise.all(files.map(file => {
-                    const lowerName = file.name.toLowerCase();
-                    const isBinary = /\.(pdf|xlsx|xls)$/.test(lowerName);
-                    return new Promise((resolve, reject) => {
-                        const reader = new FileReader();
-                        reader.onload = e => resolve({
-                            name: lowerName,
-                            isBinary: isBinary,
-                            data: e.target.result
-                        });
-                        reader.onerror = err => reject(err);
-                        if (isBinary) {
-                            reader.readAsArrayBuffer(file);
-                        } else {
-                            reader.readAsText(file, "UTF-8");
-                        }
-                    });
-                }));
-
-                // Sortieren, damit .x83 (Kurztexte) vor .x84 (Preise) eingelesen wird
-                loadedFiles.sort((a, b) => {
-                    const aBase = /\.(x83|d83|p83|x82|d82|p82)$/.test(a.name) ? 0 : 1;
-                    const bBase = /\.(x83|d83|p83|x82|d82|p82)$/.test(b.name) ? 0 : 1;
-                    return aBase - bBase;
-                });
-
-                const rawExtracted = new Map();
-
-                for (let fIdx = 0; fIdx < loadedFiles.length; fIdx++) {
-                    const fileObj = loadedFiles[fIdx];
-                    const name = fileObj.name;
-
-                    if (name.endsWith('.pdf')) {
-                        const pdfPositions = await extractOfferPositionsFromPDF(fileObj.data);
-                        pdfPositions.forEach((pos, idx) => {
-                            rawExtracted.set(`pdf_${fIdx}_${idx}`, {
-                                title: pos.title,
-                                qty: pos.qty || 1,
-                                unit: pos.unit || 'Stk',
-                                offeredUnitPrice: pos.offeredUnitPrice || 0
-                            });
-                        });
-                    } else if (/\.(xlsx|xls)$/.test(name)) {
-                        const workbook = XLSX.read(fileObj.data, { type: 'array' });
-                        const sheet = workbook.Sheets[workbook.SheetNames[0]];
-                        const rows = XLSX.utils.sheet_to_json(sheet, { header: 1, defval: '' });
-                        const excelItems = parseTabularRows(rows);
-                        excelItems.forEach((it, idx) => {
-                            rawExtracted.set(`xlsx_${fIdx}_${idx}`, {
-                                title: it.title,
-                                qty: it.qty || 1,
-                                unit: it.unit || 'Stk',
-                                offeredUnitPrice: it.prices[0] || 0
-                            });
-                        });
-                    } else if (/\.(xml|x82|d82|p82|x83|d83|p83|x84|d84|p84|x85|x86)$/.test(name)) {
-                        const gaebItems = parseGAEBXmlContent(fileObj.data);
-                        gaebItems.forEach(item => {
-                            let key = item.id || item.ozKey;
-                            if (!rawExtracted.has(key)) {
-                                const byIdx = Array.from(rawExtracted.entries()).find(([_, v]) => v.index === item.index && (v.ozKey === item.ozKey || !item.title));
-                                if (byIdx) key = byIdx[0];
-                            }
-
-                            if (!rawExtracted.has(key)) {
-                                rawExtracted.set(key, {
-                                    index: item.index,
-                                    ozKey: item.ozKey,
-                                    title: item.title || '',
-                                    qty: item.qty || 1,
-                                    unit: item.unit || 'Stk',
-                                    offeredUnitPrice: item.price || 0
-                                });
-                            } else {
-                                const entry = rawExtracted.get(key);
-                                if (!entry.title && item.title) entry.title = item.title;
-                                if ((!entry.unit || entry.unit === 'Stk') && item.unit) entry.unit = item.unit;
-                                if (entry.qty === 1 && item.qty > 1) entry.qty = item.qty;
-                                if (item.price > 0) entry.offeredUnitPrice = item.price;
-                            }
-                        });
-                    } else {
-                        const lines = String(fileObj.data).split(/\r?\n/).filter(l => l.trim().length > 0);
-                        const rows = lines.map(line => {
-                            const delimiter = line.includes(';') ? ';' : (line.includes('\t') ? '\t' : ',');
-                            return line.split(delimiter).map(cell => cell.replace(/^"|"$/g, '').trim());
-                        });
-                        const csvItems = parseTabularRows(rows);
-                        csvItems.forEach((it, idx) => {
-                            rawExtracted.set(`csv_${fIdx}_${idx}`, {
-                                title: it.title,
-                                qty: it.qty || 1,
-                                unit: it.unit || 'Stk',
-                                offeredUnitPrice: it.prices[0] || 0
-                            });
-                        });
-                    }
-                }
-
-                // Gegen Datenbank-Mittelwerte abgleichen (Falls nicht in DB -> Referenzpreis = 0 zum manuellen Eintragen!)
-                directFileCheckItems = [];
-                let matchedCount = 0;
-                let missingInDbCount = 0;
-
-                rawExtracted.forEach((pos, idxKey) => {
-                    const finalTitle = (pos.title && pos.title.length > 1)
-                        ? pos.title
-                        : `Position ${pos.ozKey || (directFileCheckItems.length + 1)}`;
-
-                    const dbMatch = findMatchingMarketPriceItem(finalTitle);
-                    const refPrice = dbMatch ? Number(dbMatch.average || 0) : 0;
-
-                    if (dbMatch && refPrice > 0) {
-                        matchedCount++;
-                    } else {
-                        missingInDbCount++;
-                    }
-
-                    directFileCheckItems.push({
-                        rowId: 'fc_' + Date.now() + '_' + Math.random().toString(36).substring(2, 7),
-                        title: finalTitle,
-                        qty: pos.qty || 1,
-                        unit: pos.unit || (dbMatch ? dbMatch.unit : 'Stk') || 'Stk',
-                        offeredUnitPrice: Number(pos.offeredUnitPrice || 0),
-                        refUnitPrice: refPrice, // Steht auf 0, wenn nicht in DB vorhanden!
-                        inDb: Boolean(dbMatch && refPrice > 0),
-                        matchedDbTitle: dbMatch ? dbMatch.title : null,
-                        matchedDbId: dbMatch ? dbMatch.idDoc : null
-                    });
-                });
-
-                if (directFileCheckItems.length === 0) {
-                    throw new Error("Es konnten keine Positionen automatisch aus der Datei erkannt werden. Nutzen Sie bei gescannten PDFs ohne Textebene bitte die manuelle Zeile unten.");
-                }
-
-                feedback.textContent = `✓ ${directFileCheckItems.length} Positionen geladen: ${matchedCount} automatisch in DB gefunden, ${missingInDbCount} nicht in DB (stehen auf 0 € für manuelle Eingabe).`;
-                feedback.className = "text-xs block text-emerald-400 font-semibold";
-                fileInput.value = '';
-                renderDirectFileCheckTable();
-
-            } catch (err) {
-                console.error("Fehler beim Angebots-Abgleich:", err);
-                feedback.textContent = "⚠ " + err.message;
-                feedback.className = "text-xs block text-rose-400 font-semibold";
-            }
-        }
-
-        function updateFileCheckRowRefPrice(rowId, newVal) {
-            const item = directFileCheckItems.find(it => it.rowId === rowId);
-            if (!item) return;
-            const parsed = parseFloat(newVal);
-            item.refUnitPrice = (!isNaN(parsed) && parsed >= 0) ? parsed : 0;
-            renderDirectFileCheckTable();
-        }
-
-        function updateFileCheckRowOfferPrice(rowId, newVal) {
-            const item = directFileCheckItems.find(it => it.rowId === rowId);
-            if (!item) return;
-            const parsed = parseFloat(newVal);
-            item.offeredUnitPrice = (!isNaN(parsed) && parsed >= 0) ? parsed : 0;
-            renderDirectFileCheckTable();
-        }
-
-        function updateFileCheckRowQty(rowId, newVal) {
-            const item = directFileCheckItems.find(it => it.rowId === rowId);
-            if (!item) return;
-            const parsed = parseFloat(newVal);
-            item.qty = (!isNaN(parsed) && parsed > 0) ? parsed : 1;
-            renderDirectFileCheckTable();
-        }
-
-        function removeFileCheckRow(rowId) {
-            directFileCheckItems = directFileCheckItems.filter(it => it.rowId !== rowId);
-            renderDirectFileCheckTable();
-        }
-
-        function clearDirectFileCheck() {
-            directFileCheckItems = [];
-            const feedback = document.getElementById('directCheckUploadFeedback');
-            if (feedback) feedback.textContent = '';
-            renderDirectFileCheckTable();
-        }
-
-        function addManualRowToFileCheck() {
-            const titleEl = document.getElementById('fcManualTitle');
-            const qtyEl = document.getElementById('fcManualQty');
-            const unitEl = document.getElementById('fcManualUnit');
-            const offerPriceEl = document.getElementById('fcManualOfferPrice');
-
-            const title = (titleEl.value || '').trim();
-            const qty = parseFloat(qtyEl.value) || 1;
-            const unit = normalizeGAEBUnit(unitEl.value) || 'Stk';
-            const offerPrice = parseFloat(offerPriceEl.value) || 0;
-
-            if (!title) {
-                alert("Bitte geben Sie eine Positionsbeschreibung ein.");
-                return;
-            }
-
-            const dbMatch = findMatchingMarketPriceItem(title);
-            const refPrice = dbMatch ? Number(dbMatch.average || 0) : 0;
-
-            directFileCheckItems.push({
-                rowId: 'fc_man_' + Date.now(),
-                title: title,
-                qty: qty,
-                unit: unit,
-                offeredUnitPrice: offerPrice,
-                refUnitPrice: refPrice,
-                inDb: Boolean(dbMatch && refPrice > 0),
-                matchedDbTitle: dbMatch ? dbMatch.title : null,
-                matchedDbId: dbMatch ? dbMatch.idDoc : null
-            });
-
-            titleEl.value = '';
-            qtyEl.value = '1';
-            offerPriceEl.value = '';
-            renderDirectFileCheckTable();
-        }
-
-        // Speichert einen manuell eingetragenen Referenzpreis auf Wunsch direkt in die Marktpreise-DB
-        async function saveManualRefPriceToDatabase(rowId) {
-            const item = directFileCheckItems.find(it => it.rowId === rowId);
-            if (!item || item.refUnitPrice <= 0) {
-                alert("Bitte tragen Sie zuerst einen Referenzpreis größer 0 € in das Feld ein.");
-                return;
-            }
-
-            if (db) {
-                try {
-                    const newDoc = await db.collection('market_prices').add({
-                        title: item.title,
-                        longText: '',
-                        unit: item.unit || 'Stk',
-                        category: detectSHKCategory(item.title),
-                        prices: [item.refUnitPrice],
-                        average: Number(item.refUnitPrice.toFixed(2)),
-                        updatedAt: new Date().toISOString()
-                    });
-                    item.inDb = true;
-                    item.matchedDbId = newDoc.id;
-                    item.matchedDbTitle = item.title;
-                    await loadMarketPrices();
-                    renderDirectFileCheckTable();
-                } catch (e) {
-                    alert("Fehler beim Speichern in die Datenbank: " + e.message);
-                }
-            }
-        }
-
-        // Rendert die Abgleich-Tabelle mit farblich markierten Bereichen für die %-Abweichung und 0-€-Manuell-Feldern
-        function renderDirectFileCheckTable() {
-            const container = document.getElementById('fileCheckTableContainer');
-            const statsBadge = document.getElementById('fileCheckPosStatsBadge');
-            const verdictBanner = document.getElementById('fileCheckVerdictBanner');
-            const verdictText = document.getElementById('fileCheckVerdictText');
-            if (!container) return;
-
-            const fmt = (n) => n.toLocaleString('de-DE', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
-
-            let totalOfferNet = 0;
-            let totalRefNet = 0;
-            let missingRefCount = 0;
-
-            directFileCheckItems.forEach(it => {
-                totalOfferNet += (it.qty * it.offeredUnitPrice);
-                totalRefNet += (it.qty * it.refUnitPrice);
-                if (!it.refUnitPrice || it.refUnitPrice <= 0) {
-                    missingRefCount++;
-                }
-            });
-
-            const totalDiffNet = totalOfferNet - totalRefNet;
-            const totalDiffPercent = totalRefNet > 0 ? (((totalOfferNet - totalRefNet) / totalRefNet) * 100) : 0;
-
-            document.getElementById('fcStatOfferNet').textContent = `${fmt(totalOfferNet)} €`;
-            document.getElementById('fcStatOfferGross').textContent = `${fmt(totalOfferNet * 1.19)} € brutto (inkl. 19% MwSt.)`;
-            document.getElementById('fcStatRefNet').textContent = `${fmt(totalRefNet)} €`;
-            document.getElementById('fcStatRefGross').textContent = `${fmt(totalRefNet * 1.19)} € brutto (inkl. 19% MwSt.)`;
-
-            const diffAmountEl = document.getElementById('fcStatDiffAmount');
-            const diffPercentEl = document.getElementById('fcStatDiffPercent');
-
-            if (statsBadge) {
-                statsBadge.textContent = `${directFileCheckItems.length} Positionen (${missingRefCount} noch auf 0 € / manuell auszufüllen)`;
-            }
-
-            if (directFileCheckItems.length > 0 && totalRefNet > 0) {
-                verdictBanner.classList.remove('hidden');
-                const sign = totalDiffPercent > 0 ? '+' : '';
-                if (totalDiffPercent <= 0) {
-                    diffAmountEl.textContent = `${fmt(totalDiffNet)} €`;
-                    diffAmountEl.className = "text-2xl font-black text-emerald-400 mt-1 block";
-                    diffPercentEl.textContent = `${sign}${totalDiffPercent.toFixed(1)} % (Unter/im Marktschnitt)`;
-                    diffPercentEl.className = "text-[11px] text-emerald-400 font-bold block mt-0.5";
-                    verdictBanner.className = "p-4 rounded-xl border text-xs flex flex-col sm:flex-row sm:items-center justify-between gap-3 bg-emerald-500/10 border-emerald-500/30 text-emerald-300";
-                    verdictText.innerHTML = `<i class="fa-solid fa-circle-check mr-1.5"></i><strong>Gesamtbewertung Grün (${sign}${totalDiffPercent.toFixed(1)} %):</strong> Das Angebot liegt insgesamt im oder unter dem Referenz-Mittelwert.`;
-                } else if (totalDiffPercent <= 20) {
-                    diffAmountEl.textContent = `+${fmt(totalDiffNet)} €`;
-                    diffAmountEl.className = "text-2xl font-black text-amber-400 mt-1 block";
-                    diffPercentEl.textContent = `+${totalDiffPercent.toFixed(1)} % (Leicht erhöht)`;
-                    diffPercentEl.className = "text-[11px] text-amber-400 font-bold block mt-0.5";
-                    verdictBanner.className = "p-4 rounded-xl border text-xs flex flex-col sm:flex-row sm:items-center justify-between gap-3 bg-amber-500/10 border-amber-500/30 text-amber-300";
-                    verdictText.innerHTML = `<i class="fa-solid fa-triangle-exclamation mr-1.5"></i><strong>Gesamtbewertung Gelb (+${totalDiffPercent.toFixed(1)} %):</strong> Das Angebot liegt um <strong>${fmt(totalDiffNet)} € netto</strong> (${fmt(totalDiffNet * 1.19)} € brutto) über den Referenzwerten.`;
-                } else {
-                    diffAmountEl.textContent = `+${fmt(totalDiffNet)} €`;
-                    diffAmountEl.className = "text-2xl font-black text-rose-400 mt-1 block";
-                    diffPercentEl.textContent = `+${totalDiffPercent.toFixed(1)} % (Deutlich überhöht!)`;
-                    diffPercentEl.className = "text-[11px] text-rose-400 font-bold block mt-0.5";
-                    verdictBanner.className = "p-4 rounded-xl border text-xs flex flex-col sm:flex-row sm:items-center justify-between gap-3 bg-rose-500/10 border-rose-500/30 text-rose-300";
-                    verdictText.innerHTML = `<i class="fa-solid fa-circle-xmark mr-1.5"></i><strong>Gesamtbewertung Rot (+${totalDiffPercent.toFixed(1)} %):</strong> Deutliches Einsparpotenzial von <strong>${fmt(totalDiffNet)} € netto</strong> (${fmt(totalDiffNet * 1.19)} € brutto) erkannt!`;
-                }
-            } else {
-                diffAmountEl.textContent = `0,00 €`;
-                diffAmountEl.className = "text-2xl font-black text-slate-400 mt-1 block";
-                diffPercentEl.textContent = `Noch keine Referenzsumme`;
-                diffPercentEl.className = "text-[11px] text-slate-400 font-semibold block mt-0.5";
-                verdictBanner.classList.add('hidden');
-            }
-
-            if (directFileCheckItems.length === 0) {
-                container.innerHTML = `
-                    <div class="p-8 text-center text-xs text-slate-400 bg-slate-950/60">
-                        <i class="fa-solid fa-file-arrow-up text-2xl text-sky-400 mb-2 block"></i>
-                        Laden Sie oben eine <strong>GAEB-Datei (.x82, .x83+.x84, .x86)</strong> oder ein <strong>PDF-Angebot</strong> hoch, um alle Positionen automatisch mit den DB-Mittelwerten zu vergleichen.
-                    </div>
-                `;
-                return;
-            }
-
-            container.innerHTML = `
-                <table class="w-full text-left text-xs text-slate-300">
-                    <thead class="bg-slate-950 text-slate-400 uppercase border-b border-slate-800">
-                        <tr>
-                            <th class="p-3">Position / Status</th>
-                            <th class="p-3 w-24">Menge</th>
-                            <th class="p-3 w-28">Angebot EP (€)</th>
-                            <th class="p-3 w-40">DB-Mittelwert / Manuell (€)</th>
-                            <th class="p-3 text-center">% Abweichung</th>
-                            <th class="p-3 text-right">Diff. Gesamt</th>
-                            <th class="p-3 text-right">Aktion</th>
-                        </tr>
-                    </thead>
-                    <tbody class="divide-y divide-slate-800">
-                        ${directFileCheckItems.map((it, idx) => {
-                            const hasRef = it.refUnitPrice > 0;
-                            const devPercent = hasRef ? (((it.offeredUnitPrice - it.refUnitPrice) / it.refUnitPrice) * 100) : null;
-                            const rowDiffTotal = hasRef ? ((it.offeredUnitPrice - it.refUnitPrice) * it.qty) : 0;
-
-                            // Farblich markierte Bereiche je nach %-Abweichung
-                            let rowBgClass = "bg-sky-950/20 hover:bg-sky-950/30 border-l-4 border-l-sky-500";
-                            let devBadgeHtml = `<span class="inline-flex items-center px-2.5 py-1 rounded-lg text-[11px] font-bold bg-sky-500/20 text-sky-300 border border-sky-500/40"><i class="fa-solid fa-pen mr-1"></i>0 € (Manuell eingeben)</span>`;
-
-                            if (hasRef) {
-                                const sign = devPercent > 0 ? '+' : '';
-                                if (devPercent <= 0) {
-                                    rowBgClass = "bg-emerald-950/15 hover:bg-emerald-950/25 border-l-4 border-l-emerald-500";
-                                    devBadgeHtml = `<span class="inline-flex items-center px-2.5 py-1 rounded-lg text-xs font-black bg-emerald-500/20 text-emerald-400 border border-emerald-500/40"><i class="fa-solid fa-check mr-1"></i>${sign}${devPercent.toFixed(1)} %</span>`;
-                                } else if (devPercent <= 20) {
-                                    rowBgClass = "bg-amber-950/15 hover:bg-amber-950/25 border-l-4 border-l-amber-500";
-                                    devBadgeHtml = `<span class="inline-flex items-center px-2.5 py-1 rounded-lg text-xs font-black bg-amber-500/20 text-amber-300 border border-amber-500/40"><i class="fa-solid fa-triangle-exclamation mr-1"></i>+${devPercent.toFixed(1)} %</span>`;
-                                } else {
-                                    rowBgClass = "bg-rose-950/20 hover:bg-rose-950/30 border-l-4 border-l-rose-500";
-                                    devBadgeHtml = `<span class="inline-flex items-center px-2.5 py-1 rounded-lg text-xs font-black bg-rose-500/25 text-rose-400 border border-rose-500/40"><i class="fa-solid fa-circle-xmark mr-1"></i>+${devPercent.toFixed(1)} %</span>`;
-                                }
-                            }
-
-                            const dbStatusSubline = it.inDb
-                                ? `<span class="text-[10px] text-emerald-400 block mt-0.5"><i class="fa-solid fa-database mr-1"></i>DB-Treffer: ${it.matchedDbTitle || it.title}</span>`
-                                : `<span class="text-[10px] text-sky-400 font-semibold block mt-0.5"><i class="fa-solid fa-circle-Exclamation mr-1"></i>Nicht in DB – steht auf 0 €, bitte Referenzpreis eintragen!</span>`;
-
-                            return `
-                                <tr class="${rowBgClass} transition">
-                                    <td class="p-3">
-                                        <span class="font-semibold text-white"><span class="text-slate-500 mr-1">${idx + 1}.</span>${it.title}</span>
-                                        ${dbStatusSubline}
-                                    </td>
-                                    <td class="p-3">
-                                        <div class="flex items-center gap-1">
-                                            <input type="number" step="0.5" min="0.1" value="${it.qty}" onchange="updateFileCheckRowQty('${it.rowId}', this.value)" class="w-14 bg-slate-950 border border-slate-700 rounded-lg px-2 py-1 text-xs text-white focus:border-sky-500 focus:outline-none">
-                                            <span class="text-[10px] text-sky-400 font-bold">${it.unit}</span>
-                                        </div>
-                                    </td>
-                                    <td class="p-3">
-                                        <input type="number" step="0.01" value="${it.offeredUnitPrice}" onchange="updateFileCheckRowOfferPrice('${it.rowId}', this.value)" class="w-24 bg-slate-950 border border-slate-700 rounded-lg px-2 py-1 text-xs text-white font-bold focus:border-sky-500 focus:outline-none">
-                                    </td>
-                                    <td class="p-3">
-                                        <div class="flex items-center gap-1.5">
-                                            <input type="number" step="0.01" value="${it.refUnitPrice}" onchange="updateFileCheckRowRefPrice('${it.rowId}', this.value)" class="w-24 bg-slate-950 border-2 ${hasRef ? 'border-emerald-500/40 text-emerald-300' : 'border-sky-500 text-sky-300'} rounded-lg px-2 py-1 text-xs font-black focus:outline-none">
-                                            ${!it.inDb && it.refUnitPrice > 0 ? `
-                                                <button type="button" onclick="saveManualRefPriceToDatabase('${it.rowId}')" title="Diesen manuellen Preis dauerhaft in die Marktpreise-DB übernehmen" class="px-2 py-1 rounded bg-emerald-500/20 hover:bg-emerald-500/30 text-emerald-400 border border-emerald-500/30 text-[10px] font-bold transition">
-                                                    <i class="fa-solid fa-floppy-disk"></i> DB
-                                                </button>
-                                            ` : ''}
-                                        </div>
-                                    </td>
-                                    <td class="p-3 text-center whitespace-nowrap">
-                                        ${devBadgeHtml}
-                                    </td>
-                                    <td class="p-3 text-right font-bold whitespace-nowrap ${rowDiffTotal > 0 ? 'text-rose-400' : (hasRef ? 'text-emerald-400' : 'text-slate-500')}">
-                                        ${hasRef ? (rowDiffTotal > 0 ? '+' : '') + fmt(rowDiffTotal) + ' €' : '-'}
-                                    </td>
-                                    <td class="p-3 text-right">
-                                        <button type="button" onclick="removeFileCheckRow('${it.rowId}')" class="text-rose-400 hover:text-rose-300 p-1" title="Zeile entfernen">
-                                            <i class="fa-solid fa-xmark"></i>
-                                        </button>
-                                    </td>
-                                </tr>
-                            `;
-                        }).join('')}
-                    </tbody>
-                </table>
-            `;
-        }
-
-        // Übernimmt die Auswertung aus dem GAEB/PDF-Abgleich in den gewählten Kundenauftrag
-        function transferFileCheckToOrder() {
-            const select = document.getElementById('fileCheckTargetOrderSelect');
-            const targetOrderId = (select && select.value) ? select.value : selectedAdminOrderId;
-
-            if (!targetOrderId) {
-                alert("Bitte wählen Sie rechts über der Tabelle zuerst den gewünschten Kundenauftrag für die Übernahme aus.");
-                return;
-            }
-
-            const order = adminOrders.find(o => o.id === targetOrderId);
-            if (!order) return;
-
-            const fmt = (n) => n.toLocaleString('de-DE', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
-            let totalOfferNet = 0;
-            let totalRefNet = 0;
-            const overPricedDefects = [];
-
-            directFileCheckItems.forEach(it => {
-                totalOfferNet += (it.qty * it.offeredUnitPrice);
-                if (it.refUnitPrice > 0) {
-                    totalRefNet += (it.qty * it.refUnitPrice);
-                    const devPct = ((it.offeredUnitPrice - it.refUnitPrice) / it.refUnitPrice) * 100;
-                    const diffPos = (it.offeredUnitPrice - it.refUnitPrice) * it.qty;
-                    if (devPct > 10 && diffPos > 5) {
-                        overPricedDefects.push(`${it.title} (${it.qty} ${it.unit}): ${fmt(it.offeredUnitPrice)} € statt Ø ${fmt(it.refUnitPrice)} € (+${devPct.toFixed(1)} % / -${Math.round(diffPos)} € netto)`);
-                    }
-                }
-            });
-
-            const diffNet = Math.max(0, totalOfferNet - totalRefNet);
-            const diffGross = Math.round(diffNet * 1.19);
-            const totalDevPct = totalRefNet > 0 ? (((totalOfferNet - totalRefNet) / totalRefNet) * 100) : 0;
-
-            order.savings = `${diffGross.toLocaleString('de-DE')} €`;
-            order.summary = `Automatischer GAEB-/PDF-Positionsabgleich (${directFileCheckItems.length} Positionen): Angebotssumme ${fmt(totalOfferNet)} € netto gegenüber Referenz-Mittelwert ${fmt(totalRefNet)} € netto (Gesamtabweichung: ${totalDevPct > 0 ? '+' : ''}${totalDevPct.toFixed(1)} %).`;
-
-            if (!Array.isArray(order.defects)) order.defects = [];
-            overPricedDefects.forEach(d => order.defects.push(d));
-
-            selectedAdminOrderId = order.id;
-            switchAdminTab('active');
-            selectAdminOrder(order.id);
-            alert(`GAEB-/PDF-Abgleich wurde in Auftrag ${order.id} übernommen! Klicken Sie unten im Auftrag auf „Speichern“, um die Änderungen in Firestore zu sichern.`);
-        }
-
-        function switchAdminTab(tabName, year = null) {
-            currentAdminTab = tabName;
-            activeArchiveYear = year;
-
-            document.getElementById('tabBtnActive').className = "px-5 py-3 text-sm font-bold border-b-2 " + (tabName === 'active' ? "border-emerald-500 text-emerald-400" : "border-transparent text-slate-400 hover:text-white") + " transition";
-            document.getElementById('tabBtnApprovals').className = "px-5 py-3 text-sm font-bold border-b-2 " + (tabName === 'approvals' ? "border-amber-500 text-amber-400" : "border-transparent text-slate-400 hover:text-white") + " transition flex items-center";
-            document.getElementById('tabBtnRejected').className = "px-5 py-3 text-sm font-bold border-b-2 " + (tabName === 'rejected' ? "border-emerald-500 text-emerald-400" : "border-transparent text-slate-400 hover:text-white") + " transition";
-            document.getElementById('tabBtnCancelled').className = "px-5 py-3 text-sm font-bold border-b-2 " + (tabName === 'cancelled' ? "border-emerald-500 text-emerald-400" : "border-transparent text-slate-400 hover:text-white") + " transition";
-            document.getElementById('tabBtnArchive').className = "px-5 py-3 text-sm font-bold border-b-2 " + (tabName === 'archive' ? "border-emerald-500 text-emerald-400" : "border-transparent text-slate-400 hover:text-white") + " transition";
-            document.getElementById('tabBtnCustomers').className = "px-5 py-3 text-sm font-bold border-b-2 " + (tabName === 'customers' ? "border-emerald-500 text-emerald-400" : "border-transparent text-slate-400 hover:text-white") + " transition";
-            document.getElementById('tabBtnMarketPrices').className = "px-5 py-3 text-sm font-bold border-b-2 " + (tabName === 'marketprices' ? "border-emerald-500 text-emerald-400" : "border-transparent text-slate-400 hover:text-white") + " transition";
-            document.getElementById('tabBtnReconstruct').className = "px-5 py-3 text-sm font-bold border-b-2 " + (tabName === 'reconstruct' ? "border-emerald-500 text-emerald-400" : "border-transparent text-slate-400 hover:text-white") + " transition";
-            document.getElementById('tabBtnFileCheck').className = "px-5 py-3 text-sm font-bold border-b-2 " + (tabName === 'filecheck' ? "border-sky-500 text-sky-400" : "border-transparent text-slate-400 hover:text-white") + " transition";
-
-            const selectPrompt = document.getElementById('adminSelectPrompt');
-            const editorPanel = document.getElementById('adminEditorPanel');
-            const marketPricesPanel = document.getElementById('adminMarketPricesPanel');
-            const customersPanel = document.getElementById('adminCustomersPanel');
-            const reconstructPanel = document.getElementById('adminReconstructPanel');
-            const fileCheckPanel = document.getElementById('adminFileCheckPanel');
-            const searchContainer = document.getElementById('adminSearchContainer');
-
-            selectPrompt.classList.add('hidden');
-            editorPanel.classList.add('hidden');
-            marketPricesPanel.classList.add('hidden');
-            customersPanel.classList.add('hidden');
-            reconstructPanel.classList.add('hidden');
-            fileCheckPanel.classList.add('hidden');
-            searchContainer.classList.add('hidden');
-
-            if (tabName === 'marketprices') {
-                marketPricesPanel.classList.remove('hidden');
-                searchContainer.classList.remove('hidden');
-                updateNavbarUI();
-                loadMarketPrices();
-            } else if (tabName === 'reconstruct') {
-                reconstructPanel.classList.remove('hidden');
-                searchContainer.classList.remove('hidden');
-                populateReconstructTargetOrderDropdown();
-                loadMarketPrices();
-                renderReconstructCatalogList();
-                renderReconstructedOffer();
-            } else if (tabName === 'filecheck') {
-                fileCheckPanel.classList.remove('hidden');
-                populateFileCheckTargetOrderDropdown();
-                loadMarketPrices();
-                renderDirectFileCheckTable();
-            } else if (tabName === 'customers') {
-                customersPanel.classList.remove('hidden');
-                loadCustomers();
-            } else {
-                if (!selectedAdminOrderId) {
-                    selectPrompt.classList.remove('hidden');
-                } else {
-                    editorPanel.classList.remove('hidden');
-                }
-            }
-
-            renderAdminDashboard();
-        }
-
-        function renderAdminDashboard() {
-            let currentRevenue = 0;
-            let openRevenue = 0;
-
-            adminOrders.forEach(o => {
-                if (o.status == 5 || o.status == 6) return;
-                const basePrice = o.price || 149;
-                const manualDiscount = parseFloat(o.manualDiscount) || 0;
-                const finalPrice = Math.max(0, basePrice - manualDiscount);
-
-                if (o.paymentStatus === 'paid') {
-                    currentRevenue += finalPrice;
-                } else if (o.paymentStatus === 'partial') {
-                    currentRevenue += (finalPrice / 2);
-                    openRevenue += (finalPrice / 2);
-                } else {
-                    openRevenue += finalPrice;
-                }
-            });
-
-            const projectedRevenue = currentRevenue + openRevenue;
-
-            document.getElementById('adminStatCurrentRevenue').textContent = currentRevenue.toLocaleString('de-DE') + ' €';
-            document.getElementById('adminStatOpenRevenue').textContent = openRevenue.toLocaleString('de-DE') + ' €';
-            document.getElementById('adminStatProjectedRevenue').textContent = projectedRevenue.toLocaleString('de-DE') + ' €';
-
-            let totalSavingsNum = 0;
-            adminOrders.forEach(o => {
-                if (o.savings && o.status != 5 && o.status != 6) {
-                    const num = parseInt(o.savings.replace(/[^0-9]/g, '')) || 0;
-                    totalSavingsNum += num;
-                }
-            });
-            document.getElementById('adminStatSavings').textContent = totalSavingsNum.toLocaleString('de-DE') + ' €';
-
-            const pendingApprovalOrders = adminOrders.filter(o => !o.isArchived && (o.pendingAction === 'reject' || o.pendingAction === 'cancel'));
-            const approvalsBadge = document.getElementById('approvalsCountBadge');
-            if (approvalsBadge) {
-                if (pendingApprovalOrders.length > 0) {
-                    approvalsBadge.textContent = pendingApprovalOrders.length;
-                    approvalsBadge.classList.remove('hidden');
-                } else {
-                    approvalsBadge.classList.add('hidden');
-                }
-            }
-
-            const container = document.getElementById('adminOrdersList');
-            const listTitle = document.getElementById('adminListTitle');
-
-            if (currentAdminTab === 'active') {
-                listTitle.textContent = "Aktive Aufträge";
-                const activeOrders = adminOrders.filter(o => !o.isArchived && o.status != 5 && o.status != 6);
-                if (activeOrders.length === 0) {
-                    container.innerHTML = `<p class="text-xs text-slate-500">Keine aktiven Aufträge vorhanden.</p>`;
-                    return;
-                }
-                container.innerHTML = activeOrders.map(o => renderOrderCard(o)).join('');
-            } else if (currentAdminTab === 'approvals') {
-                listTitle.textContent = `Offene Freigaben (${pendingApprovalOrders.length})`;
-                if (pendingApprovalOrders.length === 0) {
-                    container.innerHTML = `
-                        <div class="bg-slate-900 border border-slate-800 rounded-xl p-6 text-center text-xs text-slate-400">
-                            <i class="fa-solid fa-circle-check text-emerald-400 text-2xl mb-2 block"></i>
-                            Aktuell liegen keine offenen Freigabe-Anfragen von Sachbearbeitern vor.
-                        </div>
-                    `;
-                    return;
-                }
-                container.innerHTML = pendingApprovalOrders.map(o => renderOrderCard(o)).join('');
-            } else if (currentAdminTab === 'rejected') {
-                listTitle.textContent = "Abgelehnte Aufträge";
-                const rejectedOrders = adminOrders.filter(o => !o.isArchived && o.status == 5);
-                if (rejectedOrders.length === 0) {
-                    container.innerHTML = `<p class="text-xs text-slate-500">Keine abgelehnten Aufträge vorhanden.</p>`;
-                    return;
-                }
-                container.innerHTML = rejectedOrders.map(o => renderOrderCard(o)).join('');
-            } else if (currentAdminTab === 'cancelled') {
-                listTitle.textContent = "Stornierte Aufträge";
-                const cancelledOrders = adminOrders.filter(o => !o.isArchived && o.status == 6);
-                if (cancelledOrders.length === 0) {
-                    container.innerHTML = `<p class="text-xs text-slate-500">Keine stornierten Aufträge vorhanden.</p>`;
-                    return;
-                }
-                container.innerHTML = cancelledOrders.map(o => renderOrderCard(o)).join('');
-            } else if (currentAdminTab === 'archive') {
-                const archiveOrders = adminOrders.filter(o => o.isArchived);
-                const yearsMap = {};
-                archiveOrders.forEach(o => {
-                    const year = o.createdAt ? new Date(o.createdAt).getFullYear() : 'Unbekannt';
-                    if (!yearsMap[year]) yearsMap[year] = [];
-                    yearsMap[year].push(o);
-                });
-                const availableYears = Object.keys(yearsMap).sort().reverse();
-                if (availableYears.length === 0) {
-                    container.innerHTML = `<p class="text-xs text-slate-500">Das Archiv ist leer.</p>`;
-                    return;
-                }
-                if (!activeArchiveYear || !yearsMap[activeArchiveYear]) {
-                    activeArchiveYear = availableYears[0];
-                }
-                let html = `
-                    <div class="flex flex-wrap gap-2 mb-4">
-                        ${availableYears.map(y => `
-                            <button type="button" onclick="switchAdminTab('archive', '${y}')" class="px-3 py-1.5 rounded-lg text-xs font-bold transition ${activeArchiveYear == y ? 'bg-emerald-500 text-slate-950' : 'bg-slate-800 text-slate-300 hover:bg-slate-700'}">
-                                <i class="fa-solid fa-folder mr-1"></i>Jahr ${y} (${yearsMap[y].length})
-                            </button>
-                        `).join('')}
-                    </div>
-                `;
-                listTitle.textContent = `Archiv — Jahr ${activeArchiveYear}`;
-                const ordersInYear = yearsMap[activeArchiveYear] || [];
-                html += ordersInYear.length === 0 ? `<p class="text-xs text-slate-500 mt-2">Keine Aufträge in diesem Jahr.</p>` : ordersInYear.map(o => renderOrderCard(o)).join('');
-                container.innerHTML = html;
-            } else if (currentAdminTab === 'customers') {
-                listTitle.textContent = "Kunden & Ränge";
-                container.innerHTML = `
-                    <div class="bg-slate-900 border border-slate-800 rounded-xl p-4 space-y-2 text-xs text-slate-400">
-                        <p class="text-white font-semibold"><i class="fa-solid fa-circle-info text-emerald-400 mr-1.5"></i>Rang-Automatik & Kontosperre</p>
-                        <p>Ab 10 Aufträgen erfolgt automatisch der Aufstieg zum Stammkunden (5 % Rabatt).</p>
-                        <p class="text-amber-400 font-medium"><i class="fa-solid fa-shield-halved mr-1"></i>Der Hauptadmin kann einzelne Konten rechts in der Tabelle sperren.</p>
-                    </div>
-                `;
-            } else if (currentAdminTab === 'marketprices') {
-                listTitle.textContent = "Marktpreise-DB";
-                container.innerHTML = `
-                    <div class="bg-slate-900 border border-slate-800 rounded-xl p-4 space-y-2 text-xs text-slate-400">
-                        <p class="text-white font-semibold"><i class="fa-solid fa-database text-emerald-400 mr-1.5"></i>Fortlaufende Mittelwerte</p>
-                        <p>Aktuell gespeicherte Positionen: <strong class="text-white">${marketPrices.length}</strong></p>
-                        <p class="text-slate-400">Neue GAEB-Uploads ergänzen vorhandene Positionen um weitere Preise und aktualisieren den Durchschnittswert automatisch.</p>
-                    </div>
-                `;
-            } else if (currentAdminTab === 'reconstruct') {
-                renderReconstructCatalogList();
-            } else if (currentAdminTab === 'filecheck') {
-                listTitle.textContent = "GAEB / PDF Abgleich";
-                container.innerHTML = `
-                    <div class="bg-slate-900 border border-slate-800 rounded-xl p-4 space-y-3 text-xs text-slate-400">
-                        <p class="text-white font-semibold"><i class="fa-solid fa-file-shield text-sky-400 mr-1.5"></i>So funktioniert der Abgleich:</p>
-                        <p>1. Laden Sie rechts eine <strong>GAEB-Datei</strong> (<code class="text-sky-400">.x82 / .x84 / .x86</code> oder Kombi <code class="text-sky-400">.x83 + .x84</code>) oder ein <strong>PDF-Angebot</strong> hoch.</p>
-                        <p>2. Bekannte Positionen erhalten sofort den <strong>DB-Mittelwert</strong> und zeigen die <strong>%-Abweichung</strong> farbig an.</p>
-                        <p>3. Unbekannte Positionen stehen automatisch auf <strong class="text-sky-400">0 €</strong> – tragen Sie dort Ihren Referenzpreis manuell ein (optional mit Klick auf <strong>DB</strong> direkt für die Zukunft speichern).</p>
-                    </div>
-                `;
-            }
-        }
-
-        function renderOrderCard(o) {
-            let statusLabel = `Status ${o.status}/4`;
-            if (o.status == 5) statusLabel = 'Abgelehnt';
-            if (o.status == 6) statusLabel = 'Storniert';
-            if (o.isArchived) statusLabel = 'Archiviert';
-
-            const basePrice = o.price || 149;
-            const manualDiscount = parseFloat(o.manualDiscount) || 0;
-            const displayPrice = Math.max(0, basePrice - manualDiscount);
-            const customerName = (o.firstName && o.lastName) ? `${o.firstName} ${o.lastName}` : o.email;
-            const projectName = (o.projectName || 'Allgemein').trim() || 'Allgemein';
-
-            const isFirstOrder = isFirstCustomerInquiryOrder(o);
-            const needs50DepositBeforeWork = isFirstOrder && (!o.paymentStatus || o.paymentStatus === 'unpaid') && o.status != 5 && o.status != 6;
-
-            let firstInquiryBadgeHtml = '';
-            if (needs50DepositBeforeWork) {
-                firstInquiryBadgeHtml = `
-                    <div class="mt-2 px-2.5 py-1.5 rounded-lg bg-rose-500/20 border border-rose-500/40 text-rose-300 text-[10px] font-bold flex items-center justify-between">
-                        <span><i class="fa-solid fa-file-invoice-dollar mr-1.5"></i>NEUKUNDE (1. Anfrage)</span>
-                        <span class="uppercase text-[9px] ${o.depositInvoiceSent ? 'bg-emerald-500 text-slate-950' : 'bg-rose-500 text-white'} px-1.5 py-0.5 rounded font-black">${o.depositInvoiceSent ? '50% gesendet' : 'Status gesperrt!'}</span>
-                    </div>
-                `;
-            }
-
-            let pendingBadgeHtml = '';
-            if (o.pendingAction === 'reject' || o.pendingAction === 'cancel') {
-                const labelText = o.pendingAction === 'reject' ? 'Vorl. Ablehnung' : 'Vorl. Stornierung';
-                const reasonPreview = o.pendingActionReason
-                    ? `<div class="mt-1 text-[10px] text-amber-200/90 italic truncate"><i class="fa-solid fa-comment-dots mr-1"></i>„${o.pendingActionReason}“</div>`
-                    : '';
-                pendingBadgeHtml = `
-                    <div class="mt-2 px-2.5 py-1.5 rounded-lg bg-amber-500/20 border border-amber-500/40 text-amber-300 text-[11px] font-bold">
-                        <div class="flex items-center justify-between">
-                            <span><i class="fa-solid fa-hourglass-half mr-1.5"></i>${labelText}</span>
-                            <span class="uppercase text-[9px] bg-amber-500 text-slate-950 px-1.5 py-0.5 rounded font-black">Freigabe nötig</span>
-                        </div>
-                        ${reasonPreview}
-                    </div>
-                `;
-            }
-
-            const clientReasonHint = (o.status == 5 || o.status == 6) && o.clientVisibleReason
-                ? `<div class="mt-1.5 text-[10px] text-rose-300 truncate"><i class="fa-solid fa-eye mr-1"></i>Kundengrund: ${o.clientVisibleReason}</div>`
-                : '';
-
-            return `
-                <div onclick="selectAdminOrder('${o.id}')" class="bg-slate-900 border ${selectedAdminOrderId === o.id ? 'border-amber-500' : (o.pendingAction ? 'border-amber-500/50' : (needs50DepositBeforeWork ? 'border-rose-500/40' : 'border-slate-800'))} hover:border-slate-700 rounded-xl p-4 cursor-pointer transition mb-3">
-                    <div class="flex justify-between items-center mb-1">
-                        <span class="text-xs font-bold text-amber-400">${o.id}</span>
-                        <span class="text-xs text-slate-300 font-medium">${customerName}</span>
-                    </div>
-                    <h4 class="text-white font-semibold text-sm truncate">${o.email}</h4>
-                    <div class="mt-1.5 flex flex-wrap items-center gap-1.5">
-                        <span class="inline-flex items-center px-2 py-0.5 rounded text-[10px] font-semibold bg-sky-500/10 text-sky-400 border border-sky-500/20">
-                            <i class="fa-solid fa-folder mr-1"></i>${projectName}
-                        </span>
-                    </div>
-                    <div class="mt-2 text-xs text-emerald-400 font-medium">
-                        <i class="fa-solid fa-box mr-1"></i>${o.packageName || 'Heizungs-Angebot'} (${displayPrice} €)
-                    </div>
-                    ${o.discountApplied ? `<div class="mt-1 text-[10px] text-emerald-300"><i class="fa-solid fa-tag mr-1"></i>${o.discountApplied}</div>` : ''}
-                    ${firstInquiryBadgeHtml}
-                    ${pendingBadgeHtml}
-                    ${clientReasonHint}
-                    <div class="flex justify-between items-center mt-2 text-xs text-slate-400">
-                        <span class="${o.status == 5 || o.status == 6 ? 'text-rose-400 font-bold' : ''}">${statusLabel}</span>
-                        <span>${o.paymentStatus === 'paid' ? 'Bezahlt' : (o.paymentStatus === 'partial' ? 'Angezahlt (50%)' : 'Offen')}</span>
-                    </div>
-                </div>
-            `;
-        }
-
-        function updateAdminEditorRolePermissions(order) {
-            const isAdminOrMain = canManageRoles();
-            const optReject = document.getElementById('statusOptReject');
-            const optCancel = document.getElementById('statusOptCancel');
-            const directRow = document.getElementById('adminDirectRejectCancelRow');
-            const clerkRow = document.getElementById('clerkPreliminaryRejectCancelRow');
-            const clerkReasonInput = document.getElementById('clerkPreliminaryReasonInput');
-            const directReasonInput = document.getElementById('adminDirectReasonInput');
-
-            if (optReject && optCancel) {
-                optReject.disabled = !isAdminOrMain;
-                optCancel.disabled = !isAdminOrMain;
-                optReject.textContent = isAdminOrMain ? '5. Abgelehnt' : '5. Abgelehnt (Nur Admin)';
-                optCancel.textContent = isAdminOrMain ? '6. Storniert' : '6. Storniert (Nur Admin)';
-            }
-
-            if (directRow && clerkRow) {
-                if (isAdminOrMain) {
-                    directRow.classList.remove('hidden');
-                    clerkRow.classList.add('hidden');
-                } else {
-                    directRow.classList.add('hidden');
-                    clerkRow.classList.remove('hidden');
-                }
-            }
-
-            if (clerkReasonInput) {
-                clerkReasonInput.value = (order && order.pendingActionReason) ? order.pendingActionReason : '';
-            }
-            if (directReasonInput) {
-                directReasonInput.value = (order && order.clientVisibleReason) ? order.clientVisibleReason : '';
-            }
-
-            const approvalBanner = document.getElementById('adminPendingApprovalBanner');
-            const approvalTitle = document.getElementById('pendingApprovalTitle');
-            const approvalDesc = document.getElementById('pendingApprovalDesc');
-            const reasonBox = document.getElementById('pendingApprovalReasonBox');
-            const reasonText = document.getElementById('pendingApprovalReasonText');
-            const publicReasonInput = document.getElementById('adminApprovalPublicReasonInput');
-            const adminActions = document.getElementById('pendingApprovalAdminActions');
-            const clerkHint = document.getElementById('pendingApprovalClerkHint');
-
-            if (order && (order.pendingAction === 'reject' || order.pendingAction === 'cancel')) {
-                approvalBanner.classList.remove('hidden');
-                const actionLabel = order.pendingAction === 'reject' ? 'Vorläufige Ablehnung' : 'Vorläufige Stornierung';
-                approvalTitle.textContent = `${actionLabel} wartet auf Admin-Freigabe`;
-                approvalDesc.textContent = `Beantragt von: ${order.pendingActionBy || 'Sachbearbeiter'}${order.pendingActionAt ? ' am ' + new Date(order.pendingActionAt).toLocaleString('de-DE') : ''}`;
-
-                if (order.pendingActionReason && order.pendingActionReason.trim().length > 0) {
-                    reasonBox.classList.remove('hidden');
-                    reasonText.textContent = order.pendingActionReason;
-                } else {
-                    reasonBox.classList.add('hidden');
-                    reasonText.textContent = '';
-                }
-
-                if (publicReasonInput) {
-                    publicReasonInput.value = order.pendingActionReason || order.clientVisibleReason || '';
-                }
-
-                if (isAdminOrMain) {
-                    adminActions.classList.remove('hidden');
-                    clerkHint.classList.add('hidden');
-                } else {
-                    adminActions.classList.add('hidden');
-                    clerkHint.classList.remove('hidden');
-                }
-            } else {
-                approvalBanner.classList.add('hidden');
-            }
-        }
-
-        function selectAdminOrder(orderId) {
-            if (currentAdminTab === 'marketprices' || currentAdminTab === 'customers' || currentAdminTab === 'reconstruct' || currentAdminTab === 'filecheck') return;
-            selectedAdminOrderId = orderId;
-            const order = adminOrders.find(o => o.id === orderId);
-            if (!order) return;
-
-            renderAdminDashboard();
-
-            document.getElementById('adminSelectPrompt').classList.add('hidden');
-            document.getElementById('adminMarketPricesPanel').classList.add('hidden');
-            document.getElementById('adminCustomersPanel').classList.add('hidden');
-            document.getElementById('adminReconstructPanel').classList.add('hidden');
-            document.getElementById('adminFileCheckPanel').classList.add('hidden');
-            document.getElementById('adminEditorPanel').classList.remove('hidden');
-
-            const basePrice = order.price || 149;
-            const manualDiscount = parseFloat(order.manualDiscount) || 0;
-            const displayPrice = Math.max(0, basePrice - manualDiscount);
-            const deposit50Amount = (displayPrice / 2).toFixed(2);
-            const projectName = (order.projectName || 'Allgemein').trim() || 'Allgemein';
-
-            document.getElementById('adminEditOrderId').textContent = `Auftrag ${order.id} — ${order.packageName || 'Paket'} (${displayPrice} €)`;
-            document.getElementById('adminEditProjectBadge').textContent = `Projekt: ${projectName}`;
-            document.getElementById('adminEditCustomerEmail').textContent = order.email;
-            document.getElementById('adminPaymentSelect').value = order.paymentStatus || 'unpaid';
-            document.getElementById('adminManualPriceInput').value = order.manualDiscount || '';
-            document.getElementById('adminSavingsInput').value = order.savings || '';
-            document.getElementById('adminSummaryInput').value = order.summary || '';
-            document.getElementById('adminDefectsInput').value = (order.defects || []).join('\n');
-
-            updateAdminEditorRolePermissions(order);
-
-            const lockedForWork = isNewCustomerLockedForWork(order);
-            const statusSelect = document.getElementById('adminStatusSelect');
-            if (statusSelect) {
-                Array.from(statusSelect.options).forEach(opt => {
-                    const val = parseInt(opt.value);
-                    if ([2, 3, 4].includes(val)) {
-                        opt.disabled = lockedForWork;
-                        const baseLabels = {
-                            2: '2. In Fachprüfung',
-                            3: '3. Bericht wird erstellt',
-                            4: '4. Abgeschlossen'
-                        };
-                        opt.textContent = lockedForWork
-                            ? `${baseLabels[val]} (Gesperrt: Erst 50% Rechnung/Anzahlung!)`
-                            : baseLabels[val];
-                    }
-                });
-                statusSelect.value = order.status || 1;
-            }
-
-            const isFirstInquiry = isFirstCustomerInquiryOrder(order);
-            const firstInquiryBanner = document.getElementById('adminFirstInquiryWarningBanner');
-            const firstInquiryText = document.getElementById('adminFirstInquiryWarningText');
-            const invoiceSentBadge = document.getElementById('adminInvoiceSentStatusBadge');
-
-            if (order.depositInvoiceSent) {
-                invoiceSentBadge.classList.remove('hidden');
-            } else {
-                invoiceSentBadge.classList.add('hidden');
-            }
-
-            if (isFirstInquiry && (!order.paymentStatus || order.paymentStatus === 'unpaid') && order.status != 5 && order.status != 6) {
-                firstInquiryBanner.classList.remove('hidden');
-                firstInquiryText.textContent = order.depositInvoiceSent
-                    ? `Erstanfrage eines Neukunden: Die 50 % PDF-Anzahlungsrechnung (${deposit50Amount} €) wurde erstellt. Die Status-Sperre ist aufgehoben – bitte prüfen Sie vor Arbeitsbeginn den Zahlungseingang.`
-                    : `Status-Sperre aktiv: Dies ist die erste Angebotsanfrage dieses Neukunden. Status 2–4 sind gesperrt, bis die 50 % PDF-Anzahlungsrechnung (${deposit50Amount} €) erstellt/versendet oder die Anzahlung verbucht wurde!`;
-            } else {
-                firstInquiryBanner.classList.add('hidden');
-            }
-
-            const reportStatusSpan = document.getElementById('adminReportFileStatus');
-            if (order.reportName) {
-                reportStatusSpan.textContent = `Aktueller Bericht: ${order.reportName}`;
-                reportStatusSpan.className = "text-[11px] text-emerald-400 block font-medium";
-            } else {
-                reportStatusSpan.textContent = "Noch kein Bericht hochgeladen.";
-                reportStatusSpan.className = "text-[11px] text-slate-500 block";
-            }
-
-            const noticeBox = document.getElementById('adminNewCustomerNotice');
-            const typeLabel = document.getElementById('adminCustomerTypeLabel');
-            if (order.firstName || order.lastName || isFirstInquiry) {
-                noticeBox.classList.remove('hidden');
-                typeLabel.textContent = isFirstInquiry ? 'NEUKUNDE (ERSTE ANFRAGE)' : 'BESTANDSKUNDE';
-                const fullName = `${order.firstName || ''} ${order.lastName || ''}`.trim() || order.email;
-                document.getElementById('adminCustomerNameBadge').textContent = `Kunde: ${fullName}${order.discountApplied ? ' (' + order.discountApplied + ')' : ''}`;
-                document.getElementById('adminDepositAmount').textContent = `${deposit50Amount} € Anzahlung (50%)`;
-            } else {
-                noticeBox.classList.add('hidden');
-            }
-
-            let downloadBtn = document.getElementById('adminFileDownloadBtn');
-            if (!downloadBtn) {
-                downloadBtn = document.createElement('a');
-                downloadBtn.id = 'adminFileDownloadBtn';
-                downloadBtn.target = '_blank';
-                downloadBtn.className = 'inline-block bg-slate-800 hover:bg-slate-700 text-emerald-400 border border-emerald-500/30 px-4 py-2 rounded-xl text-xs font-semibold mb-4 transition';
-                document.getElementById('adminEditorPanel').insertBefore(downloadBtn, document.getElementById('adminEditorPanel').children[1]);
-            }
-            
-            if (order.fileData) {
-                downloadBtn.href = order.fileData;
-                downloadBtn.download = order.fileName;
-                downloadBtn.innerHTML = `<i class="fa-solid fa-file-arrow-down mr-2"></i>Eingereichte Kundendatei herunterladen (${order.fileName})`;
-                downloadBtn.style.display = 'inline-block';
-            } else {
-                downloadBtn.style.display = 'none';
-            }
-        }
-
-        function requestDocumentsEmail() {
-            if (!selectedAdminOrderId) return;
-            const order = adminOrders.find(o => o.id === selectedAdminOrderId);
-            if (!order) return;
-
-            const subject = encodeURIComponent(`Zusätzliche Unterlagen für Ihren Auftrag ${order.id} erforderlich`);
-            const body = encodeURIComponent(`Hallo,\n\nfür die Bearbeitung Ihres Auftrags (${order.packageName}) benötigen wir noch weitere Unterlagen oder Angaben.\n\nBitte laden Sie diese direkt in Ihrem Kundenportal hoch oder antworten Sie auf diese E-Mail.\n\nVielen Dank!\n\nMit freundlichen Grüßen\nSHK Angebotsprüfung`);
-
-            window.location.href = `mailto:${order.email}?subject=${subject}&body=${body}`;
-        }
-
-        function generateInvoicePDFDocument(order, type) {
-            if (!window.jspdf || !window.jspdf.jsPDF) {
-                alert('PDF-Generator (jsPDF) wird geladen oder ist nicht verfügbar.');
-                return;
-            }
-            const { jsPDF } = window.jspdf;
-            const doc = new jsPDF();
-
-            const basePrice = order.price || 149;
-            const manualDiscount = parseFloat(order.manualDiscount) || 0;
-            const totalGross = Math.max(0, basePrice - manualDiscount);
-            const billedGross = type === '50' ? (totalGross / 2) : totalGross;
-            const billedNet = billedGross / 1.19;
-            const billedVat = billedGross - billedNet;
-
-            const invoiceNo = `RE-${order.id.replace('SHK-', '')}-${type}`;
-            const todayStr = new Date().toLocaleDateString('de-DE');
-            const customerName = `${order.firstName || ''} ${order.lastName || ''}`.trim() || order.email;
-            const projectName = (order.projectName || 'Allgemein').trim();
-
-            doc.setFont('helvetica', 'bold');
-            doc.setFontSize(18);
-            doc.setTextColor(16, 185, 129);
-            doc.text('SHK Angebotsprüfung', 20, 22);
-
-            doc.setFont('helvetica', 'normal');
-            doc.setFontSize(9);
-            doc.setTextColor(100, 116, 139);
-            doc.text('Technische & Kaufmännische TGA-/SHK-Analyse', 20, 28);
-
-            doc.setTextColor(15, 23, 42);
-            doc.setFontSize(10);
-            doc.setFont('helvetica', 'bold');
-            doc.text('Rechnungsempfänger:', 20, 45);
-            doc.setFont('helvetica', 'normal');
-            doc.text(customerName, 20, 51);
-            doc.text(order.email, 20, 56);
-
-            doc.setFont('helvetica', 'bold');
-            doc.text(`Rechnungs-Nr.: ${invoiceNo}`, 125, 45);
-            doc.setFont('helvetica', 'normal');
-            doc.text(`Datum: ${todayStr}`, 125, 51);
-            doc.text(`Auftrags-Nr.: ${order.id}`, 125, 56);
-            doc.text(`Projekt: ${projectName}`, 125, 61);
-
-            doc.setFont('helvetica', 'bold');
-            doc.setFontSize(14);
-            const titleText = type === '50'
-                ? 'Anzahlungsrechnung (50 % vor Arbeitsbeginn)'
-                : 'Rechnung (100 % Gesamtabrechnung)';
-            doc.text(titleText, 20, 80);
-
-            doc.setFillColor(241, 245, 249);
-            doc.rect(20, 88, 170, 9, 'F');
-            doc.setFontSize(9);
-            doc.text('Pos.', 24, 94);
-            doc.text('Leistungsbeschreibung', 38, 94);
-            doc.text('Betrag (brutto)', 155, 94);
-
-            doc.setFont('helvetica', 'normal');
-            doc.setFontSize(10);
-            doc.text('1', 24, 106);
-            const descLines = [
-                `Paket: ${order.packageName || 'SHK-Angebotsprüfung'} (Auftrag ${order.id})`,
-                `Bauvorhaben / Projekt: ${projectName}`,
-                type === '50'
-                    ? '50 % Anzahlung gemäß Vereinbarung vor Beginn der technischen Fachprüfung'
-                    : '100 % Gesamtleistung Technische & Kaufmännische Angebotsprüfung'
-            ];
-            if (order.discountApplied) descLines.push(`Berücksichtigter Rabatt: ${order.discountApplied}`);
-            if (manualDiscount > 0) descLines.push(`Manueller Nachlass: -${manualDiscount.toFixed(2).replace('.', ',')} €`);
-
-            doc.text(descLines, 38, 106);
-            doc.setFont('helvetica', 'bold');
-            doc.text(`${billedGross.toFixed(2).replace('.', ',')} €`, 155, 106);
-
-            const sumY = 145;
-            doc.setDrawColor(203, 213, 225);
-            doc.line(20, sumY - 6, 190, sumY - 6);
-
-            doc.setFont('helvetica', 'normal');
-            doc.setFontSize(10);
-            doc.text('Nettobetrag:', 115, sumY);
-            doc.text(`${billedNet.toFixed(2).replace('.', ',')} €`, 160, sumY);
-
-            doc.text('zzgl. 19 % MwSt.:', 115, sumY + 7);
-            doc.text(`${billedVat.toFixed(2).replace('.', ',')} €`, 160, sumY + 7);
-
-            doc.setFont('helvetica', 'bold');
-            doc.setFontSize(11);
-            doc.text('Rechnungsbetrag (Brutto):', 115, sumY + 16);
-            doc.text(`${billedGross.toFixed(2).replace('.', ',')} €`, 160, sumY + 16);
-
-            doc.setFont('helvetica', 'normal');
-            doc.setFontSize(9);
-            doc.setTextColor(71, 85, 105);
-            const footerNote = type === '50'
-                ? 'Bitte überweisen Sie den Anzahlungsbetrag unter Angabe der Rechnungsnummer vor Beginn der Fachprüfung.'
-                : 'Vielen Dank für Ihren Auftrag und Ihr Vertrauen!';
-            doc.text(footerNote, 20, sumY + 34);
-
-            doc.save(`Rechnung_${order.id}_${type}Prozent.pdf`);
-        }
-
-        async function sendInvoiceEmail(type, markDepositSent = false) {
-            if (!selectedAdminOrderId) return;
-            const order = adminOrders.find(o => o.id === selectedAdminOrderId);
-            if (!order) return;
-
-            generateInvoicePDFDocument(order, type);
-
-            const basePrice = order.price || 149;
-            const manualDiscount = parseFloat(order.manualDiscount) || 0;
-            const finalPrice = Math.max(0, basePrice - manualDiscount);
-
-            if (type === '50' && markDepositSent) {
-                order.depositInvoiceSent = true;
-                if (db && order.idDoc) {
-                    try {
-                        await db.collection('orders').doc(order.idDoc).update({
-                            depositInvoiceSent: true
-                        });
-                    } catch (e) {
-                        console.warn("Konnte Versandstatus der 50%-Rechnung nicht speichern:", e);
-                    }
-                }
-                selectAdminOrder(order.id);
-                renderAdminDashboard();
-            }
-
-            const amount = type === '50'
-                ? (finalPrice / 2).toFixed(2).replace('.', ',') + ' € (50% Anzahlung vor Arbeitsbeginn)'
-                : finalPrice.toFixed(2).replace('.', ',') + ' € (100% Gesamtbetrag)';
-            const subject = encodeURIComponent(`Ihre Rechnung (${type === '50' ? '50% Anzahlung vor Arbeitsbeginn' : 'Gesamtrechnung'}) für Auftrag ${order.id}`);
-            const body = encodeURIComponent(`Hallo,\n\nanbei erhalten Sie Ihre PDF-Rechnung für den gebuchten Prüfservice (${order.packageName}).\n\nRechnungsbetrag: ${amount}\n\n${type === '50' ? 'Hinweis für Neukunden: Bitte überweisen Sie die 50% Anzahlung vor Beginn der technischen Detailprüfung.\n\n' : ''}Vielen Dank für Ihr Vertrauen!\n\nMit freundlichen Grüßen\nSHK Angebotsprüfung`);
-
-            window.location.href = `mailto:${order.email}?subject=${subject}&body=${body}`;
-        }
-
-        async function requestPreliminaryOrderAction(actionType) {
-            if (!selectedAdminOrderId) return;
-            const order = adminOrders.find(o => o.id === selectedAdminOrderId);
-            if (!order) return;
-
-            const reasonInput = document.getElementById('clerkPreliminaryReasonInput');
-            const reasonText = reasonInput ? reasonInput.value.trim() : '';
-
-            if (actionType === 'reject' && !reasonText) {
-                alert('Bitte tragen Sie im internen Notizfeld eine kurze Begründung für die vorläufige Ablehnung ein.');
-                if (reasonInput) reasonInput.focus();
-                return;
-            }
-
-            const currentOrderId = order.id;
-            order.pendingAction = actionType;
-            order.pendingActionBy = currentUser ? currentUser.email : 'Sachbearbeiter';
-            order.pendingActionAt = new Date().toISOString();
-            order.pendingActionReason = reasonText || null;
-
-            if (db && order.idDoc) {
-                try {
-                    await db.collection('orders').doc(order.idDoc).update({
-                        pendingAction: order.pendingAction,
-                        pendingActionBy: order.pendingActionBy,
-                        pendingActionAt: order.pendingActionAt,
-                        pendingActionReason: order.pendingActionReason
-                    });
-                } catch (e) {
-                    alert('Fehler beim Speichern der Vorabanfrage: ' + e.message);
-                    return;
-                }
-            }
-
-            await loadAdminOrders();
-            selectAdminOrder(currentOrderId);
-        }
-
-        async function approvePreliminaryAction() {
-            if (!canManageRoles()) {
-                alert('Nur Administratoren und der Hauptadmin können diese Aktion freigeben.');
-                return;
-            }
-            if (!selectedAdminOrderId) return;
-            const order = adminOrders.find(o => o.id === selectedAdminOrderId);
-            if (!order || !order.pendingAction) return;
-
-            const currentOrderId = order.id;
-            const isReject = order.pendingAction === 'reject';
-            const newStatus = isReject ? 5 : 6;
-
-            const shareWithClientCheck = document.getElementById('shareApprovalReasonWithClientCheck');
-            const publicReasonInput = document.getElementById('adminApprovalPublicReasonInput');
-            const shouldShareReason = shareWithClientCheck ? shareWithClientCheck.checked : false;
-            const finalReasonText = publicReasonInput ? publicReasonInput.value.trim() : (order.pendingActionReason || '');
-
-            const clientVisibleReasonValue = (shouldShareReason && finalReasonText) ? finalReasonText : null;
-
-            const updates = {
-                status: newStatus,
-                clientVisibleReason: clientVisibleReasonValue,
-                pendingAction: null,
-                pendingActionBy: null,
-                pendingActionAt: null
-            };
-            if (!isReject) {
-                updates.paymentStatus = 'paid';
-            }
-
-            order.status = newStatus;
-            order.clientVisibleReason = clientVisibleReasonValue;
-            order.pendingAction = null;
-            order.pendingActionBy = null;
-            order.pendingActionAt = null;
-            if (!isReject) order.paymentStatus = 'paid';
-
-            if (db && order.idDoc) {
-                try {
-                    await db.collection('orders').doc(order.idDoc).update(updates);
-                } catch (e) {
-                    alert('Fehler bei der Freigabe: ' + e.message);
-                    return;
-                }
-            }
-
-            if (isReject) {
-                const subject = encodeURIComponent(`Aktualisierung zu Ihrem Auftrag ${order.id}`);
-                const reasonMailPart = clientVisibleReasonValue ? `\n\nBegründung / Hinweis:\n${clientVisibleReasonValue}\n` : '\n';
-                const body = encodeURIComponent(`Hallo,\n\nleider mussten wir Ihren Auftrag (${order.packageName}) ablehnen.${reasonMailPart}\nBei Fragen wenden Sie sich gerne an unseren Support.\n\nMit freundlichen Grüßen\nSHK Angebotsprüfung`);
-                window.open(`mailto:${order.email}?subject=${subject}&body=${body}`);
-            }
-
-            await loadAdminOrders();
-            selectAdminOrder(currentOrderId);
-        }
-
-        async function denyPreliminaryAction() {
-            if (!selectedAdminOrderId) return;
-            const order = adminOrders.find(o => o.id === selectedAdminOrderId);
-            if (!order) return;
-
-            const currentOrderId = order.id;
-
-            order.pendingAction = null;
-            order.pendingActionBy = null;
-            order.pendingActionAt = null;
-            order.pendingActionReason = null;
-            updateAdminEditorRolePermissions(order);
-
-            if (db) {
-                try {
-                    if (order.idDoc) {
-                        await db.collection('orders').doc(order.idDoc).update({
-                            pendingAction: null,
-                            pendingActionBy: null,
-                            pendingActionAt: null,
-                            pendingActionReason: null
-                        });
-                    } else {
-                        const snap = await db.collection('orders').where('id', '==', currentOrderId).get();
-                        const batch = db.batch();
-                        snap.forEach(doc => {
-                            batch.update(doc.ref, {
-                                pendingAction: null,
-                                pendingActionBy: null,
-                                pendingActionAt: null,
-                                pendingActionReason: null
-                            });
-                        });
-                        await batch.commit();
-                    }
-                } catch (e) {
-                    console.error('Fehler beim Zurücksetzen der Vorabanfrage:', e);
-                    alert('Fehler beim Zurücksetzen: ' + e.message);
-                    return;
-                }
-            }
-
-            await loadAdminOrders();
-            selectAdminOrder(currentOrderId);
-        }
-
-        async function rejectAdminOrder() {
-            if (!canManageRoles()) {
-                await requestPreliminaryOrderAction('reject');
-                return;
-            }
-            if (!selectedAdminOrderId) return;
-
-            const order = adminOrders.find(o => o.id === selectedAdminOrderId);
-            if (!order || !order.idDoc) return;
-
-            const directReasonInput = document.getElementById('adminDirectReasonInput');
-            const directShareCheck = document.getElementById('adminDirectShareReasonCheck');
-            const reasonText = directReasonInput ? directReasonInput.value.trim() : '';
-            const shouldShare = directShareCheck ? directShareCheck.checked : false;
-            const clientVisibleReasonValue = (shouldShare && reasonText) ? reasonText : null;
-
-            order.status = 5;
-            order.clientVisibleReason = clientVisibleReasonValue;
-            order.pendingAction = null;
-
-            if (db) {
-                try {
-                    await db.collection('orders').doc(order.idDoc).update({
-                        status: 5,
-                        clientVisibleReason: clientVisibleReasonValue,
-                        pendingAction: null,
-                        pendingActionBy: null,
-                        pendingActionAt: null
-                    });
-                } catch(e) {
-                    alert('Fehler: ' + e.message);
-                }
-            }
-
-            const subject = encodeURIComponent(`Aktualisierung zu Ihrem Auftrag ${order.id}`);
-            const reasonMailPart = clientVisibleReasonValue ? `\n\nBegründung / Hinweis:\n${clientVisibleReasonValue}\n` : '\n';
-            const body = encodeURIComponent(`Hallo,\n\nleider mussten wir Ihren Auftrag (${order.packageName}) ablehnen.${reasonMailPart}\nBei Fragen wenden Sie sich gerne an unseren Support.\n\nMit freundlichen Grüßen\nSHK Angebotsprüfung`);
-            window.open(`mailto:${order.email}?subject=${subject}&body=${body}`);
-
-            await loadAdminOrders();
-        }
-
-        async function cancelAdminOrderDirect() {
-            if (!canManageRoles()) {
-                await requestPreliminaryOrderAction('cancel');
-                return;
-            }
-            if (!selectedAdminOrderId) return;
-
-            const order = adminOrders.find(o => o.id === selectedAdminOrderId);
-            if (!order || !order.idDoc) return;
-
-            const directReasonInput = document.getElementById('adminDirectReasonInput');
-            const directShareCheck = document.getElementById('adminDirectShareReasonCheck');
-            const reasonText = directReasonInput ? directReasonInput.value.trim() : '';
-            const shouldShare = directShareCheck ? directShareCheck.checked : false;
-            const clientVisibleReasonValue = (shouldShare && reasonText) ? reasonText : null;
-
-            order.status = 6;
-            order.paymentStatus = 'paid';
-            order.clientVisibleReason = clientVisibleReasonValue;
-            order.pendingAction = null;
-
-            if (db) {
-                try {
-                    await db.collection('orders').doc(order.idDoc).update({
-                        status: 6,
-                        paymentStatus: 'paid',
-                        clientVisibleReason: clientVisibleReasonValue,
-                        pendingAction: null,
-                        pendingActionBy: null,
-                        pendingActionAt: null
-                    });
-                } catch (e) {
-                    alert('Fehler: ' + e.message);
-                }
-            }
-
-            await loadAdminOrders();
-        }
-
-        async function archiveAdminOrder() {
-            if (!selectedAdminOrderId) return;
-
-            const order = adminOrders.find(o => o.id === selectedAdminOrderId);
-            if (!order || !order.idDoc) return;
-
-            order.isArchived = true;
-
-            if (db) {
-                try {
-                    await db.collection('orders').doc(order.idDoc).update({ isArchived: true });
-                } catch(e) {
-                    alert('Fehler: ' + e.message);
-                }
-            }
-            await loadAdminOrders();
-        }
-
-        async function saveAdminOrderChanges() {
-            if (!selectedAdminOrderId) return;
-            const order = adminOrders.find(o => o.id === selectedAdminOrderId);
-            if (!order || !order.idDoc) return;
-
-            const oldStatus = order.status;
-            let newStatus = parseInt(document.getElementById('adminStatusSelect').value);
-            const selectedPaymentStatus = document.getElementById('adminPaymentSelect').value;
-
-            if (!canManageRoles() && (newStatus === 5 || newStatus === 6)) {
-                alert('Als Sachbearbeiter können Sie Aufträge nicht direkt ablehnen oder stornieren. Bitte nutzen Sie die Buttons für die vorläufige Ablehnung/Stornierung.');
-                document.getElementById('adminStatusSelect').value = oldStatus || 1;
-                return;
-            }
-
-            const stillLocked = isFirstCustomerInquiryOrder(order) && selectedPaymentStatus === 'unpaid' && !order.depositInvoiceSent;
-            if ([2, 3, 4].includes(newStatus) && stillLocked) {
-                alert('Status-Sperre aktiv: Bei der ersten Anfrage eines Neukunden muss vor Arbeitsbeginn (Status 2–4) zuerst die 50% PDF-Anzahlungsrechnung erstellt/versendet oder der Bezahlstatus auf „Angezahlt (50%)“ / „Bezahlt“ gesetzt werden!');
-                document.getElementById('adminStatusSelect').value = oldStatus || 1;
-                return;
-            }
-
-            order.status = newStatus;
-            order.paymentStatus = selectedPaymentStatus;
-            
-            if (newStatus === 6) {
-                order.paymentStatus = 'paid';
-                document.getElementById('adminPaymentSelect').value = 'paid';
-            }
-
-            order.manualDiscount = parseFloat(document.getElementById('adminManualPriceInput').value) || 0;
-            order.savings = document.getElementById('adminSavingsInput').value;
-            order.summary = document.getElementById('adminSummaryInput').value;
-            order.defects = document.getElementById('adminDefectsInput').value.split('\n').filter(Boolean);
-
-            const reportFileInput = document.getElementById('adminReportFileInput');
-            if (reportFileInput.files && reportFileInput.files[0]) {
-                const reportFile = reportFileInput.files[0];
-                const reader = new FileReader();
-                reader.readAsDataURL(reportFile);
-                
-                await new Promise(resolve => {
-                    reader.onload = function() {
-                        order.reportData = reader.result;
-                        order.reportName = reportFile.name;
-                        resolve();
-                    }
-                });
-            }
-
-            if (db) {
-                try {
-                    await db.collection('orders').doc(order.idDoc).update({
-                        status: order.status,
-                        paymentStatus: order.paymentStatus,
-                        manualDiscount: order.manualDiscount,
-                        savings: order.savings,
-                        summary: order.summary,
-                        defects: order.defects,
-                        reportData: order.reportData || null,
-                        reportName: order.reportName || null
-                    });
-                    alert('Änderungen erfolgreich in Firestore gespeichert!');
-                } catch(e) {
-                    alert('Fehler beim Speichern: ' + e.message);
-                }
-            }
-
-            if (oldStatus !== newStatus) {
-                const statusNames = { 1: 'Eingegangen', 2: 'In Fachprüfung', 3: 'Bericht wird erstellt', 4: 'Abgeschlossen', 5: 'Abgelehnt', 6: 'Storniert' };
-                const subject = encodeURIComponent(`Statusänderung für Ihren Auftrag ${order.id}`);
-                const body = encodeURIComponent(`Hallo,\n\nder Bearbeitungsstand Ihres Auftrags (${order.packageName}) hat sich geändert.\n\nNeuer Status: ${statusNames[newStatus] || 'In Bearbeitung'}\n\nSie können Ihr Kundenportal einsehen, um Details abzurufen.\n\nMit freundlichen Grüßen\nSHK Angebotsprüfung`);
-                window.open(`mailto:${order.email}?subject=${subject}&body=${body}`);
-            }
-
-            await loadAdminOrders();
-            selectAdminOrder(order.id);
-        }
 
         function openAuthModal(mode) {
             isRegisterMode = (mode === 'register');
