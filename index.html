@@ -22,6 +22,8 @@
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <!-- SheetJS (XLSX) für direkten Excel-Import (.xlsx / .xls / .csv) -->
     <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
+    <!-- jsPDF für automatischen PDF-Rechnungsgenerator (50% Anzahlung & 100% Gesamtrechnung) -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
 </head>
 <body class="bg-slate-900 text-slate-100 font-sans antialiased selection:bg-emerald-500 selection:text-white">
 
@@ -578,7 +580,7 @@
                     <div id="adminListHeaderContainer" class="space-y-3">
                         <h2 id="adminListTitle" class="text-lg font-bold text-white mb-2">Aktive Aufträge</h2>
                         <div id="adminSearchContainer" class="hidden space-y-2">
-                            <input type="text" id="marketPriceSearchInput" oninput="renderMarketPricesTable()" placeholder="🔍 Nach Kurztext oder Einheit suchen..." class="w-full bg-slate-950 border border-slate-700 rounded-xl px-4 py-2.5 text-xs text-white focus:border-emerald-500 focus:outline-none">
+                            <input type="text" id="marketPriceSearchInput" oninput="renderMarketPricesTable()" placeholder="🔍 Nach Kurztext, Langtext oder Einheit suchen..." class="w-full bg-slate-950 border border-slate-700 rounded-xl px-4 py-2.5 text-xs text-white focus:border-emerald-500 focus:outline-none">
                             <div class="flex gap-1">
                                 <button type="button" onclick="filterMarketPricesCategory('Alle')" id="catBtnAlle" class="flex-1 bg-emerald-500 text-slate-950 font-bold py-1.5 rounded-lg text-[11px] transition">Alle</button>
                                 <button type="button" onclick="filterMarketPricesCategory('Heizung')" id="catBtnHeizung" class="flex-1 bg-slate-800 text-slate-300 hover:bg-slate-700 font-semibold py-1.5 rounded-lg text-[11px] transition">Heizung</button>
@@ -665,7 +667,7 @@
                         <div class="bg-slate-900 border border-slate-800 rounded-2xl p-6 shadow-xl space-y-4">
                             <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-2">
                                 <h4 class="text-sm font-bold text-white">
-                                    <i class="fa-solid fa-file-arrow-up text-emerald-400 mr-2"></i>GAEB (nur Kurztexte) & Excel / CSV Import (.xlsx, .xls, .csv, .x82, .x83+.x84)
+                                    <i class="fa-solid fa-file-arrow-up text-emerald-400 mr-2"></i>GAEB (Kurztext + Langtext-Tooltip) & Excel / CSV Import
                                 </h4>
                                 <div class="flex flex-wrap items-center gap-2">
                                     <button type="button" onclick="exportMarketPricesToCSV()" class="bg-slate-800 hover:bg-slate-700 text-emerald-400 border border-emerald-500/30 px-3 py-1 rounded-lg text-[11px] font-semibold transition" title="Datenbank als CSV für Excel exportieren">
@@ -677,8 +679,8 @@
                                 </div>
                             </div>
                             <p class="text-xs text-slate-400 leading-relaxed">
-                                • <strong>GAEB-Import:</strong> Zieht strikt nur die <strong>Kurztexte</strong> (<code class="text-emerald-400">OutlTxt</code>) + Einheiten (<code class="text-emerald-400">QU</code>). Laden Sie eine <code class="text-emerald-400">.x82/.x86</code> einzeln oder eine <code class="text-emerald-400">.x83</code> zusammen mit bis zu drei <code class="text-emerald-400">.x84</code>-Dateien hoch.<br>
-                                • <strong>Excel / CSV Import:</strong> Unterstützt <code class="text-emerald-400">.xlsx</code>, <code class="text-emerald-400">.xls</code> und <code class="text-emerald-400">.csv</code> (Spalten: <em>Position | Preis 1 | Preis 2 | Preis 3 | Einheit | Kategorie</em> oder <em>Position | Preis | Einheit</em>).
+                                • <strong>GAEB-Import:</strong> Übernimmt den <strong>Kurztext</strong> (<code class="text-emerald-400">OutlTxt</code>) als Titel, speichert den <strong>Langtext</strong> (<code class="text-sky-400">DetailTxt</code>) optional als Info-Tooltip und liest die Einheit (<code class="text-emerald-400">QU</code>) aus.<br>
+                                • <strong>Excel / CSV Import:</strong> Unterstützt <code class="text-emerald-400">.xlsx</code>, <code class="text-emerald-400">.xls</code> und <code class="text-emerald-400">.csv</code> (Spalten: <em>Position | Preis 1 | Preis 2 | Preis 3 | Einheit | Kategorie</em>).
                             </p>
                             
                             <div class="flex flex-col sm:flex-row gap-3 items-center">
@@ -690,7 +692,7 @@
                             <span id="importFeedback" class="text-xs block"></span>
                         </div>
 
-                        <!-- NEU: Schnellprüfungs-Rechner inkl. Mengen-Multiplikator & Direkt-Übernahme in Auftrag -->
+                        <!-- Schnellprüfungs-Rechner inkl. Mengen-Multiplikator & Direkt-Übernahme in Auftrag -->
                         <div class="bg-slate-900 border border-slate-800 rounded-2xl p-6 shadow-xl space-y-4">
                             <div class="flex flex-col sm:flex-row sm:items-center justify-between border-b border-slate-800 pb-3 gap-2">
                                 <h3 class="text-lg font-bold text-white"><i class="fa-solid fa-calculator text-emerald-400 mr-2"></i>Position & Menge schnell auf Plausibilität prüfen</h3>
@@ -754,6 +756,10 @@
                                             <option value="Allgemein">Allgemein</option>
                                         </select>
                                     </div>
+                                </div>
+                                <div>
+                                    <label class="block text-xs font-medium text-slate-300 mb-1">Optionaler Langtext / Detailbeschreibung (wird als <i class="fa-solid fa-circle-info text-sky-400"></i> Info-Tooltip angezeigt)</label>
+                                    <textarea id="mpLongText" rows="2" placeholder="Optionaler Langtext aus GAEB (DetailTxt) oder technische Details zur Position..." class="w-full bg-slate-900 border border-slate-700 rounded-xl px-4 py-2 text-xs text-white focus:border-emerald-500 focus:outline-none"></textarea>
                                 </div>
                                 <div class="grid grid-cols-1 sm:grid-cols-3 gap-3">
                                     <div>
@@ -857,22 +863,22 @@
                             </div>
                         </div>
 
-                        <!-- NEU: Prominenter Neukunden-Erstanfrage-Warnhinweis (50% Rechnung vor Arbeitsbeginn) -->
+                        <!-- Prominenter Neukunden-Erstanfrage-Warnhinweis inkl. Status-Sperre (50% Rechnung vor Arbeitsbeginn) -->
                         <div id="adminFirstInquiryWarningBanner" class="hidden bg-rose-500/10 border-2 border-rose-500/40 rounded-xl p-4 space-y-3">
                             <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
                                 <div class="flex items-start space-x-3">
                                     <i class="fa-solid fa-triangle-exclamation text-rose-400 text-xl mt-0.5"></i>
                                     <div>
                                         <span class="text-rose-400 font-extrabold text-xs uppercase tracking-wider block">
-                                            Erste Angebotsanfrage (Neukunde) — 50 % Rechnung vor Arbeitsbeginn!
+                                            Erste Angebotsanfrage (Neukunde) — Status-Sperre bis 50 % Rechnung!
                                         </span>
                                         <p id="adminFirstInquiryWarningText" class="text-xs text-slate-200 mt-0.5">
-                                            Dies ist der erste Auftrag dieses Kunden. Vor Beginn der Fachprüfung muss zwingend die 50 % Anzahlungsrechnung versendet werden.
+                                            Dies ist der erste Auftrag dieses Kunden. Vor Beginn der Fachprüfung (Status 2–4) muss zwingend die 50 % PDF-Anzahlungsrechnung erstellt und versendet werden.
                                         </p>
                                     </div>
                                 </div>
                                 <button type="button" onclick="sendInvoiceEmail('50', true)" class="bg-rose-500 hover:bg-rose-600 text-white font-bold px-4 py-2.5 rounded-xl text-xs transition whitespace-nowrap shadow-lg shadow-rose-500/20">
-                                    <i class="fa-solid fa-paper-plane mr-1.5"></i>50 % Rechnung jetzt senden
+                                    <i class="fa-solid fa-file-pdf mr-1.5"></i>50 % PDF-Rechnung erstellen & senden
                                 </button>
                             </div>
                         </div>
@@ -903,18 +909,19 @@
                             </button>
                         </div>
 
+                        <!-- Automatischer PDF-Rechnungsgenerator & E-Mail-Versand (50% / 100%) -->
                         <div class="bg-slate-950 p-4 rounded-xl border border-slate-800 space-y-3">
                             <div class="flex items-center justify-between">
-                                <span class="text-xs font-semibold text-white block"><i class="fa-solid fa-file-invoice-dollar text-emerald-400 mr-2"></i>Rechnung an Kunden senden</span>
-                                <span id="adminInvoiceSentStatusBadge" class="hidden text-[11px] text-emerald-400 font-semibold"><i class="fa-solid fa-check-double mr-1"></i>50 % Rechnung bereits versendet</span>
+                                <span class="text-xs font-semibold text-white block"><i class="fa-solid fa-file-invoice-dollar text-emerald-400 mr-2"></i>Automatischer PDF-Rechnungsgenerator & Versand</span>
+                                <span id="adminInvoiceSentStatusBadge" class="hidden text-[11px] text-emerald-400 font-semibold"><i class="fa-solid fa-check-double mr-1"></i>50 % Rechnung versendet (Status-Sperre aufgehoben)</span>
                             </div>
                             <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
                                 <button type="button" onclick="sendInvoiceEmail('50', true)" class="bg-slate-900 hover:bg-slate-800 border border-emerald-500/40 text-emerald-400 text-xs font-semibold py-2.5 px-3 rounded-lg transition text-left flex items-center justify-between">
-                                    <span>50% Anzahlung senden (Vor Arbeitsbeginn)</span>
+                                    <span><i class="fa-solid fa-file-pdf mr-1.5"></i>50% PDF-Rechnung + E-Mail</span>
                                     <i class="fa-solid fa-paper-plane"></i>
                                 </button>
                                 <button type="button" onclick="sendInvoiceEmail('100', false)" class="bg-slate-900 hover:bg-slate-800 border border-slate-700 text-white text-xs font-semibold py-2.5 px-3 rounded-lg transition text-left flex items-center justify-between">
-                                    <span>100% Gesamtrechnung senden</span>
+                                    <span><i class="fa-solid fa-file-pdf mr-1.5 text-emerald-400"></i>100% PDF-Rechnung + E-Mail</span>
                                     <i class="fa-solid fa-paper-plane"></i>
                                 </button>
                             </div>
@@ -1046,8 +1053,7 @@
     <script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-app-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-auth-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore-compat.js"></script>
-
-    <script>
+<script>
         const firebaseConfig = {
             apiKey: "AIzaSyB_hKknTz9_FM__bneuGv6IKaw_0sbKhIM",
             authDomain: "shk-angebote-pruefen.firebaseapp.com",
@@ -1088,11 +1094,11 @@
         let marketPrices = [];
         let customersList = [];
         let selectedAdminOrderId = null;
-        let currentAdminTab = 'active'; 
+        let currentAdminTab = 'active';
         let activeArchiveYear = null;
         let activeMarketPriceCategory = 'Alle';
         let activeCustomerRoleFilter = 'Alle';
-        let lastCalculatedCheckDefect = null; // Speichert das Ergebnis aus dem Schnellprüfungs-Rechner für 1-Klick-Übernahme
+        let lastCalculatedCheckDefect = null;
 
         // Hilfsfunktionen für Rollen-Berechtigungen
         function isMainAdminEmail(email) {
@@ -1122,7 +1128,16 @@
             return false;
         }
 
-        // Ermittelt die Anzahl der bisherigen Aufträge einer E-Mail-Adresse und stuft ab 10 Aufträgen automatisch auf Stammkunde hoch
+        // Prüft, ob ein Neukunden-Auftrag für Status 2, 3 oder 4 gesperrt ist (solange keine 50% Rechnung/Anzahlung erfolgt ist)
+        function isNewCustomerLockedForWork(order) {
+            if (!order) return false;
+            const isFirst = isFirstCustomerInquiryOrder(order);
+            const isUnpaid = (!order.paymentStatus || order.paymentStatus === 'unpaid');
+            const invoiceNotSent = !order.depositInvoiceSent;
+            return isFirst && isUnpaid && invoiceNotSent;
+        }
+
+        // Stuft Kunden ab 10 Aufträgen automatisch auf Stammkunde hoch
         async function checkAndAutoUpgradeStammkunde(email, additionalNewOrder = 0) {
             if (!db || !email) return 'Kunde';
             const cleanMail = email.toLowerCase().trim();
@@ -1168,7 +1183,6 @@
             }
         }
 
-        // Ermittelt den Rang einer E-Mail-Adresse aus Firestore bzw. prüft auf Hauptadmin & 10-Aufträge-Regel
         async function fetchRoleForEmail(email) {
             if (!email) return 'Kunde';
             const cleanMail = email.toLowerCase().trim();
@@ -1177,8 +1191,7 @@
             }
             if (db) {
                 try {
-                    const roleAfterCheck = await checkAndAutoUpgradeStammkunde(email, 0);
-                    return roleAfterCheck;
+                    return await checkAndAutoUpgradeStammkunde(email, 0);
                 } catch (e) {
                     console.warn("Fehler beim Abrufen der Rolle:", e);
                 }
@@ -1186,7 +1199,6 @@
             return 'Kunde';
         }
 
-        // Stellt sicher, dass der Nutzer in der 'customers'-Collection existiert
         async function ensureCustomerRecord(email, firstName = '', lastName = '') {
             if (!db || !email) return;
             const cleanMail = email.toLowerCase().trim();
@@ -1309,7 +1321,6 @@
             }
         }
 
-        // Prüft beim Verlassen des E-Mail-Felds im Auftragsformular, ob ein Stammkunde vorliegt
         async function checkEmailForStammkunde(email) {
             if (!email || !email.includes('@')) {
                 if (!currentUser) {
@@ -1434,7 +1445,6 @@
                 const methods = await auth.fetchSignInMethodsForEmail(email);
                 const isExistingUser = methods.length > 0;
 
-                // Prüfen, ob für diese E-Mail-Adresse bereits frühere Aufträge in Firestore existieren
                 let previousOrdersCount = 0;
                 if (db) {
                     const prevSnap = await db.collection('orders').where('email', '==', email).get();
@@ -1503,7 +1513,7 @@
                         fileName: file.name,
                         fileData: fileBase64,
                         additionalFiles: [],
-                        status: 1, 
+                        status: 1,
                         paymentStatus: 'unpaid',
                         isFirstInquiry: isFirstCustomerInquiry,
                         depositInvoiceSent: false,
@@ -1538,7 +1548,6 @@
             }
         }
 
-        // Gibt alle für den Kunden sichtbaren Aufträge zurück (ohne weg-ge-X-te Aufträge)
         function getVisibleUserOrders() {
             return userOrders.filter(o => !o.hiddenByClient);
         }
@@ -1572,7 +1581,6 @@
             renderClientOrdersList();
         }
 
-        // Aktualisiert die Vorschlagsliste (Datalist) für Projektnamen des Kunden
         function updateProjectDatalist() {
             const datalist = document.getElementById('existingProjectsDatalist');
             if (!datalist) return;
@@ -1592,7 +1600,6 @@
             document.getElementById('clientStatDone').textContent = completedOrders;
         }
 
-        // Rendert die Projekt-Filter-Buttons im Kundenportal
         function renderClientProjectFilterBar() {
             const bar = document.getElementById('clientProjectFilterBar');
             if (!bar) return;
@@ -1640,7 +1647,6 @@
             renderClientOrdersList();
         }
 
-        // Kundenauftrag per X aus der Kundenansicht ausblenden (nur für abgelehnte/stornierte Aufträge)
         async function dismissClientOrder(orderId, event = null) {
             if (event) {
                 event.stopPropagation();
@@ -1674,7 +1680,6 @@
             renderClientOrdersList();
         }
 
-        // Projekt-Zuordnung eines Auftrags im Kundenportal speichern
         async function saveClientOrderProject() {
             if (!activeOrderId) return;
             const order = userOrders.find(o => o.id === activeOrderId);
@@ -1999,7 +2004,6 @@
             }
         }
 
-        // Kunden aus Firestore laden & automatischen Stammkunden-Aufstieg ab 10 Aufträgen synchronisieren
         async function loadCustomers() {
             customersList = [];
             if (db) {
@@ -2060,7 +2064,6 @@
             }
         }
 
-        // Filterfunktion für Ränge in der Kundentabelle
         function filterCustomersRole(role) {
             activeCustomerRoleFilter = role;
             const roles = ['Alle', 'Kunde', 'Stammkunde', 'Sachbearbeiter', 'Admin', 'Hauptadmin'];
@@ -2077,7 +2080,6 @@
             renderCustomersTable();
         }
 
-        // Hilfsfunktion für farbige Rang-Badges
         function getRoleBadgeHtml(role, orderCount = 0) {
             switch (role) {
                 case 'Hauptadmin':
@@ -2093,7 +2095,6 @@
             }
         }
 
-        // Kunden-Tabelle inkl. Suche, Filter & Rang-Zuweisung rendern
         function renderCustomersTable() {
             const container = document.getElementById('adminCustomersTableContainer');
             const permHint = document.getElementById('roleManagementPermissionHint');
@@ -2273,7 +2274,6 @@
             `;
         }
 
-        // Speichert eine Rollenänderung in Firestore
         async function updateCustomerRole(targetEmail, newRole) {
             if (!canManageRoles()) {
                 alert('Zugriff verweigert: Als Sachbearbeiter können Sie keine Rollen vergeben.');
@@ -2332,10 +2332,9 @@
         }
 
         // ============================================================================
-        // GAEB-IMPORTER (NUR KURZTEXTE), EXCEL (.XLSX/.XLS) & CSV IMPORT + BEREINIGUNG
+        // GAEB-IMPORTER (KURZTEXT + OPTIONALER LANGTEXT-TOOLTIP), EXCEL & CSV IMPORT
         // ============================================================================
 
-        // Erkennt automatisch die passende SHK-Kategorie anhand des Positionstextes
         function detectSHKCategory(text) {
             const t = (text || '').toLowerCase();
             if (/(wärmepumpe|heizkörper|heizkreis|fußbodenheizung|kessel|therme|pufferspeicher|ausdehnungsgefäß|abgleich|ventilunterteil|thermostat|vorlauf|rücklauf|brenner|solar|speicher|heizung)/.test(t)) {
@@ -2347,7 +2346,6 @@
             return 'Allgemein';
         }
 
-        // Vereinheitlicht Mengeneinheiten aus GAEB (<QU>) oder Excel auf saubere SHK-Standardwerte
         function normalizeGAEBUnit(rawUnit) {
             if (!rawUnit) return '';
             const cleaned = String(rawUnit).trim();
@@ -2365,7 +2363,6 @@
             return cleaned.substring(0, 12);
         }
 
-        // Erzeugt einen normierten Vergleichsschlüssel für die Duplikat-Erkennung
         function normalizePositionTitleKey(title) {
             return (title || '')
                 .toLowerCase()
@@ -2374,9 +2371,8 @@
                 .trim();
         }
 
-        // NEU: Extrahiert aus GAEB-XML-Knoten STRIKT NUR DEN KURZTEXT (ignoriert DetailTxt / Langtext komplett)
+        // Extrahiert aus GAEB-XML-Knoten STRIKT NUR DEN KURZTEXT (ignoriert DetailTxt / Langtext)
         function extractStrictGAEBShortText(itemNode) {
-            // 1. Gezielte Suche nach dem GAEB-Kurztext-Knoten (GAEB DA XML 3.1 / 3.2 / 3.3)
             const shortTextNode = itemNode.querySelector(
                 'OutlineText OutlTxt TextOutlTxt, OutlineText TextOutlTxt, OutlTxt TextOutlTxt, OutlineText OutlTxt, OutlTxt, ShortDesc, Kurztext, Headline'
             );
@@ -2387,7 +2383,6 @@
                 }
             }
 
-            // 2. Fallback für ältere GAEB-XML-Strukturen: Knoten klonen und alle Langtext-Elemente (DetailTxt) vorher restlos entfernen
             const clone = itemNode.cloneNode(true);
             clone.querySelectorAll('DetailTxt, TextComplement, CompleteTextDetail, LongText, PerfDescr, UP, QU, Qty, IT').forEach(el => el.remove());
             const fallbackNode = clone.querySelector('Description, Text');
@@ -2401,7 +2396,18 @@
             return '';
         }
 
-        // Liest Positionen (ID, OZ, strikter Kurztext, Einheit QU, Einheitspreis UP) aus einem GAEB-XML-String aus
+        // Extrahiert optional den Langtext (DetailTxt / LongText) separat für den Info-Tooltip
+        function extractOptionalGAEBLongText(itemNode) {
+            const longNodes = itemNode.querySelectorAll('DetailTxt, CompleteTextDetail, LongText, TextComplement');
+            if (!longNodes || longNodes.length === 0) return '';
+            let combined = [];
+            longNodes.forEach(n => {
+                const t = (n.textContent || '').replace(/\s+/g, ' ').trim();
+                if (t) combined.push(t);
+            });
+            return combined.join(' | ').substring(0, 600);
+        }
+
         function parseGAEBXmlContent(xmlContent) {
             const parser = new DOMParser();
             const xmlDoc = parser.parseFromString(xmlContent, "text/xml");
@@ -2415,14 +2421,12 @@
                 const parentRNo = parentCtgy ? (parentCtgy.getAttribute('RNoPart') || '') : '';
                 const ozKey = (parentRNo + '_' + rNoPart).replace(/^_+|_+$/g, '') || itemId || ('idx_' + idx);
 
-                // Strikt nur Kurztext ziehen
                 const shortTitle = extractStrictGAEBShortText(node);
+                const longDescription = extractOptionalGAEBLongText(node);
 
-                // Mengeneinheit (QU) suchen
                 const unitNode = node.querySelector('QU, Unit, ME');
                 const rawUnit = unitNode && unitNode.textContent ? normalizeGAEBUnit(unitNode.textContent) : '';
 
-                // Einheitspreis (UP) suchen
                 const priceNode = node.querySelector('UP, UnitPrice, Price');
                 let price = 0;
                 if (priceNode && priceNode.textContent) {
@@ -2434,6 +2438,7 @@
                     ozKey: ozKey,
                     index: idx,
                     title: shortTitle,
+                    longText: longDescription,
                     unit: rawUnit,
                     price: price
                 });
@@ -2442,7 +2447,6 @@
             return parsedList;
         }
 
-        // Hilfsfunktion: Parst einen Zahlenwert aus Excel/CSV-Zellen (z.B. "149,50 €" -> 149.5)
         function parsePriceNumber(val) {
             if (typeof val === 'number') return val > 0 ? val : 0;
             if (!val) return 0;
@@ -2456,13 +2460,11 @@
             return (!isNaN(num) && num > 0) ? num : 0;
         }
 
-        // Extrahiert Positionen aus einem 2D-Array (aus Excel .xlsx/.xls oder .csv)
         function parseTabularRows(rows) {
             const results = [];
             if (!rows || rows.length === 0) return results;
 
-            // Prüfen, ob Zeile 1 eine Kopfzeile ist
-            let colMap = { title: 0, p1: 1, p2: 2, p3: 3, unit: -1, cat: -1 };
+            let colMap = { title: 0, p1: 1, p2: 2, p3: 3, unit: -1, cat: -1, longText: -1 };
             let startRow = 0;
 
             const firstRowStr = rows[0].map(c => String(c || '').toLowerCase().trim());
@@ -2471,14 +2473,15 @@
             if (hasHeader) {
                 startRow = 1;
                 firstRowStr.forEach((h, i) => {
-                    if (/(position|kurztext|beschreibung|bezeichnung|titel|bauteil)/.test(h)) colMap.title = i;
+                    if (/(position|kurztext|bezeichnung|titel|bauteil)/.test(h)) colMap.title = i;
+                    else if (/(langtext|detail|hinweis|tooltip)/.test(h)) colMap.longText = i;
                     else if (/(einheit|me|qu)/.test(h)) colMap.unit = i;
                     else if (/(kategorie|gewerk)/.test(h)) colMap.cat = i;
                 });
 
                 const priceCols = [];
                 firstRowStr.forEach((h, i) => {
-                    if (i !== colMap.title && i !== colMap.unit && i !== colMap.cat && /(preis|angebot|ep|wert|netto|1|2|3)/.test(h)) {
+                    if (i !== colMap.title && i !== colMap.unit && i !== colMap.cat && i !== colMap.longText && /(preis|angebot|ep|wert|netto|1|2|3)/.test(h)) {
                         priceCols.push(i);
                     }
                 });
@@ -2494,7 +2497,7 @@
                 const rawTitle = String(row[colMap.title] || '').replace(/\s+/g, ' ').trim().substring(0, 120);
                 if (rawTitle.length < 2) continue;
 
-                let p1 = 0, p2 = 0, p3 = 0, unitStr = '', catStr = '';
+                let p1 = 0, p2 = 0, p3 = 0, unitStr = '', catStr = '', longTxt = '';
 
                 if (hasHeader) {
                     p1 = parsePriceNumber(row[colMap.p1]);
@@ -2502,8 +2505,8 @@
                     p3 = colMap.p3 >= 0 && colMap.p3 < row.length ? parsePriceNumber(row[colMap.p3]) : 0;
                     if (colMap.unit >= 0 && row[colMap.unit]) unitStr = normalizeGAEBUnit(row[colMap.unit]);
                     if (colMap.cat >= 0 && row[colMap.cat]) catStr = String(row[colMap.cat]).trim();
+                    if (colMap.longText >= 0 && row[colMap.longText]) longTxt = String(row[colMap.longText]).trim().substring(0, 600);
                 } else {
-                    // Automatische Spaltenerkennung ohne Header
                     p1 = parsePriceNumber(row[1]);
                     if (row.length === 3 && parsePriceNumber(row[2]) === 0 && row[2]) {
                         unitStr = normalizeGAEBUnit(row[2]);
@@ -2522,6 +2525,7 @@
                         : detectSHKCategory(rawTitle);
                     results.push({
                         title: rawTitle,
+                        longText: longTxt,
                         unit: unitStr || 'Stk',
                         category: resolvedCat,
                         prices: validPrices
@@ -2531,7 +2535,6 @@
             return results;
         }
 
-        // Kombinierter Importer für GAEB (.x82, .x83+.x84, .x86), Excel (.xlsx, .xls) und CSV (.csv, .txt)
         async function handleFileImport() {
             const fileInput = document.getElementById('importFile');
             const feedback = document.getElementById('importFeedback');
@@ -2542,7 +2545,7 @@
                 return;
             }
 
-            feedback.textContent = `${files.length} Datei(en) werden analysiert (Kurztexte, Einheiten & Preise)...`;
+            feedback.textContent = `${files.length} Datei(en) werden analysiert (Kurztexte, Langtext-Tooltips, Einheiten & Preise)...`;
             feedback.className = "text-xs block text-amber-400";
 
             try {
@@ -2551,7 +2554,6 @@
                     snap.forEach(doc => marketPrices.push({ idDoc: doc.id, ...doc.data() }));
                 }
 
-                // Dateien einlesen (Excel binär als ArrayBuffer, GAEB/CSV als Text)
                 const loadedFiles = await Promise.all(files.map(file => {
                     const lowerName = file.name.toLowerCase();
                     const isExcelBinary = /\.(xlsx|xls)$/.test(lowerName);
@@ -2571,7 +2573,6 @@
                     });
                 }));
 
-                // Sortieren: .x83 / .x82 zuerst, damit Kurztexte & Einheiten vor .x84-Bieterpreisen bereitstehen
                 loadedFiles.sort((a, b) => {
                     const aIsBase = /\.(x83|d83|p83|x82|d82|p82)$/.test(a.name) ? 0 : 1;
                     const bIsBase = /\.(x83|d83|p83|x82|d82|p82)$/.test(b.name) ? 0 : 1;
@@ -2586,7 +2587,6 @@
                     const isXmlGaeb = /\.(xml|x82|d82|p82|x83|d83|p83|x84|d84|p84|x85|x86)$/.test(name);
 
                     if (fileObj.isExcel) {
-                        // Excel (.xlsx / .xls) über SheetJS auslesen
                         if (typeof XLSX === 'undefined') {
                             throw new Error("Excel-Bibliothek (SheetJS) konnte nicht geladen werden.");
                         }
@@ -2602,6 +2602,7 @@
                                 index: idx,
                                 ozKey: '',
                                 title: it.title,
+                                longText: it.longText || '',
                                 unit: it.unit,
                                 category: it.category,
                                 prices: it.prices
@@ -2628,6 +2629,7 @@
                                     index: item.index,
                                     ozKey: item.ozKey,
                                     title: item.title || '',
+                                    longText: item.longText || '',
                                     unit: item.unit || '',
                                     prices: item.price > 0 ? [item.price] : []
                                 });
@@ -2635,6 +2637,9 @@
                                 const entry = mergedPositions.get(key);
                                 if (!entry.title && item.title) {
                                     entry.title = item.title;
+                                }
+                                if (!entry.longText && item.longText) {
+                                    entry.longText = item.longText;
                                 }
                                 if (!entry.unit && item.unit) {
                                     entry.unit = item.unit;
@@ -2645,7 +2650,6 @@
                             }
                         });
                     } else {
-                        // CSV / TXT Dateien
                         const lines = String(fileObj.data).split(/\r?\n/).filter(l => l.trim().length > 0);
                         const rows = lines.map(line => {
                             const delimiter = line.includes(';') ? ';' : (line.includes('\t') ? '\t' : ',');
@@ -2658,6 +2662,7 @@
                                 index: idx,
                                 ozKey: '',
                                 title: it.title,
+                                longText: it.longText || '',
                                 unit: it.unit,
                                 category: it.category,
                                 prices: it.prices
@@ -2666,7 +2671,6 @@
                     }
                 });
 
-                // Innerhalb des aktuellen Imports gleiche Kurztexte zusammenführen
                 const consolidatedImportMap = new Map();
                 let missingPriceCount = 0;
 
@@ -2685,6 +2689,7 @@
                     if (!consolidatedImportMap.has(normKey)) {
                         consolidatedImportMap.set(normKey, {
                             title: finalTitle,
+                            longText: pos.longText || '',
                             unit: finalUnit,
                             category: pos.category || detectSHKCategory(finalTitle),
                             prices: [...pos.prices]
@@ -2693,6 +2698,9 @@
                         const existingInBatch = consolidatedImportMap.get(normKey);
                         if ((!existingInBatch.unit || existingInBatch.unit === 'Stk') && pos.unit) {
                             existingInBatch.unit = pos.unit;
+                        }
+                        if (!existingInBatch.longText && pos.longText) {
+                            existingInBatch.longText = pos.longText;
                         }
                         pos.prices.forEach(p => {
                             if (p > 0 && !existingInBatch.prices.some(ep => Math.abs(ep - p) < 0.001)) {
@@ -2709,7 +2717,6 @@
                     throw new Error("Es wurden keine Positionen mit gültigen Preisen (> 0 €) in den gewählten Dateien gefunden.");
                 }
 
-                // Duplikat-Abgleich mit bestehenden Einträgen in Firestore
                 const existingLookup = new Map();
                 marketPrices.forEach(mp => {
                     const k = normalizePositionTitleKey(mp.title);
@@ -2745,10 +2752,12 @@
                                 : 0;
 
                             const updatedUnit = impItem.unit || existingDbItem.unit || 'Stk';
+                            const updatedLongText = impItem.longText || existingDbItem.longText || '';
 
                             const docRef = db.collection('market_prices').doc(existingDbItem.idDoc);
                             batch.update(docRef, {
                                 unit: updatedUnit,
+                                longText: updatedLongText,
                                 category: existingDbItem.category || impItem.category,
                                 prices: [p1, p2, p3],
                                 average: avg,
@@ -2768,6 +2777,7 @@
                             const newDocRef = db.collection('market_prices').doc();
                             batch.set(newDocRef, {
                                 title: impItem.title,
+                                longText: impItem.longText || '',
                                 unit: impItem.unit || 'Stk',
                                 category: impItem.category,
                                 prices: [p1, p2, p3],
@@ -2798,7 +2808,6 @@
             }
         }
 
-        // NEU: Bereinigt alte 100-€- und 0-€-Platzhalter aus früheren fehlerhaften .x83-Importen
         async function cleanupOldPlaceholders() {
             const feedback = document.getElementById('importFeedback');
             if (!db) return;
@@ -2813,9 +2822,6 @@
                     const validPrices = prices.filter(p => p > 0);
                     const avg = Number(data.average || 0);
 
-                    // Erkennungsmerkmale alter .x83-Platzhalter:
-                    // 1. Keine gültigen Einzelpreise (> 0) gespeichert, aber average == 100 oder 50 oder 0
-                    // 2. Alle 3 Preise sind exakt 0
                     const isUnpricedPlaceholder = (validPrices.length === 0) || (avg <= 0);
                     const isOldX83Dummy = (avg === 100 && validPrices.every(p => p === 100) && !data.unit);
 
@@ -2844,20 +2850,20 @@
             }
         }
 
-        // Exportiert die Marktpreise-Datenbank als CSV-Datei für Excel
         function exportMarketPricesToCSV() {
             if (marketPrices.length === 0) {
                 alert("Die Marktpreise-Datenbank ist noch leer.");
                 return;
             }
-            const header = ["Position", "Preis 1", "Preis 2", "Preis 3", "Mittelwert", "Einheit", "Kategorie"];
+            const header = ["Position", "Preis 1", "Preis 2", "Preis 3", "Mittelwert", "Einheit", "Kategorie", "Langtext"];
             const rows = marketPrices.map(m => {
                 const p1 = (m.prices && m.prices[0]) ? String(m.prices[0]).replace('.', ',') : '';
                 const p2 = (m.prices && m.prices[1]) ? String(m.prices[1]).replace('.', ',') : '';
                 const p3 = (m.prices && m.prices[2]) ? String(m.prices[2]).replace('.', ',') : '';
                 const avg = m.average ? String(m.average.toFixed(2)).replace('.', ',') : '0,00';
                 const cleanTitle = `"${(m.title || '').replace(/"/g, '""')}"`;
-                return [cleanTitle, p1, p2, p3, avg, m.unit || 'Stk', m.category || 'Allgemein'].join(';');
+                const cleanLong = `"${(m.longText || '').replace(/"/g, '""')}"`;
+                return [cleanTitle, p1, p2, p3, avg, m.unit || 'Stk', m.category || 'Allgemein', cleanLong].join(';');
             });
 
             const csvContent = "\uFEFF" + [header.join(';'), ...rows].join('\r\n');
@@ -2880,7 +2886,6 @@
             });
         }
 
-        // NEU: Schnellprüfungs-Rechner mit Mengen-Multiplikator & Direkt-Übernahme in den aktiven Auftrag
         function pruefePositionGegenMarktwert() {
             const selectId = document.getElementById('selectBauteil').value;
             const mengeInput = parseFloat(document.getElementById('inputPruefMenge').value);
@@ -2963,7 +2968,6 @@
             ergebnisBox.classList.remove('hidden');
         }
 
-        // Übernimmt eine im Schnellprüfungs-Rechner erkannte Preisüberhöhung direkt in den aktiven Auftrag
         function transferCheckResultToActiveOrder() {
             if (!lastCalculatedCheckDefect || !selectedAdminOrderId) return;
             const order = adminOrders.find(o => o.id === selectedAdminOrderId);
@@ -2981,7 +2985,7 @@
             selectAdminOrder(order.id);
         }
 
-        // Manueller Speichervorgang inkl. Einheit & automatischer Duplikat-Prüfung
+        // Manueller Speichervorgang inkl. Einheit, optionalem Langtext-Tooltip & Duplikat-Prüfung
         async function saveMarketPriceItem(event) {
             event.preventDefault();
             let docId = document.getElementById('marketPriceDocId').value;
@@ -2989,6 +2993,8 @@
             const rawUnit = document.getElementById('mpUnit').value.trim();
             const unit = normalizeGAEBUnit(rawUnit) || 'Stk';
             const category = document.getElementById('mpCategory').value;
+            const longTextEl = document.getElementById('mpLongText');
+            const longText = longTextEl ? longTextEl.value.trim() : '';
             const p1 = parseFloat(document.getElementById('mpPrice1').value) || 0;
             const p2 = parseFloat(document.getElementById('mpPrice2').value) || 0;
             const p3 = parseFloat(document.getElementById('mpPrice3').value) || 0;
@@ -3006,6 +3012,7 @@
 
             const itemData = {
                 title: title,
+                longText: longText,
                 unit: unit,
                 category: category,
                 prices: [p1, p2, p3],
@@ -3037,6 +3044,8 @@
             document.getElementById('mpTitle').value = item.title;
             document.getElementById('mpUnit').value = item.unit || 'Stk';
             document.getElementById('mpCategory').value = item.category || 'Allgemein';
+            const longTextEl = document.getElementById('mpLongText');
+            if (longTextEl) longTextEl.value = item.longText || '';
             document.getElementById('mpPrice1').value = item.prices[0] || '';
             document.getElementById('mpPrice2').value = item.prices[1] || '';
             document.getElementById('mpPrice3').value = item.prices[2] || '';
@@ -3058,6 +3067,8 @@
             document.getElementById('mpTitle').value = '';
             document.getElementById('mpUnit').value = 'Stk';
             document.getElementById('mpCategory').value = 'Heizung';
+            const longTextEl = document.getElementById('mpLongText');
+            if (longTextEl) longTextEl.value = '';
             document.getElementById('mpPrice1').value = '';
             document.getElementById('mpPrice2').value = '';
             document.getElementById('mpPrice3').value = '';
@@ -3078,6 +3089,7 @@
             renderMarketPricesTable();
         }
 
+        // Rendert die Marktpreise-Tabelle inkl. optionalem GAEB-Langtext als Info-Tooltip
         function renderMarketPricesTable() {
             const container = document.getElementById('marketPricesTableContainer');
             const searchInput = document.getElementById('marketPriceSearchInput');
@@ -3088,7 +3100,7 @@
                     return false;
                 }
                 if (!query) return true;
-                const haystack = `${m.title || ''} ${m.unit || 'Stk'} ${m.category || ''}`.toLowerCase();
+                const haystack = `${m.title || ''} ${m.longText || ''} ${m.unit || 'Stk'} ${m.category || ''}`.toLowerCase();
                 const words = query.split(/\s+/);
                 return words.every(word => haystack.includes(word));
             });
@@ -3102,7 +3114,7 @@
                 <table class="w-full text-left text-xs text-slate-300">
                     <thead class="bg-slate-950 text-slate-400 uppercase border-b border-slate-800">
                         <tr>
-                            <th class="p-3">Position (Kurztext)</th>
+                            <th class="p-3">Position (Kurztext & Tooltip)</th>
                             <th class="p-3">Einheit</th>
                             <th class="p-3">Kategorie</th>
                             <th class="p-3">Preise (€)</th>
@@ -3111,19 +3123,42 @@
                         </tr>
                     </thead>
                     <tbody class="divide-y divide-slate-800">
-                        ${filteredPrices.map(m => `
-                            <tr class="hover:bg-slate-950/50">
-                                <td class="p-3 font-semibold text-white">${m.title}</td>
-                                <td class="p-3"><span class="bg-slate-800 border border-slate-700 px-2 py-0.5 rounded text-[11px] font-bold text-sky-400">${m.unit || 'Stk'}</span></td>
-                                <td class="p-3"><span class="bg-slate-800 px-2 py-0.5 rounded text-[10px] text-emerald-400">${m.category || 'Allgemein'}</span></td>
-                                <td class="p-3">${(m.prices || []).filter(p => p > 0).map(p => p.toLocaleString('de-DE', {minimumFractionDigits: 2, maximumFractionDigits: 2}) + ' €').join(' / ')}</td>
-                                <td class="p-3 text-emerald-400 font-black">${(m.average || 0).toLocaleString('de-DE', {minimumFractionDigits: 2, maximumFractionDigits: 2})} € / ${m.unit || 'Stk'}</td>
-                                <td class="p-3 text-right space-x-2 whitespace-nowrap">
-                                    <button type="button" onclick="editMarketPrice('${m.idDoc}')" class="text-amber-400 hover:underline" title="Bearbeiten"><i class="fa-solid fa-pen"></i></button>
-                                    <button type="button" onclick="deleteMarketPrice('${m.idDoc}')" class="text-rose-400 hover:underline" title="Löschen"><i class="fa-solid fa-trash"></i></button>
-                                </td>
-                            </tr>
-                        `).join('')}
+                        ${filteredPrices.map(m => {
+                            const safeLongText = (m.longText || '')
+                                .replace(/&/g, '&amp;')
+                                .replace(/</g, '&lt;')
+                                .replace(/>/g, '&gt;')
+                                .replace(/"/g, '&quot;');
+
+                            const tooltipHtml = safeLongText
+                                ? `<span class="relative group inline-flex items-center cursor-help text-sky-400 hover:text-sky-300 ml-1.5">
+                                        <i class="fa-solid fa-circle-info"></i>
+                                        <span class="hidden group-hover:block absolute left-0 bottom-full mb-2 w-72 sm:w-96 p-3 rounded-xl bg-slate-950 border border-sky-500/40 text-[11px] font-normal text-slate-200 shadow-2xl z-50 whitespace-normal leading-relaxed pointer-events-none">
+                                            <strong class="text-sky-400 block mb-1 uppercase tracking-wider text-[10px]">GAEB-Langtext / Details:</strong>
+                                            ${safeLongText}
+                                        </span>
+                                   </span>`
+                                : '';
+
+                            return `
+                                <tr class="hover:bg-slate-950/50">
+                                    <td class="p-3 font-semibold text-white">
+                                        <div class="flex items-center">
+                                            <span>${m.title}</span>
+                                            ${tooltipHtml}
+                                        </div>
+                                    </td>
+                                    <td class="p-3"><span class="bg-slate-800 border border-slate-700 px-2 py-0.5 rounded text-[11px] font-bold text-sky-400">${m.unit || 'Stk'}</span></td>
+                                    <td class="p-3"><span class="bg-slate-800 px-2 py-0.5 rounded text-[10px] text-emerald-400">${m.category || 'Allgemein'}</span></td>
+                                    <td class="p-3">${(m.prices || []).filter(p => p > 0).map(p => p.toLocaleString('de-DE', {minimumFractionDigits: 2, maximumFractionDigits: 2}) + ' €').join(' / ')}</td>
+                                    <td class="p-3 text-emerald-400 font-black">${(m.average || 0).toLocaleString('de-DE', {minimumFractionDigits: 2, maximumFractionDigits: 2})} € / ${m.unit || 'Stk'}</td>
+                                    <td class="p-3 text-right space-x-2 whitespace-nowrap">
+                                        <button type="button" onclick="editMarketPrice('${m.idDoc}')" class="text-amber-400 hover:underline" title="Bearbeiten"><i class="fa-solid fa-pen"></i></button>
+                                        <button type="button" onclick="deleteMarketPrice('${m.idDoc}')" class="text-rose-400 hover:underline" title="Löschen"><i class="fa-solid fa-trash"></i></button>
+                                    </td>
+                                </tr>
+                            `;
+                        }).join('')}
                     </tbody>
                 </table>
             `;
@@ -3207,7 +3242,6 @@
             });
             document.getElementById('adminStatSavings').textContent = totalSavingsNum.toLocaleString('de-DE') + ' €';
 
-            // Zähler-Badge für den Reiter "Offene Freigaben" aktualisieren
             const pendingApprovalOrders = adminOrders.filter(o => !o.isArchived && (o.pendingAction === 'reject' || o.pendingAction === 'cancel'));
             const approvalsBadge = document.getElementById('approvalsCountBadge');
             if (approvalsBadge) {
@@ -3300,9 +3334,9 @@
                 listTitle.textContent = "Marktpreise-DB";
                 container.innerHTML = `
                     <div class="bg-slate-900 border border-slate-800 rounded-xl p-4 space-y-2 text-xs text-slate-400">
-                        <p class="text-white font-semibold"><i class="fa-solid fa-database text-emerald-400 mr-1.5"></i>GAEB-Kurztexte & Excel-Import</p>
+                        <p class="text-white font-semibold"><i class="fa-solid fa-database text-emerald-400 mr-1.5"></i>GAEB-Kurztexte & Langtext-Tooltips</p>
                         <p>Aktuell gespeicherte Positionen: <strong class="text-white">${marketPrices.length}</strong></p>
-                        <p class="text-slate-400">Tipp: Wählen Sie beim Datei-Upload eine <code class="text-emerald-400">.x83</code> und bis zu drei <code class="text-emerald-400">.x84</code> gleichzeitig aus oder importieren Sie direkt eine <code class="text-emerald-400">.xlsx</code> / <code class="text-emerald-400">.csv</code> Preisliste.</p>
+                        <p class="text-slate-400">Bewegen Sie die Maus über das blaue <i class="fa-solid fa-circle-info text-sky-400"></i>-Icon einer Position, um den gespeicherten GAEB-Langtext einzusehen.</p>
                     </div>
                 `;
             }
@@ -3320,7 +3354,6 @@
             const customerName = (o.firstName && o.lastName) ? `${o.firstName} ${o.lastName}` : o.email;
             const projectName = (o.projectName || 'Allgemein').trim() || 'Allgemein';
 
-            // Prüfen, ob erste Angebotsanfrage eines Neukunden vorliegt und 50% Anzahlung noch offen ist
             const isFirstOrder = isFirstCustomerInquiryOrder(o);
             const needs50DepositBeforeWork = isFirstOrder && (!o.paymentStatus || o.paymentStatus === 'unpaid') && o.status != 5 && o.status != 6;
 
@@ -3329,7 +3362,7 @@
                 firstInquiryBadgeHtml = `
                     <div class="mt-2 px-2.5 py-1.5 rounded-lg bg-rose-500/20 border border-rose-500/40 text-rose-300 text-[10px] font-bold flex items-center justify-between">
                         <span><i class="fa-solid fa-file-invoice-dollar mr-1.5"></i>NEUKUNDE (1. Anfrage)</span>
-                        <span class="uppercase text-[9px] bg-rose-500 text-white px-1.5 py-0.5 rounded font-black">${o.depositInvoiceSent ? '50% gesendet' : '50% Rechnung vor Start!'}</span>
+                        <span class="uppercase text-[9px] ${o.depositInvoiceSent ? 'bg-emerald-500 text-slate-950' : 'bg-rose-500 text-white'} px-1.5 py-0.5 rounded font-black">${o.depositInvoiceSent ? '50% gesendet' : 'Status gesperrt!'}</span>
                     </div>
                 `;
             }
@@ -3382,7 +3415,6 @@
             `;
         }
 
-        // Passt das Auftrags-Editor-Panel an die Berechtigungen an (Sachbearbeiter vs. Admin/Hauptadmin)
         function updateAdminEditorRolePermissions(order) {
             const isAdminOrMain = canManageRoles();
             const optReject = document.getElementById('statusOptReject');
@@ -3477,7 +3509,6 @@
             document.getElementById('adminEditOrderId').textContent = `Auftrag ${order.id} — ${order.packageName || 'Paket'} (${displayPrice} €)`;
             document.getElementById('adminEditProjectBadge').textContent = `Projekt: ${projectName}`;
             document.getElementById('adminEditCustomerEmail').textContent = order.email;
-            document.getElementById('adminStatusSelect').value = order.status || 1;
             document.getElementById('adminPaymentSelect').value = order.paymentStatus || 'unpaid';
             document.getElementById('adminManualPriceInput').value = order.manualDiscount || '';
             document.getElementById('adminSavingsInput').value = order.savings || '';
@@ -3486,7 +3517,27 @@
 
             updateAdminEditorRolePermissions(order);
 
-            // NEU: Prüfung auf erste Angebotsanfrage eines Neukunden (Hinweis: 50% Rechnung vor Arbeitsbeginn)
+            // Status-Sperre im Dropdown für Neukunden ohne 50% Anzahlungsrechnung / Zahlung anwenden
+            const lockedForWork = isNewCustomerLockedForWork(order);
+            const statusSelect = document.getElementById('adminStatusSelect');
+            if (statusSelect) {
+                Array.from(statusSelect.options).forEach(opt => {
+                    const val = parseInt(opt.value);
+                    if ([2, 3, 4].includes(val)) {
+                        opt.disabled = lockedForWork;
+                        const baseLabels = {
+                            2: '2. In Fachprüfung',
+                            3: '3. Bericht wird erstellt',
+                            4: '4. Abgeschlossen'
+                        };
+                        opt.textContent = lockedForWork
+                            ? `${baseLabels[val]} (Gesperrt: Erst 50% Rechnung/Anzahlung!)`
+                            : baseLabels[val];
+                    }
+                });
+                statusSelect.value = order.status || 1;
+            }
+
             const isFirstInquiry = isFirstCustomerInquiryOrder(order);
             const firstInquiryBanner = document.getElementById('adminFirstInquiryWarningBanner');
             const firstInquiryText = document.getElementById('adminFirstInquiryWarningText');
@@ -3501,8 +3552,8 @@
             if (isFirstInquiry && (!order.paymentStatus || order.paymentStatus === 'unpaid') && order.status != 5 && order.status != 6) {
                 firstInquiryBanner.classList.remove('hidden');
                 firstInquiryText.textContent = order.depositInvoiceSent
-                    ? `Erstanfrage eines Neukunden: Die 50 % Anzahlungsrechnung (${deposit50Amount} €) wurde bereits per E-Mail geöffnet. Bitte warten Sie vor Arbeitsbeginn auf den Zahlungseingang (Status „Angezahlt (50%)“).`
-                    : `Dies ist die erste Angebotsanfrage dieses Neukunden. Vor Arbeitsbeginn muss zwingend die 50 % Anzahlungsrechnung (${deposit50Amount} €) an den Kunden versendet werden!`;
+                    ? `Erstanfrage eines Neukunden: Die 50 % PDF-Anzahlungsrechnung (${deposit50Amount} €) wurde erstellt. Die Status-Sperre ist aufgehoben – bitte prüfen Sie vor Arbeitsbeginn den Zahlungseingang.`
+                    : `Status-Sperre aktiv: Dies ist die erste Angebotsanfrage dieses Neukunden. Status 2–4 sind gesperrt, bis die 50 % PDF-Anzahlungsrechnung (${deposit50Amount} €) erstellt/versendet oder die Anzahlung verbucht wurde!`;
             } else {
                 firstInquiryBanner.classList.add('hidden');
             }
@@ -3558,16 +3609,132 @@
             window.location.href = `mailto:${order.email}?subject=${subject}&body=${body}`;
         }
 
-        // Sendet die 50%- oder 100%-Rechnung per E-Mail und markiert bei Bedarf den Versand der 50%-Anzahlung in Firestore
+        // Automatischer PDF-Rechnungsgenerator (50% Anzahlung & 100% Gesamtrechnung) via jsPDF
+        function generateInvoicePDFDocument(order, type) {
+            if (!window.jspdf || !window.jspdf.jsPDF) {
+                alert('PDF-Generator (jsPDF) wird geladen oder ist nicht verfügbar.');
+                return;
+            }
+            const { jsPDF } = window.jspdf;
+            const doc = new jsPDF();
+
+            const basePrice = order.price || 149;
+            const manualDiscount = parseFloat(order.manualDiscount) || 0;
+            const totalGross = Math.max(0, basePrice - manualDiscount);
+            const billedGross = type === '50' ? (totalGross / 2) : totalGross;
+            const billedNet = billedGross / 1.19;
+            const billedVat = billedGross - billedNet;
+
+            const invoiceNo = `RE-${order.id.replace('SHK-', '')}-${type}`;
+            const todayStr = new Date().toLocaleDateString('de-DE');
+            const customerName = `${order.firstName || ''} ${order.lastName || ''}`.trim() || order.email;
+            const projectName = (order.projectName || 'Allgemein').trim();
+
+            // Kopfbereich
+            doc.setFont('helvetica', 'bold');
+            doc.setFontSize(18);
+            doc.setTextColor(16, 185, 129);
+            doc.text('SHK Angebotsprüfung', 20, 22);
+
+            doc.setFont('helvetica', 'normal');
+            doc.setFontSize(9);
+            doc.setTextColor(100, 116, 139);
+            doc.text('Technische & Kaufmännische TGA-/SHK-Analyse', 20, 28);
+
+            // Empfänger & Rechnungsmetadaten
+            doc.setTextColor(15, 23, 42);
+            doc.setFontSize(10);
+            doc.setFont('helvetica', 'bold');
+            doc.text('Rechnungsempfänger:', 20, 45);
+            doc.setFont('helvetica', 'normal');
+            doc.text(customerName, 20, 51);
+            doc.text(order.email, 20, 56);
+
+            doc.setFont('helvetica', 'bold');
+            doc.text(`Rechnungs-Nr.: ${invoiceNo}`, 125, 45);
+            doc.setFont('helvetica', 'normal');
+            doc.text(`Datum: ${todayStr}`, 125, 51);
+            doc.text(`Auftrags-Nr.: ${order.id}`, 125, 56);
+            doc.text(`Projekt: ${projectName}`, 125, 61);
+
+            // Rechnungstitel
+            doc.setFont('helvetica', 'bold');
+            doc.setFontSize(14);
+            const titleText = type === '50'
+                ? 'Anzahlungsrechnung (50 % vor Arbeitsbeginn)'
+                : 'Rechnung (100 % Gesamtabrechnung)';
+            doc.text(titleText, 20, 80);
+
+            // Tabellenkopf
+            doc.setFillColor(241, 245, 249);
+            doc.rect(20, 88, 170, 9, 'F');
+            doc.setFontSize(9);
+            doc.text('Pos.', 24, 94);
+            doc.text('Leistungsbeschreibung', 38, 94);
+            doc.text('Betrag (brutto)', 155, 94);
+
+            // Positionszeilen
+            doc.setFont('helvetica', 'normal');
+            doc.setFontSize(10);
+            doc.text('1', 24, 106);
+            const descLines = [
+                `Paket: ${order.packageName || 'SHK-Angebotsprüfung'} (Auftrag ${order.id})`,
+                `Bauvorhaben / Projekt: ${projectName}`,
+                type === '50'
+                    ? '50 % Anzahlung gemäß Vereinbarung vor Beginn der technischen Fachprüfung'
+                    : '100 % Gesamtleistung Technische & Kaufmännische Angebotsprüfung'
+            ];
+            if (order.discountApplied) descLines.push(`Berücksichtigter Rabatt: ${order.discountApplied}`);
+            if (manualDiscount > 0) descLines.push(`Manueller Nachlass: -${manualDiscount.toFixed(2).replace('.', ',')} €`);
+
+            doc.text(descLines, 38, 106);
+            doc.setFont('helvetica', 'bold');
+            doc.text(`${billedGross.toFixed(2).replace('.', ',')} €`, 155, 106);
+
+            // Summenblock
+            const sumY = 145;
+            doc.setDrawColor(203, 213, 225);
+            doc.line(20, sumY - 6, 190, sumY - 6);
+
+            doc.setFont('helvetica', 'normal');
+            doc.setFontSize(10);
+            doc.text('Nettobetrag:', 115, sumY);
+            doc.text(`${billedNet.toFixed(2).replace('.', ',')} €`, 160, sumY);
+
+            doc.text('zzgl. 19 % MwSt.:', 115, sumY + 7);
+            doc.text(`${billedVat.toFixed(2).replace('.', ',')} €`, 160, sumY + 7);
+
+            doc.setFont('helvetica', 'bold');
+            doc.setFontSize(11);
+            doc.text('Rechnungsbetrag (Brutto):', 115, sumY + 16);
+            doc.text(`${billedGross.toFixed(2).replace('.', ',')} €`, 160, sumY + 16);
+
+            // Fußnote
+            doc.setFont('helvetica', 'normal');
+            doc.setFontSize(9);
+            doc.setTextColor(71, 85, 105);
+            const footerNote = type === '50'
+                ? 'Bitte überweisen Sie den Anzahlungsbetrag unter Angabe der Rechnungsnummer vor Beginn der Fachprüfung.'
+                : 'Vielen Dank für Ihren Auftrag und Ihr Vertrauen!';
+            doc.text(footerNote, 20, sumY + 34);
+
+            doc.save(`Rechnung_${order.id}_${type}Prozent.pdf`);
+        }
+
+        // Erzeugt die PDF-Rechnung, hebt bei 50% die Neukunden-Status-Sperre auf und öffnet die E-Mail
         async function sendInvoiceEmail(type, markDepositSent = false) {
             if (!selectedAdminOrderId) return;
             const order = adminOrders.find(o => o.id === selectedAdminOrderId);
             if (!order) return;
 
+            // 1. PDF automatisch generieren und herunterladen
+            generateInvoicePDFDocument(order, type);
+
             const basePrice = order.price || 149;
             const manualDiscount = parseFloat(order.manualDiscount) || 0;
             const finalPrice = Math.max(0, basePrice - manualDiscount);
 
+            // 2. Bei 50%-Rechnung den Versandstatus in Firestore speichern & Status-Sperre aufheben
             if (type === '50' && markDepositSent) {
                 order.depositInvoiceSent = true;
                 if (db && order.idDoc) {
@@ -3583,14 +3750,15 @@
                 renderAdminDashboard();
             }
 
-            const amount = type === '50' ? (finalPrice / 2).toFixed(2) + ' € (50% Anzahlung vor Arbeitsbeginn)' : finalPrice.toFixed(2) + ' € (100% Gesamtbetrag)';
+            const amount = type === '50'
+                ? (finalPrice / 2).toFixed(2).replace('.', ',') + ' € (50% Anzahlung vor Arbeitsbeginn)'
+                : finalPrice.toFixed(2).replace('.', ',') + ' € (100% Gesamtbetrag)';
             const subject = encodeURIComponent(`Ihre Rechnung (${type === '50' ? '50% Anzahlung vor Arbeitsbeginn' : 'Gesamtrechnung'}) für Auftrag ${order.id}`);
-            const body = encodeURIComponent(`Hallo,\n\nanbei erhalten Sie die Rechnung für Ihren gebuchten Prüfservice (${order.packageName}).\n\nRechnungsbetrag: ${amount}\n\n${type === '50' ? 'Hinweis für Neukunden: Bitte überweisen Sie die 50% Anzahlung vor Beginn der technischen Detailprüfung.\n\n' : ''}Vielen Dank für Ihr Vertrauen!\n\nMit freundlichen Grüßen\nSHK Angebotsprüfung`);
+            const body = encodeURIComponent(`Hallo,\n\nanbei erhalten Sie Ihre PDF-Rechnung für den gebuchten Prüfservice (${order.packageName}).\n\nRechnungsbetrag: ${amount}\n\n${type === '50' ? 'Hinweis für Neukunden: Bitte überweisen Sie die 50% Anzahlung vor Beginn der technischen Detailprüfung.\n\n' : ''}Vielen Dank für Ihr Vertrauen!\n\nMit freundlichen Grüßen\nSHK Angebotsprüfung`);
 
             window.location.href = `mailto:${order.email}?subject=${subject}&body=${body}`;
         }
 
-        // Sachbearbeiter reicht vorläufige Ablehnung oder Stornierung inkl. interner Notiz ein
         async function requestPreliminaryOrderAction(actionType) {
             if (!selectedAdminOrderId) return;
             const order = adminOrders.find(o => o.id === selectedAdminOrderId);
@@ -3629,7 +3797,6 @@
             selectAdminOrder(currentOrderId);
         }
 
-        // Admin gibt vorläufige Ablehnung / Stornierung endgültig frei (inkl. Entscheidung über Kunden-Sichtbarkeit)
         async function approvePreliminaryAction() {
             if (!canManageRoles()) {
                 alert('Nur Administratoren und der Hauptadmin können diese Aktion freigeben.');
@@ -3688,7 +3855,6 @@
             selectAdminOrder(currentOrderId);
         }
 
-        // Admin verwirft vorläufige Anfrage / setzt sie inkl. Notiz zurück
         async function denyPreliminaryAction() {
             if (!selectedAdminOrderId) return;
             const order = adminOrders.find(o => o.id === selectedAdminOrderId);
@@ -3735,7 +3901,6 @@
             selectAdminOrder(currentOrderId);
         }
 
-        // Direkte Ablehnung (Nur für Admin & Hauptadmin, inkl. optionaler Kunden-Begründung)
         async function rejectAdminOrder() {
             if (!canManageRoles()) {
                 await requestPreliminaryOrderAction('reject');
@@ -3778,7 +3943,6 @@
             await loadAdminOrders();
         }
 
-        // Direkte Stornierung (Nur für Admin & Hauptadmin, inkl. optionaler Kunden-Begründung)
         async function cancelAdminOrderDirect() {
             if (!canManageRoles()) {
                 await requestPreliminaryOrderAction('cancel');
@@ -3843,6 +4007,7 @@
 
             const oldStatus = order.status;
             let newStatus = parseInt(document.getElementById('adminStatusSelect').value);
+            const selectedPaymentStatus = document.getElementById('adminPaymentSelect').value;
 
             if (!canManageRoles() && (newStatus === 5 || newStatus === 6)) {
                 alert('Als Sachbearbeiter können Sie Aufträge nicht direkt ablehnen oder stornieren. Bitte nutzen Sie die Buttons für die vorläufige Ablehnung/Stornierung.');
@@ -3850,8 +4015,16 @@
                 return;
             }
 
+            // Status-Sperre für Neukunden prüfen (sofern der Bezahlstatus nicht gerade auf partial/paid gesetzt wurde)
+            const stillLocked = isFirstCustomerInquiryOrder(order) && selectedPaymentStatus === 'unpaid' && !order.depositInvoiceSent;
+            if ([2, 3, 4].includes(newStatus) && stillLocked) {
+                alert('Status-Sperre aktiv: Bei der ersten Anfrage eines Neukunden muss vor Arbeitsbeginn (Status 2–4) zuerst die 50% PDF-Anzahlungsrechnung erstellt/versendet oder der Bezahlstatus auf „Angezahlt (50%)“ / „Bezahlt“ gesetzt werden!');
+                document.getElementById('adminStatusSelect').value = oldStatus || 1;
+                return;
+            }
+
             order.status = newStatus;
-            order.paymentStatus = document.getElementById('adminPaymentSelect').value;
+            order.paymentStatus = selectedPaymentStatus;
             
             if (newStatus === 6) {
                 order.paymentStatus = 'paid';
