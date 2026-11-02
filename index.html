@@ -345,7 +345,7 @@
                                         <p class="text-xs text-slate-300 mt-1">Leider konnte dieser Auftrag nicht angenommen werden.</p>
                                     </div>
                                 </div>
-                                <button type="button" onclick="dismissClientOrder(activeOrderId)" class="bg-rose-500/20 hover:bg-rose-500/30 text-rose-300 border border-rose-500/30 px-3 py-1.5 rounded-lg text-xs font-bold transition whitespace-nowrap">
+                                <button type="button" onclick="dismissClientOrder(activeOrderId)" class="bg-rose-500/25 hover:bg-rose-500/35 text-rose-200 border border-rose-500/40 px-3 py-1.5 rounded-lg text-xs font-bold transition whitespace-nowrap" title="Aus meiner Ansicht entfernen">
                                     <i class="fa-solid fa-xmark mr-1"></i>Ausblenden
                                 </button>
                             </div>
@@ -364,7 +364,7 @@
                                         <p class="text-xs text-slate-300 mt-1">Dieser Auftrag wurde storniert.</p>
                                     </div>
                                 </div>
-                                <button type="button" onclick="dismissClientOrder(activeOrderId)" class="bg-amber-500/20 hover:bg-amber-500/30 text-amber-300 border border-amber-500/30 px-3 py-1.5 rounded-lg text-xs font-bold transition whitespace-nowrap">
+                                <button type="button" onclick="dismissClientOrder(activeOrderId)" class="bg-amber-500/25 hover:bg-amber-500/35 text-amber-200 border border-amber-500/40 px-3 py-1.5 rounded-lg text-xs font-bold transition whitespace-nowrap" title="Aus meiner Ansicht entfernen">
                                     <i class="fa-solid fa-xmark mr-1"></i>Ausblenden
                                 </button>
                             </div>
@@ -717,7 +717,10 @@
                         <div class="bg-slate-900 border border-slate-800 rounded-2xl p-6 shadow-xl space-y-4">
                             <div class="flex justify-between items-center">
                                 <h4 class="text-sm font-bold text-white">GAEB & Excel Import</h4>
-                                <button type="button" onclick="exportMarketPricesToCSV()" class="bg-slate-800 text-emerald-400 px-3 py-1 rounded text-xs">Export</button>
+                                <div class="flex gap-2">
+                                    <button type="button" onclick="exportMarketPricesToCSV()" class="bg-slate-800 text-emerald-400 px-3 py-1 rounded text-xs">Export</button>
+                                    <button type="button" id="btnClearEntireMarketDb" onclick="openClearDbPasswordModal()" class="hidden bg-rose-500 text-white px-3 py-1 rounded text-xs font-bold">DB leeren</button>
+                                </div>
                             </div>
                             <div class="flex gap-3">
                                 <input type="file" id="importFile" multiple accept=".xlsx,.xls,.csv,.xml,.x82,.x83,.x84,.x86" class="w-full text-xs bg-slate-950 border border-slate-700 rounded-xl p-2 text-slate-400">
@@ -772,7 +775,7 @@
         </div>
     </div>
 
-    <!-- PASSWORT-MODAL FÜR HAUPTADMIN -->
+    <!-- Passowrt-Modal für Hauptadmin -->
     <div id="clearDbPasswordModal" class="fixed inset-0 z-50 flex items-center justify-center bg-slate-950/85 backdrop-blur-sm hidden">
         <div class="bg-slate-900 border-2 border-rose-500/50 rounded-2xl p-8 max-w-md w-full mx-4 relative space-y-4">
             <button type="button" onclick="closeClearDbPasswordModal()" class="absolute top-4 right-4 text-slate-400 hover:text-white"><i class="fa-solid fa-xmark text-lg"></i></button>
@@ -788,7 +791,7 @@
     <script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-app-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-auth-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore-compat.js"></script>
-    <script>
+<script>
         if (window.pdfjsLib) {
             window.pdfjsLib.GlobalWorkerOptions.workerSrc = 'https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.worker.min.js';
         }
@@ -1133,327 +1136,263 @@
             if (file) document.getElementById('fileNameDisplay').textContent = `Ausgewählt: ${file.name}`;
         }
 
-        // GAEB / PDF Abgleich (Reiter 9) Logik
-        async function handleDirectOfferCheckUpload() {
-            const fileInput = document.getElementById('directCheckFileInput');
-            const feedback = document.getElementById('directCheckUploadFeedback');
-            const files = Array.from(fileInput.files || []);
-            if (files.length === 0) { alert("Bitte Datei auswählen."); return; }
+        async function handleOrderSubmission(event) {
+            event.preventDefault();
+            const email = document.getElementById('orderEmail').value.trim();
+            const projectInputVal = document.getElementById('orderProjectInput').value.trim();
+            const projectName = projectInputVal || 'Allgemein';
+            const firstName = document.getElementById('orderFirstName').value.trim();
+            const lastName = document.getElementById('orderLastName').value.trim();
+            const password = document.getElementById('orderPasswordInput').value;
+            const notes = document.getElementById('orderNotes').value;
+            const fileInput = document.getElementById('offerFile');
+            const file = fileInput.files[0];
 
-            feedback.textContent = "Datei wird ausgelesen und mit DB abgeglichen...";
-            feedback.className = "text-xs block text-sky-400 font-semibold";
+            if (!file) { alert("Bitte wählen Sie eine Angebotsdatei aus."); return; }
+            if (await isAccountBlocked(email)) { alert("Dieses Konto wurde gesperrt."); return; }
 
             try {
-                if (db && marketPrices.length === 0) {
-                    const snap = await db.collection('market_prices').get();
-                    snap.forEach(doc => marketPrices.push({ idDoc: doc.id, ...doc.data() }));
+                const methods = await auth.fetchSignInMethodsForEmail(email);
+                const isExistingUser = methods.length > 0;
+                let previousOrdersCount = 0;
+                if (db) {
+                    const prevSnap = await db.collection('orders').where('email', '==', email).get();
+                    previousOrdersCount = prevSnap.size;
+                }
+                const isFirstCustomerInquiry = (!isExistingUser || previousOrdersCount === 0);
+
+                if (!isExistingUser) {
+                    if (!firstName || !lastName) { alert("Bitte Vor- und Nachnamen eingeben."); return; }
+                    if (!password || password.length < 6) { alert("Passwort (min. 6 Zeichen) erforderlich."); return; }
+                    await auth.createUserWithEmailAndPassword(email, password);
                 }
 
-                const loaded = await Promise.all(files.map(file => {
-                    const lower = file.name.toLowerCase();
-                    const isBin = /\.(pdf|xlsx|xls)$/.test(lower);
-                    return new Promise((res, rej) => {
-                        const r = new FileReader();
-                        r.onload = e => res({ name: lower, isBin, data: e.target.result });
-                        r.onerror = rej;
-                        if (isBin) r.readAsArrayBuffer(file);
-                        else r.readAsText(file, "UTF-8");
-                    });
-                }));
+                await ensureCustomerRecord(email, firstName, lastName);
+                const customerRole = await checkAndAutoUpgradeStammkunde(email, 1);
+                const customerIsStammkunde = (customerRole === 'Stammkunde');
+                isStammkundeActive = customerIsStammkunde;
 
-                const rawExtracted = [];
-                for (const f of loaded) {
-                    if (f.name.endsWith('.pdf')) {
-                        const pdfItems = await extractOfferPositionsFromPDF(f.data);
-                        pdfItems.forEach(p => rawExtracted.push(p));
-                    } else if (/\.(xlsx|xls)$/.test(f.name)) {
-                        const wb = XLSX.read(f.data, { type: 'array' });
-                        const rows = XLSX.utils.sheet_to_json(wb.Sheets[wb.SheetNames[0]], { header: 1, defval: '' });
-                        parseTabularRows(rows).forEach(it => rawExtracted.push({ title: it.title, qty: it.qty || 1, unit: it.unit, offeredUnitPrice: it.prices[0] || 0 }));
-                    } else if (/\.(xml|x82|x83|x84|x86)$/.test(f.name)) {
-                        parseGAEBXmlContent(f.data).forEach(it => {
-                            if (it.title) rawExtracted.push({ title: it.title, qty: it.qty || 1, unit: it.unit || 'Stk', offeredUnitPrice: it.price || 0 });
-                        });
-                    } else {
-                        const lines = String(f.data).split(/\r?\n/).filter(l => l.trim().length > 0);
-                        const rows = lines.map(line => line.split(line.includes(';') ? ';' : '\t').map(c => c.trim()));
-                        parseTabularRows(rows).forEach(it => rawExtracted.push({ title: it.title, qty: it.qty || 1, unit: it.unit, offeredUnitPrice: it.prices[0] || 0 }));
-                    }
-                }
+                const reader = new FileReader();
+                reader.readAsDataURL(file);
+                reader.onload = async function () {
+                    const fileBase64 = reader.result;
+                    const orderId = 'SHK-' + Math.floor(100000 + Math.random() * 900000);
+                    const finalCalculatedPrice = getCalculatedOrderPrice(selectedPackagePrice, customerIsStammkunde, appliedDiscountPercent);
 
-                directFileCheckItems = [];
-                rawExtracted.forEach(pos => {
-                    const dbMatch = findMatchingMarketPriceItem(pos.title);
-                    const refPrice = dbMatch ? Number(dbMatch.average || 0) : 0;
-                    directFileCheckItems.push({
-                        rowId: 'fc_' + Math.random().toString(36).substring(2, 7),
-                        title: pos.title,
-                        qty: pos.qty || 1,
-                        unit: pos.unit || (dbMatch ? dbMatch.unit : 'Stk') || 'Stk',
-                        offeredUnitPrice: Number(pos.offeredUnitPrice || 0),
-                        refUnitPrice: refPrice,
-                        inDb: Boolean(dbMatch && refPrice > 0),
-                        matchedDbTitle: dbMatch ? dbMatch.title : null,
-                        matchedDbId: dbMatch ? dbMatch.idDoc : null
-                    });
-                });
+                    const newOrder = {
+                        id: orderId,
+                        packageName: selectedPackageName,
+                        projectName: projectName,
+                        price: finalCalculatedPrice,
+                        originalPrice: selectedPackagePrice,
+                        discountApplied: customerIsStammkunde ? 'Stammkunde (5%)' : null,
+                        email: email,
+                        firstName: firstName || '',
+                        lastName: lastName || '',
+                        notes: notes,
+                        fileName: file.name,
+                        fileData: fileBase64,
+                        additionalFiles: [],
+                        status: 1,
+                        paymentStatus: 'unpaid',
+                        isFirstInquiry: isFirstCustomerInquiry,
+                        depositInvoiceSent: false,
+                        isArchived: false,
+                        hiddenByClient: false,
+                        pendingAction: null,
+                        createdAt: new Date().toISOString(),
+                        userId: auth.currentUser ? auth.currentUser.uid : 'anon_' + email
+                    };
 
-                feedback.textContent = `✓ ${directFileCheckItems.length} Positionen eingelesen!`;
-                feedback.className = "text-xs block text-emerald-400 font-semibold";
-                fileInput.value = '';
-                renderDirectFileCheckTable();
-            } catch (err) {
-                feedback.textContent = "⚠ " + err.message;
-                feedback.className = "text-xs block text-rose-400 font-semibold";
+                    if (db) await db.collection('orders').add(newOrder);
+                    document.getElementById('orderProjectInput').value = '';
+                    alert('Auftrag erfolgreich eingereicht!');
+                    switchView('clientPortal');
+                };
+            } catch (error) {
+                alert("Fehler: " + error.message);
             }
         }
 
-        function findMatchingMarketPriceItem(rawTitle) {
-            if (!rawTitle || marketPrices.length === 0) return null;
-            const normTarget = normalizePositionTitleKey(rawTitle);
-            if (!normTarget) return null;
-            let match = marketPrices.find(m => normalizePositionTitleKey(m.title) === normTarget);
-            if (match) return match;
-
-            const targetWords = rawTitle.toLowerCase().split(/\s+/).filter(w => w.length > 3);
-            let bestCandidate = null;
-            let bestScore = 0;
-            marketPrices.forEach(m => {
-                const dbNorm = normalizePositionTitleKey(m.title);
-                if (normTarget.includes(dbNorm) || dbNorm.includes(normTarget)) {
-                    bestCandidate = m;
-                }
-            });
-            return bestCandidate;
+        function getVisibleUserOrders() {
+            return userOrders.filter(o => !o.hiddenByClient);
         }
 
-        async function extractOfferPositionsFromPDF(arrayBuffer) {
-            if (!window.pdfjsLib) return [];
-            const pdf = await window.pdfjsLib.getDocument({ data: arrayBuffer }).promise;
-            const extractedLines = [];
-            for (let pageNum = 1; pageNum <= pdf.numPages; pageNum++) {
-                const page = await pdf.getPage(pageNum);
-                const textContent = await page.getTextContent();
-                textContent.items.forEach(item => {
-                    const str = (item.str || '').trim();
-                    if (str) extractedLines.push(str);
-                });
+        async function loadUserOrders() {
+            userOrders = [];
+            if (db && currentUser) {
+                try {
+                    const snapshot = await db.collection('orders').where('email', '==', currentUser.email).get();
+                    snapshot.forEach(doc => userOrders.push({ idDoc: doc.id, ...doc.data() }));
+                } catch(e) {}
             }
-            const parsedPositions = [];
-            extractedLines.forEach(line => {
-                const priceMatch = line.match(/(\d{1,3}(?:\.\d{3})*,\d{2}|\d+\.\d{2})\s*€?/);
-                if (priceMatch) {
-                    const price = parsePriceNumber(priceMatch[1]);
-                    const title = line.replace(priceMatch[0], '').trim();
-                    if (title.length > 3 && price > 0) {
-                        parsedPositions.push({ title: title.substring(0, 120), qty: 1, unit: 'Stk', offeredUnitPrice: price });
-                    }
-                }
+            updateProjectDatalist();
+            renderClientPortalKPIs();
+            renderClientProjectFilterBar();
+            renderClientOrdersList();
+        }
+
+        function updateProjectDatalist() {
+            const datalist = document.getElementById('existingProjectsDatalist');
+            if (!datalist) return;
+            const visibleOrders = getVisibleUserOrders();
+            const projects = [...new Set(visibleOrders.map(o => (o.projectName || 'Allgemein').trim()).filter(Boolean))];
+            datalist.innerHTML = projects.map(p => `<option value="${p.replace(/"/g, '&quot;')}"></option>`).join('');
+        }
+
+        function renderClientPortalKPIs() {
+            const visibleOrders = getVisibleUserOrders();
+            document.getElementById('clientStatTotal').textContent = visibleOrders.length;
+            document.getElementById('clientStatUnpaid').textContent = visibleOrders.filter(o => o.status != 6 && o.status != 5 && (!o.paymentStatus || o.paymentStatus === 'unpaid')).length;
+            document.getElementById('clientStatDone').textContent = visibleOrders.filter(o => o.status == 4).length;
+        }
+
+        function renderClientProjectFilterBar() {
+            const bar = document.getElementById('clientProjectFilterBar');
+            if (!bar) return;
+            const visibleOrders = getVisibleUserOrders();
+            const projectCounts = {};
+            visibleOrders.forEach(o => {
+                const pName = (o.projectName || 'Allgemein').trim() || 'Allgemein';
+                projectCounts[pName] = (projectCounts[pName] || 0) + 1;
             });
-            return parsedPositions;
-        }
+            const projectNames = Object.keys(projectCounts).sort();
+            if (projectNames.length === 0) { bar.innerHTML = ''; return; }
 
-        function updateFileCheckRowRefPrice(rowId, newVal) {
-            const item = directFileCheckItems.find(it => it.rowId === rowId);
-            if (item) { item.refUnitPrice = parseFloat(newVal) || 0; renderDirectFileCheckTable(); }
-        }
-
-        function updateFileCheckRowOfferPrice(rowId, newVal) {
-            const item = directFileCheckItems.find(it => it.rowId === rowId);
-            if (item) { item.offeredUnitPrice = parseFloat(newVal) || 0; renderDirectFileCheckTable(); }
-        }
-
-        function updateFileCheckRowQty(rowId, newVal) {
-            const item = directFileCheckItems.find(it => it.rowId === rowId);
-            if (item) { item.qty = parseFloat(newVal) || 1; renderDirectFileCheckTable(); }
-        }
-
-        function removeFileCheckRow(rowId) {
-            directFileCheckItems = directFileCheckItems.filter(it => it.rowId !== rowId);
-            renderDirectFileCheckTable();
-        }
-
-        function clearDirectFileCheck() {
-            directFileCheckItems = [];
-            renderDirectFileCheckTable();
-        }
-
-        function addManualRowToFileCheck() {
-            const title = (document.getElementById('fcManualTitle').value || '').trim();
-            const qty = parseFloat(document.getElementById('fcManualQty').value) || 1;
-            const unit = normalizeGAEBUnit(document.getElementById('fcManualUnit').value) || 'Stk';
-            const offerPrice = parseFloat(document.getElementById('fcManualOfferPrice').value) || 0;
-            if (!title) return;
-
-            const dbMatch = findMatchingMarketPriceItem(title);
-            const refPrice = dbMatch ? Number(dbMatch.average || 0) : 0;
-
-            directFileCheckItems.push({
-                rowId: 'fc_man_' + Math.random(),
-                title: title, qty: qty, unit: unit, offeredUnitPrice: offerPrice, refUnitPrice: refPrice, inDb: Boolean(dbMatch && refPrice > 0)
+            let html = `<button type="button" onclick="filterClientOrdersByProject('Alle')" class="px-2.5 py-1 rounded-lg text-[11px] font-bold transition ${activeClientProjectFilter === 'Alle' ? 'bg-emerald-500 text-slate-950' : 'bg-slate-800 text-slate-300'}">Alle (${visibleOrders.length})</button>`;
+            projectNames.forEach(p => {
+                const safeAttr = p.replace(/'/g, "\\'");
+                html += `<button type="button" onclick="filterClientOrdersByProject('${safeAttr}')" class="px-2.5 py-1 rounded-lg text-[11px] font-semibold transition ${activeClientProjectFilter === p ? 'bg-emerald-500 text-slate-950 font-bold' : 'bg-slate-800 text-slate-300'}">${p} (${projectCounts[p]})</button>`;
             });
-            document.getElementById('fcManualTitle').value = '';
-            document.getElementById('fcManualOfferPrice').value = '';
-            renderDirectFileCheckTable();
+            bar.innerHTML = html;
         }
 
-        async function saveManualRefPriceToDatabase(rowId) {
-            const item = directFileCheckItems.find(it => it.rowId === rowId);
-            if (!item || item.refUnitPrice <= 0) return;
-            if (db) {
-                await db.collection('market_prices').add({
-                    title: item.title, longText: '', unit: item.unit || 'Stk', category: detectSHKCategory(item.title), prices: [item.refUnitPrice], average: item.refUnitPrice, updatedAt: new Date().toISOString()
-                });
-                item.inDb = true;
-                await loadMarketPrices();
-                renderDirectFileCheckTable();
+        function filterClientOrdersByProject(projectName) {
+            activeClientProjectFilter = projectName;
+            renderClientProjectFilterBar();
+            renderClientOrdersList();
+        }
+
+        async function dismissClientOrder(orderId, event = null) {
+            if (event) event.stopPropagation();
+            if (!orderId) return;
+            const order = userOrders.find(o => o.id === orderId);
+            if (!order) return;
+            order.hiddenByClient = true;
+            if (db && order.idDoc) await db.collection('orders').doc(order.idDoc).update({ hiddenByClient: true });
+            if (activeOrderId === orderId) {
+                activeOrderId = null;
+                document.getElementById('activeOrderDetailsPanel').classList.add('hidden');
+                document.getElementById('noActiveOrderPrompt').classList.remove('hidden');
             }
+            renderClientPortalKPIs();
+            renderClientProjectFilterBar();
+            renderClientOrdersList();
         }
 
-        function renderDirectFileCheckTable() {
-            const container = document.getElementById('fileCheckTableContainer');
-            const statsBadge = document.getElementById('fileCheckPosStatsBadge');
-            const verdictBanner = document.getElementById('fileCheckVerdictBanner');
-            const verdictText = document.getElementById('fileCheckVerdictText');
-            if (!container) return;
+        async function saveClientOrderProject() {
+            if (!activeOrderId) return;
+            const order = userOrders.find(o => o.id === activeOrderId);
+            if (!order) return;
+            const input = document.getElementById('clientProjectEditInput');
+            const newProjectName = (input.value || '').trim() || 'Allgemein';
+            order.projectName = newProjectName;
+            if (db && order.idDoc) await db.collection('orders').doc(order.idDoc).update({ projectName: newProjectName });
+            document.getElementById('detailOrderProjectBadge').textContent = `Projekt: ${newProjectName}`;
+            renderClientProjectFilterBar();
+            renderClientOrdersList();
+        }
 
-            const fmt = (n) => n.toLocaleString('de-DE', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
-            let totalOfferNet = 0, totalRefNet = 0, missingRefCount = 0;
-
-            directFileCheckItems.forEach(it => {
-                totalOfferNet += (it.qty * it.offeredUnitPrice);
-                totalRefNet += (it.qty * it.refUnitPrice);
-                if (!it.refUnitPrice || it.refUnitPrice <= 0) missingRefCount++;
+        function renderClientOrdersList() {
+            const container = document.getElementById('clientOrdersList');
+            const visibleOrders = getVisibleUserOrders();
+            const filteredOrders = visibleOrders.filter(o => {
+                if (activeClientProjectFilter === 'Alle') return true;
+                return ((o.projectName || 'Allgemein').trim() || 'Allgemein') === activeClientProjectFilter;
             });
 
-            const totalDiffNet = totalOfferNet - totalRefNet;
-            const totalDiffPercent = totalRefNet > 0 ? (((totalOfferNet - totalRefNet) / totalRefNet) * 100) : 0;
-
-            document.getElementById('fcStatOfferNet').textContent = `${fmt(totalOfferNet)} €`;
-            document.getElementById('fcStatOfferGross').textContent = `${fmt(totalOfferNet * 1.19)} € brutto`;
-            document.getElementById('fcStatRefNet').textContent = `${fmt(totalRefNet)} €`;
-            document.getElementById('fcStatRefGross').textContent = `${fmt(totalRefNet * 1.19)} € brutto`;
-            document.getElementById('fcStatDiffAmount').textContent = `${fmt(totalDiffNet)} €`;
-            if (statsBadge) statsBadge.textContent = `${directFileCheckItems.length} Positionen (${missingRefCount} auf 0 €)`;
-
-            if (directFileCheckItems.length > 0 && totalRefNet > 0) {
-                verdictBanner.classList.remove('hidden');
-                if (totalDiffPercent <= 0) {
-                    verdictBanner.className = "p-4 rounded-xl border text-xs flex justify-between items-center bg-emerald-500/10 border-emerald-500/30 text-emerald-300";
-                    verdictText.innerHTML = `<strong>Grün (${totalDiffPercent.toFixed(1)}%):</strong> Im/unter Marktschnitt.`;
-                } else if (totalDiffPercent <= 20) {
-                    verdictBanner.className = "p-4 rounded-xl border text-xs flex justify-between items-center bg-amber-500/10 border-amber-500/30 text-amber-300";
-                    verdictText.innerHTML = `<strong>Gelb (+${totalDiffPercent.toFixed(1)}%):</strong> Leicht erhöht.`;
-                } else {
-                    verdictBanner.className = "p-4 rounded-xl border text-xs flex justify-between items-center bg-rose-500/10 border-rose-500/30 text-rose-300";
-                    verdictText.innerHTML = `<strong>Rot (+${totalDiffPercent.toFixed(1)}%):</strong> Deutlich überhöht!`;
-                }
-            } else {
-                verdictBanner.classList.add('hidden');
-            }
-
-            if (directFileCheckItems.length === 0) {
-                container.innerHTML = `<p class="text-xs text-slate-500 p-6 text-center">Keine Positionen geladen.</p>`;
+            if (filteredOrders.length === 0) {
+                container.innerHTML = `<p class="text-xs text-slate-500">Keine Aufträge.</p>`;
                 return;
             }
 
-            container.innerHTML = `
-                <table class="w-full text-left text-xs text-slate-300">
-                    <thead class="bg-slate-950 text-slate-400 uppercase border-b border-slate-800">
-                        <tr>
-                            <th class="p-3">Position</th>
-                            <th class="p-3 w-20">Menge</th>
-                            <th class="p-3 w-28">Angebot EP</th>
-                            <th class="p-3 w-40">DB-Mittelwert / Manuell</th>
-                            <th class="p-3 text-center">% Abweichung</th>
-                            <th class="p-3 text-right">Diff. Gesamt</th>
-                            <th class="p-3 text-right">Aktion</th>
-                        </tr>
-                    </thead>
-                    <tbody class="divide-y divide-slate-800">
-                        ${directFileCheckItems.map((it) => {
-                            const hasRef = it.refUnitPrice > 0;
-                            const devPercent = hasRef ? (((it.offeredUnitPrice - it.refUnitPrice) / it.refUnitPrice) * 100) : null;
-                            const rowDiffTotal = hasRef ? ((it.offeredUnitPrice - it.refUnitPrice) * it.qty) : 0;
-
-                            let rowBg = "bg-sky-950/20 border-l-4 border-l-sky-500";
-                            let devBadge = `<span class="px-2 py-0.5 rounded bg-sky-500/20 text-sky-300 font-bold">0 € (Manuell)</span>`;
-
-                            if (hasRef) {
-                                if (devPercent <= 0) {
-                                    rowBg = "bg-emerald-950/15 border-l-4 border-l-emerald-500";
-                                    devBadge = `<span class="px-2 py-0.5 rounded bg-emerald-500/20 text-emerald-400 font-bold">${devPercent.toFixed(1)} %</span>`;
-                                } else if (devPercent <= 20) {
-                                    rowBg = "bg-amber-950/15 border-l-4 border-l-amber-500";
-                                    devBadge = `<span class="px-2 py-0.5 rounded bg-amber-500/20 text-amber-300 font-bold">+${devPercent.toFixed(1)} %</span>`;
-                                } else {
-                                    rowBg = "bg-rose-950/20 border-l-4 border-l-rose-500";
-                                    devBadge = `<span class="px-2 py-0.5 rounded bg-rose-500/25 text-rose-400 font-bold">+${devPercent.toFixed(1)} %</span>`;
-                                }
-                            }
-
-                            return `
-                                <tr class="${rowBg}">
-                                    <td class="p-3">
-                                        <span class="font-semibold text-white">${it.title}</span>
-                                        ${it.inDb ? `<span class="text-[10px] text-emerald-400 block">DB-Treffer</span>` : `<span class="text-[10px] text-sky-400 block">Nicht in DB (0 €)</span>`}
-                                    </td>
-                                    <td class="p-3"><input type="number" step="0.5" value="${it.qty}" onchange="updateFileCheckRowQty('${it.rowId}', this.value)" class="w-16 bg-slate-950 border border-slate-700 rounded p-1 text-white"></td>
-                                    <td class="p-3"><input type="number" step="0.01" value="${it.offeredUnitPrice}" onchange="updateFileCheckRowOfferPrice('${it.rowId}', this.value)" class="w-24 bg-slate-950 border border-slate-700 rounded p-1 text-white font-bold"></td>
-                                    <td class="p-3">
-                                        <div class="flex gap-1">
-                                            <input type="number" step="0.01" value="${it.refUnitPrice}" onchange="updateFileCheckRowRefPrice('${it.rowId}', this.value)" class="w-24 bg-slate-950 border-2 ${hasRef ? 'border-emerald-500/40 text-emerald-300' : 'border-sky-500 text-sky-300'} rounded p-1 font-black">
-                                            ${!it.inDb && it.refUnitPrice > 0 ? `<button type="button" onclick="saveManualRefPriceToDatabase('${it.rowId}')" class="px-2 bg-emerald-500/20 text-emerald-400 rounded text-[10px]" title="In DB speichern">DB</button>` : ''}
-                                        </div>
-                                    </td>
-                                    <td class="p-3 text-center">${devBadge}</td>
-                                    <td class="p-3 text-right font-bold ${rowDiffTotal > 0 ? 'text-rose-400' : 'text-emerald-400'}">${hasRef ? fmt(rowDiffTotal) + ' €' : '-'}</td>
-                                    <td class="p-3 text-right"><button type="button" onclick="removeFileCheckRow('${it.rowId}')" class="text-rose-400"><i class="fa-solid fa-xmark"></i></button></td>
-                                </tr>
-                            `;
-                        }).join('')}
-                    </tbody>
-                </table>
-            `;
+            container.innerHTML = filteredOrders.map((o) => {
+                const canDismiss = (o.status == 5 || o.status == 6);
+                return `
+                    <div onclick="selectClientOrder('${o.id}')" class="bg-slate-900 border ${activeOrderId === o.id ? 'border-emerald-500' : 'border-slate-800'} rounded-xl p-4 cursor-pointer transition">
+                        <div class="flex justify-between items-center mb-1.5">
+                            <span class="text-xs font-bold text-emerald-400">${o.id}</span>
+                            ${canDismiss ? `<button type="button" onclick="dismissClientOrder('${o.id}', event)" class="w-6 h-6 rounded bg-slate-800 hover:bg-rose-500/20 text-slate-400 hover:text-rose-400 flex items-center justify-center"><i class="fa-solid fa-xmark"></i></button>` : ''}
+                        </div>
+                        <h4 class="text-white font-semibold text-sm">${o.packageName || 'Heizung'} (${o.price || 149} €)</h4>
+                    </div>
+                `;
+            }).join('');
         }
 
-        function transferFileCheckToOrder() {
-            const select = document.getElementById('fileCheckTargetOrderSelect');
-            const targetOrderId = (select && select.value) ? select.value : selectedAdminOrderId;
-            if (!targetOrderId) { alert("Bitte Auftrag wählen."); return; }
-            const order = adminOrders.find(o => o.id === targetOrderId);
+        function selectClientOrder(orderId) {
+            activeOrderId = orderId;
+            const order = userOrders.find(o => o.id === orderId && !o.hiddenByClient);
             if (!order) return;
-
-            let totalOfferNet = 0, totalRefNet = 0;
-            directFileCheckItems.forEach(it => {
-                totalOfferNet += (it.qty * it.offeredUnitPrice);
-                if (it.refUnitPrice > 0) totalRefNet += (it.qty * it.refUnitPrice);
-            });
-
-            const diffNet = Math.max(0, totalOfferNet - totalRefNet);
-            order.savings = `${Math.round(diffNet * 1.19).toLocaleString('de-DE')} €`;
-            order.summary = `GAEB/PDF-Abgleich: Angebot ${totalOfferNet.toFixed(2)} € vs DB ${totalRefNet.toFixed(2)} € netto.`;
-
-            selectedAdminOrderId = order.id;
-            switchAdminTab('active');
-            selectAdminOrder(order.id);
-            alert(`Ergebnis in Auftrag ${order.id} übernommen!`);
+            document.getElementById('noActiveOrderPrompt').classList.add('hidden');
+            document.getElementById('activeOrderDetailsPanel').classList.remove('hidden');
+            document.getElementById('detailOrderPackage').textContent = `${order.packageName} (${order.price} €)`;
+            document.getElementById('detailOrderId').textContent = `Auftrag ${order.id}`;
         }
 
-        // Standard-Tabs & Dashboard
-        function switchAdminTab(tabName, year = null) {
-            currentAdminTab = tabName;
-            activeArchiveYear = year;
+        async function loadAdminOrders() {
+            adminOrders = [];
+            if (db) {
+                const snap = await db.collection('orders').get();
+                snap.forEach(doc => adminOrders.push({ idDoc: doc.id, ...doc.data() }));
+            }
+            populateReconstructTargetOrderDropdown();
+            populateFileCheckTargetOrderDropdown();
+            renderAdminDashboard();
+        }
 
-            document.getElementById('tabBtnActive').className = "px-5 py-3 text-sm font-bold border-b-2 " + (tabName === 'active' ? "border-emerald-500 text-emerald-400" : "border-transparent text-slate-400") + " transition";
-            document.getElementById('tabBtnApprovals').className = "px-5 py-3 text-sm font-bold border-b-2 " + (tabName === 'approvals' ? "border-amber-500 text-amber-400" : "border-transparent text-slate-400") + " transition flex items-center";
-            document.getElementById('tabBtnRejected').className = "px-5 py-3 text-sm font-bold border-b-2 " + (tabName === 'rejected' ? "border-emerald-500 text-emerald-400" : "border-transparent text-slate-400") + " transition";
-            document.getElementById('tabBtnCancelled').className = "px-5 py-3 text-sm font-bold border-b-2 " + (tabName === 'cancelled' ? "border-emerald-500 text-emerald-400" : "border-transparent text-slate-400") + " transition";
-            document.getElementById('tabBtnArchive').className = "px-5 py-3 text-sm font-bold border-b-2 " + (tabName === 'archive' ? "border-emerald-500 text-emerald-400" : "border-transparent text-slate-400") + " transition";
-            document.getElementById('tabBtnCustomers').className = "px-5 py-3 text-sm font-bold border-b-2 " + (tabName === 'customers' ? "border-emerald-500 text-emerald-400" : "border-transparent text-slate-400") + " transition";
-            document.getElementById('tabBtnMarketPrices').className = "px-5 py-3 text-sm font-bold border-b-2 " + (tabName === 'marketprices' ? "border-emerald-500 text-emerald-400" : "border-transparent text-slate-400") + " transition";
-            document.getElementById('tabBtnReconstruct').className = "px-5 py-3 text-sm font-bold border-b-2 " + (tabName === 'reconstruct' ? "border-emerald-500 text-emerald-400" : "border-transparent text-slate-400") + " transition";
-            document.getElementById('tabBtnFileCheck').className = "px-5 py-3 text-sm font-bold border-b-2 " + (tabName === 'filecheck' ? "border-sky-500 text-sky-400" : "border-transparent text-slate-400") + " transition";
+        async function loadMarketPrices() {
+            marketPrices = [];
+            if (db) {
+                const snap = await db.collection('market_prices').get();
+                snap.forEach(doc => marketPrices.push({ idDoc: doc.id, ...doc.data() }));
+            }
+            if (currentAdminTab === 'marketprices') {
+                renderMarketPricesTable();
+            } else if (currentAdminTab === 'reconstruct') {
+                renderReconstructCatalogList();
+                renderReconstructedOffer();
+            } else if (currentAdminTab === 'filecheck') {
+                renderDirectFileCheckTable();
+            }
+        }
+
+        async function loadCustomers() {
+            customersList = [];
+            if (db) {
+                const snap = await db.collection('customers').get();
+                snap.forEach(doc => customersList.push({ idDoc: doc.id, ...doc.data() }));
+            }
+            if (currentAdminTab === 'customers') renderCustomersTable();
+        }
+
+        function filterCustomersRole(role) {
+            activeCustomerRoleFilter = role;
+            renderCustomersTable();
+        }
+
+        function renderCustomersTable() {
+            const container = document.getElementById('adminCustomersTableContainer');
+            if (!container) return;
+            container.innerHTML = `<table class="w-full text-left text-xs text-slate-300"><thead><tr><th class="p-2">E-Mail</th><th class="p-2">Rang</th></tr></thead><tbody>${customersList.map(c => `<tr><td class="p-2">${c.email}</td><td class="p-2">${c.role || 'Kunde'}</td></tr>`).join('')}</tbody></table>`;
+        }
+
+        function switchAdminTab(tabName) {
+            currentAdminTab = tabName;
+            ['active', 'approvals', 'rejected', 'cancelled', 'archive', 'customers', 'marketprices', 'reconstruct', 'filecheck'].forEach(t => {
+                const btn = document.getElementById('tabBtn' + t.charAt(0).toUpperCase() + t.slice(1));
+                if (btn) btn.className = "px-5 py-3 text-sm font-bold border-b-2 " + (currentAdminTab === t ? "border-emerald-500 text-emerald-400" : "border-transparent text-slate-400");
+            });
 
             document.getElementById('adminSelectPrompt').classList.add('hidden');
             document.getElementById('adminEditorPanel').classList.add('hidden');
@@ -1535,15 +1474,6 @@
                 updateNavbarUI();
                 closeAuthModal();
                 openAdminPortal();
-                return;
-            }
-
-            if (!auth) {
-                currentUser = { email: rawInput, uid: 'user_123' };
-                currentUserRole = isMainAdminEmail(rawInput) ? 'Hauptadmin' : 'Kunde';
-                updateNavbarUI();
-                closeAuthModal();
-                openClientPortal();
                 return;
             }
 
