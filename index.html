@@ -217,6 +217,16 @@
                                 </div>
                             </div>
 
+                            <!-- NEU: Projekt-Zuordnung direkt bei der Anfrage -->
+                            <div>
+                                <label class="block text-xs font-medium text-slate-300 mb-1">
+                                    <i class="fa-solid fa-folder-tree text-emerald-400 mr-1"></i>Projekt / Bauvorhaben (optional zur besseren Übersicht im Kundenportal)
+                                </label>
+                                <input type="text" id="orderProjectInput" list="existingProjectsDatalist" placeholder="z. B. Wärmepumpe Neubau, Badsanierung OG, Mietobjekt Südstraße..." class="w-full bg-slate-950 border border-slate-700 rounded-xl px-4 py-3 text-sm text-white focus:border-emerald-500 focus:outline-none">
+                                <datalist id="existingProjectsDatalist"></datalist>
+                                <span class="text-[11px] text-slate-400 mt-1 block">Sie können Angebote einem Projekt zuordnen und diese Zuordnung später jederzeit im Kundenportal ändern.</span>
+                            </div>
+
                             <!-- Vor- und Nachname (nur bei Neukunden erforderlich) -->
                             <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
                                 <div>
@@ -297,7 +307,7 @@
                         <h1 class="text-3xl font-extrabold text-white">Mein Kundenportal</h1>
                         <span id="clientPortalRoleBadge" class="px-3 py-1 rounded-full text-xs font-bold bg-slate-800 text-emerald-400 border border-emerald-500/30">Kunde</span>
                     </div>
-                    <p class="text-slate-400 text-sm mt-1">Übersicht Ihrer eingereichten Angebote und Bearbeitungsstatus in Echtzeit.</p>
+                    <p class="text-slate-400 text-sm mt-1">Übersicht Ihrer eingereichten Angebote, Projekte und Bearbeitungsstatus in Echtzeit.</p>
                 </div>
                 <button type="button" onclick="switchView('landing')" class="bg-slate-800 hover:bg-slate-700 text-white px-4 py-2 rounded-xl text-sm font-medium transition">
                     <i class="fa-solid fa-plus mr-2"></i>Weiteres Angebot prüfen lassen
@@ -307,7 +317,7 @@
             <!-- Kunden KPIs -->
             <div class="grid grid-cols-1 sm:grid-cols-3 gap-4 mb-8">
                 <div class="bg-slate-900 border border-slate-800 rounded-2xl p-5">
-                    <span class="text-xs text-slate-400 block">Anzahl der Angebote</span>
+                    <span class="text-xs text-slate-400 block">Sichtbare Angebote</span>
                     <span id="clientStatTotal" class="text-2xl font-bold text-white mt-1 block">0</span>
                 </div>
                 <div class="bg-slate-900 border border-slate-800 rounded-2xl p-5">
@@ -321,9 +331,17 @@
             </div>
 
             <div class="grid grid-cols-1 lg:grid-cols-3 gap-8">
-                <!-- Orders List -->
+                <!-- Orders List + Project Filter -->
                 <div class="lg:col-span-1 space-y-4">
-                    <h2 class="text-lg font-bold text-white mb-2">Ihre Aufträge</h2>
+                    <div class="flex items-center justify-between">
+                        <h2 class="text-lg font-bold text-white">Ihre Aufträge & Projekte</h2>
+                    </div>
+
+                    <!-- NEU: Projekt-Filterleiste im Kundenportal -->
+                    <div id="clientProjectFilterBar" class="flex flex-wrap gap-1.5 pb-1">
+                        <!-- Dynamisch befüllt -->
+                    </div>
+
                     <div id="clientOrdersList" class="space-y-3">
                         <!-- Dynamically populated -->
                     </div>
@@ -337,29 +355,61 @@
                     </div>
 
                     <div id="activeOrderDetailsPanel" class="hidden space-y-6">
-                        <!-- Abgelehnt Hinweis Box -->
-                        <div id="orderRejectedBanner" class="hidden bg-rose-500/10 border border-rose-500/30 rounded-2xl p-6 shadow-xl flex items-start space-x-4">
-                            <i class="fa-solid fa-circle-xmark text-rose-400 text-2xl mt-1"></i>
-                            <div>
-                                <h3 class="text-lg font-bold text-rose-400">Auftrag abgelehnt</h3>
-                                <p class="text-xs text-slate-300 mt-1">Leider konnte dieser Auftrag nicht angenommen oder geprüft werden. Bei Fragen wenden Sie sich bitte direkt per E-Mail an den Support.</p>
+                        <!-- Abgelehnt Hinweis Box (inkl. Weg-X-en Button) -->
+                        <div id="orderRejectedBanner" class="hidden bg-rose-500/10 border border-rose-500/30 rounded-2xl p-6 shadow-xl flex items-start justify-between gap-4">
+                            <div class="flex items-start space-x-4">
+                                <i class="fa-solid fa-circle-xmark text-rose-400 text-2xl mt-1"></i>
+                                <div>
+                                    <h3 class="text-lg font-bold text-rose-400">Auftrag abgelehnt</h3>
+                                    <p class="text-xs text-slate-300 mt-1">Leider konnte dieser Auftrag nicht angenommen oder geprüft werden. Bei Fragen wenden Sie sich bitte direkt per E-Mail an den Support.</p>
+                                </div>
                             </div>
+                            <button type="button" onclick="dismissClientOrder(activeOrderId)" class="bg-rose-500/20 hover:bg-rose-500/30 text-rose-300 border border-rose-500/30 px-3 py-1.5 rounded-lg text-xs font-bold transition whitespace-nowrap" title="Aus meiner Ansicht entfernen">
+                                <i class="fa-solid fa-xmark mr-1"></i>Ausblenden
+                            </button>
                         </div>
 
-                        <!-- Storniert Hinweis Box -->
-                        <div id="orderCancelledBanner" class="hidden bg-amber-500/10 border border-amber-500/30 rounded-2xl p-6 shadow-xl flex items-start space-x-4">
-                            <i class="fa-solid fa-ban text-amber-400 text-2xl mt-1"></i>
-                            <div>
-                                <h3 class="text-lg font-bold text-amber-400">Auftrag storniert</h3>
-                                <p class="text-xs text-slate-300 mt-1">Dieser Auftrag wurde erfolgreich storniert.</p>
+                        <!-- Storniert Hinweis Box (inkl. Weg-X-en Button) -->
+                        <div id="orderCancelledBanner" class="hidden bg-amber-500/10 border border-amber-500/30 rounded-2xl p-6 shadow-xl flex items-start justify-between gap-4">
+                            <div class="flex items-start space-x-4">
+                                <i class="fa-solid fa-ban text-amber-400 text-2xl mt-1"></i>
+                                <div>
+                                    <h3 class="text-lg font-bold text-amber-400">Auftrag storniert</h3>
+                                    <p class="text-xs text-slate-300 mt-1">Dieser Auftrag wurde erfolgreich storniert.</p>
+                                </div>
                             </div>
+                            <button type="button" onclick="dismissClientOrder(activeOrderId)" class="bg-amber-500/20 hover:bg-amber-500/30 text-amber-300 border border-amber-500/30 px-3 py-1.5 rounded-lg text-xs font-bold transition whitespace-nowrap" title="Aus meiner Ansicht entfernen">
+                                <i class="fa-solid fa-xmark mr-1"></i>Ausblenden
+                            </button>
+                        </div>
+
+                        <!-- NEU: Projekt-Zuordnung im Kundenportal bearbeiten -->
+                        <div class="bg-slate-900 border border-slate-800 rounded-2xl p-5 shadow-xl">
+                            <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
+                                <div>
+                                    <label class="text-xs font-bold text-white flex items-center">
+                                        <i class="fa-solid fa-folder-tree text-emerald-400 mr-2"></i>Projekt-Zuordnung
+                                    </label>
+                                    <p class="text-[11px] text-slate-400 mt-0.5">Ordnen Sie dieses Angebot einem Projekt oder Bauvorhaben zu, um Ihre Übersicht zu strukturieren.</p>
+                                </div>
+                                <div class="flex gap-2 w-full sm:w-auto">
+                                    <input type="text" id="clientProjectEditInput" list="existingProjectsDatalist" placeholder="z. B. Badsanierung OG" class="w-full sm:w-56 bg-slate-950 border border-slate-700 rounded-xl px-3.5 py-2 text-xs text-white focus:border-emerald-500 focus:outline-none">
+                                    <button type="button" onclick="saveClientOrderProject()" class="bg-emerald-500 hover:bg-emerald-600 text-slate-950 font-bold px-4 py-2 rounded-xl text-xs transition whitespace-nowrap shadow-lg shadow-emerald-500/20">
+                                        <i class="fa-solid fa-check mr-1"></i>Speichern
+                                    </button>
+                                </div>
+                            </div>
+                            <span id="clientProjectSaveFeedback" class="text-[11px] text-emerald-400 font-semibold mt-2 hidden block"></span>
                         </div>
 
                         <!-- Status Tracker Card -->
                         <div id="orderTrackerCard" class="bg-slate-900 border border-slate-800 rounded-2xl p-6 shadow-xl space-y-4">
                             <div class="flex justify-between items-center mb-6">
                                 <div>
-                                    <span id="detailOrderPackage" class="text-xs font-bold uppercase tracking-wider text-emerald-400 bg-emerald-500/10 px-3 py-1 rounded-full">Heizung</span>
+                                    <div class="flex flex-wrap items-center gap-2">
+                                        <span id="detailOrderPackage" class="text-xs font-bold uppercase tracking-wider text-emerald-400 bg-emerald-500/10 px-3 py-1 rounded-full">Heizung</span>
+                                        <span id="detailOrderProjectBadge" class="text-xs font-semibold text-sky-400 bg-sky-500/10 border border-sky-500/20 px-3 py-1 rounded-full">Projekt: Allgemein</span>
+                                    </div>
                                     <h3 id="detailOrderId" class="text-xl font-bold text-white mt-2">Auftrag #---</h3>
                                 </div>
                                 <span id="detailOrderStatusBadge" class="px-3 py-1 rounded-full text-xs font-semibold bg-amber-500/10 text-amber-400 border border-amber-500/20">In Fachprüfung</span>
@@ -561,7 +611,7 @@
                             </div>
                         </div>
 
-                        <!-- NEU: Such- und Filterleiste für die Kundentabelle -->
+                        <!-- Such- und Filterleiste für die Kundentabelle -->
                         <div class="bg-slate-950 border border-slate-800 rounded-xl p-4 space-y-3">
                             <div class="flex flex-col sm:flex-row gap-3 items-center justify-between">
                                 <div class="relative w-full sm:flex-1">
@@ -673,8 +723,11 @@
                     <div id="adminEditorPanel" class="hidden bg-slate-900 border border-slate-800 rounded-2xl p-6 shadow-xl space-y-6">
                         <div class="flex justify-between items-center border-b border-slate-800 pb-4">
                             <div>
-                                <span id="adminEditOrderId" class="text-xs text-emerald-400 font-bold uppercase">Auftrag #---</span>
-                                <h3 id="adminEditCustomerEmail" class="text-lg font-bold text-white">kunde@beispiel.de</h3>
+                                <div class="flex flex-wrap items-center gap-2">
+                                    <span id="adminEditOrderId" class="text-xs text-emerald-400 font-bold uppercase">Auftrag #---</span>
+                                    <span id="adminEditProjectBadge" class="text-[11px] bg-sky-500/10 text-sky-400 border border-sky-500/20 px-2.5 py-0.5 rounded-full font-semibold">Projekt: Allgemein</span>
+                                </div>
+                                <h3 id="adminEditCustomerEmail" class="text-lg font-bold text-white mt-1">kunde@beispiel.de</h3>
                             </div>
                             <div class="flex items-center space-x-2">
                                 <label class="text-xs text-slate-400">Status:</label>
@@ -689,7 +742,7 @@
                             </div>
                         </div>
 
-                        <!-- NEU: Banner für vorläufige Ablehnung / Stornierung (Freigabe-Workflow) -->
+                        <!-- Banner für vorläufige Ablehnung / Stornierung (Freigabe-Workflow) -->
                         <div id="adminPendingApprovalBanner" class="hidden bg-amber-500/10 border-2 border-amber-500/40 rounded-xl p-4 space-y-3">
                             <div class="flex items-start justify-between gap-3">
                                 <div class="flex items-start space-x-3">
@@ -713,7 +766,9 @@
                             <!-- Hinweis für Sachbearbeiter -->
                             <div id="pendingApprovalClerkHint" class="hidden flex items-center justify-between pt-2 border-t border-amber-500/20 text-xs text-slate-400">
                                 <span><i class="fa-solid fa-lock mr-1 text-amber-400"></i>Ein Admin oder Hauptadmin muss diese Anfrage noch bestätigen.</span>
-                                <button type="button" onclick="denyPreliminaryAction()" class="text-rose-400 hover:underline font-semibold text-xs">Anfrage zurückziehen</button>
+                                <button type="button" onclick="denyPreliminaryAction()" class="bg-rose-500/10 hover:bg-rose-500/20 text-rose-400 border border-rose-500/30 px-3 py-1 rounded-lg font-semibold text-xs transition">
+                                    <i class="fa-solid fa-rotate-left mr-1"></i>Anfrage zurückziehen
+                                </button>
                             </div>
                         </div>
 
@@ -899,6 +954,7 @@
         let appliedDiscountPercent = 0;
         let userOrders = [];
         let activeOrderId = null;
+        let activeClientProjectFilter = 'Alle';
         let adminOrders = [];
         let marketPrices = [];
         let customersList = [];
@@ -929,7 +985,6 @@
             if (isMainAdminEmail(cleanMail)) return 'Hauptadmin';
 
             try {
-                // Alle bisherigen Aufträge des Kunden zählen
                 const ordersSnap = await db.collection('orders').where('email', '==', email.trim()).get();
                 const totalCustomerOrders = ordersSnap.size + additionalNewOrder;
 
@@ -944,7 +999,6 @@
 
                 let currentRole = targetDoc && targetDoc.role ? targetDoc.role : 'Kunde';
 
-                // Wenn Rang noch 'Kunde' ist und mindestens 10 Aufträge vorliegen -> Automatischer Aufstieg zu 'Stammkunde'
                 if (currentRole === 'Kunde' && totalCustomerOrders >= STAMMKUNDE_ORDER_THRESHOLD) {
                     currentRole = 'Stammkunde';
                     if (targetDoc) {
@@ -1209,10 +1263,12 @@
             }
         }
 
-        // Auftragsabgabe inkl. automatischer Prüfung auf 10-Aufträge-Stammkunden-Aufstieg
+        // Auftragsabgabe inkl. Projekt-Zuordnung & 10-Aufträge-Stammkunden-Aufstieg
         async function handleOrderSubmission(event) {
             event.preventDefault();
             const email = document.getElementById('orderEmail').value.trim();
+            const projectInputVal = document.getElementById('orderProjectInput').value.trim();
+            const projectName = projectInputVal || 'Allgemein';
             const firstName = document.getElementById('orderFirstName').value.trim();
             const lastName = document.getElementById('orderLastName').value.trim();
             const password = document.getElementById('orderPasswordInput').value;
@@ -1256,7 +1312,6 @@
                     }
                 }
 
-                // Vor dem Speichern prüfen, ob bereits Stammkunde oder durch diesen 10. Auftrag zum Stammkunden aufsteigt
                 await ensureCustomerRecord(email, firstName, lastName);
                 const customerRole = await checkAndAutoUpgradeStammkunde(email, 1);
                 const customerIsStammkunde = (customerRole === 'Stammkunde');
@@ -1283,6 +1338,7 @@
                     const newOrder = {
                         id: orderId,
                         packageName: selectedPackageName,
+                        projectName: projectName,
                         price: finalCalculatedPrice,
                         originalPrice: selectedPackagePrice,
                         discountApplied: discountLabels.length > 0 ? discountLabels.join(' + ') : null,
@@ -1298,6 +1354,7 @@
                         status: 1, 
                         paymentStatus: 'unpaid',
                         isArchived: false,
+                        hiddenByClient: false,
                         pendingAction: null,
                         pendingActionBy: null,
                         savings: '3200 €',
@@ -1314,7 +1371,8 @@
                         await db.collection('orders').add(newOrder);
                     }
 
-                    alert('Auftrag erfolgreich eingereicht und Ihrem Kundenkonto zugeordnet!');
+                    document.getElementById('orderProjectInput').value = '';
+                    alert('Auftrag erfolgreich eingereicht und Ihrem Projekt im Kundenkonto zugeordnet!');
                     switchView('clientPortal');
                 };
 
@@ -1322,6 +1380,11 @@
                 console.error("Fehler bei der Auftragsabgabe:", error);
                 alert("Fehler: " + error.message);
             }
+        }
+
+        // Gibt alle für den Kunden sichtbaren Aufträge zurück (ohne weg-ge-X-te Aufträge)
+        function getVisibleUserOrders() {
+            return userOrders.filter(o => !o.hiddenByClient);
         }
 
         async function loadUserOrders() {
@@ -1348,30 +1411,173 @@
                     console.warn("Fehler beim Laden der Kundenaufträge:", e);
                 }
             }
+            updateProjectDatalist();
             renderClientPortalKPIs();
+            renderClientProjectFilterBar();
             renderClientOrdersList();
         }
 
+        // Aktualisiert die Vorschlagsliste (Datalist) für Projektnamen des Kunden
+        function updateProjectDatalist() {
+            const datalist = document.getElementById('existingProjectsDatalist');
+            if (!datalist) return;
+            const visibleOrders = getVisibleUserOrders();
+            const projects = [...new Set(visibleOrders.map(o => (o.projectName || 'Allgemein').trim()).filter(Boolean))];
+            datalist.innerHTML = projects.map(p => `<option value="${p.replace(/"/g, '&quot;')}"></option>`).join('');
+        }
+
         function renderClientPortalKPIs() {
-            const totalOrders = userOrders.length;
-            const unpaidOrders = userOrders.filter(o => o.status != 6 && (!o.paymentStatus || o.paymentStatus === 'unpaid')).length;
-            const completedOrders = userOrders.filter(o => o.status == 4).length;
+            const visibleOrders = getVisibleUserOrders();
+            const totalOrders = visibleOrders.length;
+            const unpaidOrders = visibleOrders.filter(o => o.status != 6 && o.status != 5 && (!o.paymentStatus || o.paymentStatus === 'unpaid')).length;
+            const completedOrders = visibleOrders.filter(o => o.status == 4).length;
 
             document.getElementById('clientStatTotal').textContent = totalOrders;
             document.getElementById('clientStatUnpaid').textContent = unpaidOrders;
             document.getElementById('clientStatDone').textContent = completedOrders;
         }
 
-        function renderClientOrdersList() {
-            const container = document.getElementById('clientOrdersList');
-            if (userOrders.length === 0) {
-                container.innerHTML = `<p class="text-xs text-slate-500">Keine Aufträge vorhanden.</p>`;
+        // NEU: Rendert die Projekt-Filter-Buttons im Kundenportal
+        function renderClientProjectFilterBar() {
+            const bar = document.getElementById('clientProjectFilterBar');
+            if (!bar) return;
+
+            const visibleOrders = getVisibleUserOrders();
+            const projectCounts = {};
+            visibleOrders.forEach(o => {
+                const pName = (o.projectName || 'Allgemein').trim() || 'Allgemein';
+                projectCounts[pName] = (projectCounts[pName] || 0) + 1;
+            });
+
+            const projectNames = Object.keys(projectCounts).sort();
+
+            if (activeClientProjectFilter !== 'Alle' && !projectCounts[activeClientProjectFilter]) {
+                activeClientProjectFilter = 'Alle';
+            }
+
+            if (projectNames.length === 0) {
+                bar.innerHTML = '';
                 return;
             }
 
-            container.innerHTML = userOrders.map((o) => {
+            let html = `
+                <button type="button" onclick="filterClientOrdersByProject('Alle')" class="px-2.5 py-1 rounded-lg text-[11px] font-bold transition ${activeClientProjectFilter === 'Alle' ? 'bg-emerald-500 text-slate-950' : 'bg-slate-800 text-slate-300 hover:bg-slate-700'}">
+                    Alle Projekte (${visibleOrders.length})
+                </button>
+            `;
+
+            projectNames.forEach(p => {
+                const safeAttr = p.replace(/'/g, "\\'");
+                const isActive = activeClientProjectFilter === p;
+                html += `
+                    <button type="button" onclick="filterClientOrdersByProject('${safeAttr}')" class="px-2.5 py-1 rounded-lg text-[11px] font-semibold transition ${isActive ? 'bg-emerald-500 text-slate-950 font-bold' : 'bg-slate-800 text-slate-300 hover:bg-slate-700'}">
+                        <i class="fa-solid fa-folder mr-1"></i>${p} (${projectCounts[p]})
+                    </button>
+                `;
+            });
+
+            bar.innerHTML = html;
+        }
+
+        function filterClientOrdersByProject(projectName) {
+            activeClientProjectFilter = projectName;
+            renderClientProjectFilterBar();
+            renderClientOrdersList();
+        }
+
+        // NEU: Kundenauftrag per X aus der Kundenansicht ausblenden (nur für abgelehnte/stornierte Aufträge)
+        async function dismissClientOrder(orderId, event = null) {
+            if (event) {
+                event.stopPropagation();
+            }
+            if (!orderId) return;
+
+            const order = userOrders.find(o => o.id === orderId);
+            if (!order) return;
+
+            order.hiddenByClient = true;
+
+            if (db && order.idDoc) {
+                try {
+                    await db.collection('orders').doc(order.idDoc).update({
+                        hiddenByClient: true
+                    });
+                } catch (e) {
+                    console.warn("Fehler beim Ausblenden des Auftrags:", e);
+                }
+            }
+
+            if (activeOrderId === orderId) {
+                activeOrderId = null;
+                document.getElementById('activeOrderDetailsPanel').classList.add('hidden');
+                document.getElementById('noActiveOrderPrompt').classList.remove('hidden');
+            }
+
+            updateProjectDatalist();
+            renderClientPortalKPIs();
+            renderClientProjectFilterBar();
+            renderClientOrdersList();
+        }
+
+        // NEU: Projekt-Zuordnung eines Auftrags im Kundenportal speichern
+        async function saveClientOrderProject() {
+            if (!activeOrderId) return;
+            const order = userOrders.find(o => o.id === activeOrderId);
+            if (!order) return;
+
+            const input = document.getElementById('clientProjectEditInput');
+            const newProjectName = (input.value || '').trim() || 'Allgemein';
+            const feedback = document.getElementById('clientProjectSaveFeedback');
+
+            order.projectName = newProjectName;
+
+            if (db && order.idDoc) {
+                try {
+                    await db.collection('orders').doc(order.idDoc).update({
+                        projectName: newProjectName
+                    });
+                } catch (e) {
+                    alert('Fehler beim Speichern des Projekts: ' + e.message);
+                    return;
+                }
+            }
+
+            const detailBadge = document.getElementById('detailOrderProjectBadge');
+            if (detailBadge) {
+                detailBadge.textContent = `Projekt: ${newProjectName}`;
+            }
+
+            if (feedback) {
+                feedback.textContent = `✓ Projekt-Zuordnung („${newProjectName}“) gespeichert!`;
+                feedback.classList.remove('hidden');
+                setTimeout(() => feedback.classList.add('hidden'), 3000);
+            }
+
+            updateProjectDatalist();
+            renderClientProjectFilterBar();
+            renderClientOrdersList();
+        }
+
+        function renderClientOrdersList() {
+            const container = document.getElementById('clientOrdersList');
+            const visibleOrders = getVisibleUserOrders();
+
+            const filteredOrders = visibleOrders.filter(o => {
+                if (activeClientProjectFilter === 'Alle') return true;
+                const pName = (o.projectName || 'Allgemein').trim() || 'Allgemein';
+                return pName === activeClientProjectFilter;
+            });
+
+            if (filteredOrders.length === 0) {
+                container.innerHTML = `<p class="text-xs text-slate-500">Keine Aufträge in dieser Ansicht vorhanden.</p>`;
+                return;
+            }
+
+            container.innerHTML = filteredOrders.map((o) => {
                 let statusBadgeText = `Status ${o.status}/4`;
                 let statusBadgeClass = 'bg-amber-500/10 text-amber-400';
+                const canDismiss = (o.status == 5 || o.status == 6);
+                const projectName = (o.projectName || 'Allgemein').trim() || 'Allgemein';
                 
                 if (o.status == 4) {
                     statusBadgeText = 'Abgeschlossen';
@@ -1385,28 +1591,40 @@
                 }
 
                 return `
-                    <div onclick="selectClientOrder('${o.id}')" class="bg-slate-900 border ${activeOrderId === o.id ? 'border-emerald-500' : 'border-slate-800'} hover:border-slate-700 rounded-xl p-4 cursor-pointer transition">
-                        <div class="flex justify-between items-center mb-1">
+                    <div onclick="selectClientOrder('${o.id}')" class="relative bg-slate-900 border ${activeOrderId === o.id ? 'border-emerald-500' : 'border-slate-800'} hover:border-slate-700 rounded-xl p-4 cursor-pointer transition group">
+                        <div class="flex justify-between items-center mb-1.5">
                             <span class="text-xs font-bold text-emerald-400">${o.id}</span>
-                            <span class="text-xs px-2 py-0.5 rounded-full ${statusBadgeClass}">${statusBadgeText}</span>
+                            <div class="flex items-center gap-1.5">
+                                <span class="text-xs px-2 py-0.5 rounded-full ${statusBadgeClass}">${statusBadgeText}</span>
+                                ${canDismiss ? `
+                                    <button type="button" onclick="dismissClientOrder('${o.id}', event)" title="Auftrag aus meiner Ansicht entfernen" class="w-6 h-6 rounded-lg bg-slate-800 hover:bg-rose-500/20 text-slate-400 hover:text-rose-400 border border-slate-700 hover:border-rose-500/40 flex items-center justify-center transition">
+                                        <i class="fa-solid fa-xmark text-xs"></i>
+                                    </button>
+                                ` : ''}
+                            </div>
+                        </div>
+                        <div class="mb-1.5">
+                            <span class="inline-flex items-center px-2 py-0.5 rounded text-[10px] font-semibold bg-sky-500/10 text-sky-400 border border-sky-500/20">
+                                <i class="fa-solid fa-folder mr-1"></i>${projectName}
+                            </span>
                         </div>
                         <h4 class="text-white font-semibold text-sm">${o.packageName || 'Heizungs-Angebot'} (${o.price || 149} €)</h4>
                         ${o.discountApplied ? `<span class="text-[10px] text-emerald-400 block mt-0.5"><i class="fa-solid fa-tag mr-1"></i>${o.discountApplied}</span>` : ''}
-                        <div class="mt-2 text-xs text-slate-400">
+                        <div class="mt-2 text-xs text-slate-400 truncate">
                             <i class="fa-solid fa-file-pdf mr-1"></i>${o.fileName}
                         </div>
                     </div>
                 `;
             }).join('');
 
-            if (userOrders.length > 0 && !activeOrderId) {
-                selectClientOrder(userOrders[0].id);
+            if (filteredOrders.length > 0 && (!activeOrderId || !filteredOrders.some(o => o.id === activeOrderId))) {
+                selectClientOrder(filteredOrders[0].id);
             }
         }
 
         function selectClientOrder(orderId) {
             activeOrderId = orderId;
-            const order = userOrders.find(o => o.id === orderId);
+            const order = userOrders.find(o => o.id === orderId && !o.hiddenByClient);
             if (!order) return;
 
             renderClientOrdersList();
@@ -1414,8 +1632,15 @@
             document.getElementById('noActiveOrderPrompt').classList.add('hidden');
             document.getElementById('activeOrderDetailsPanel').classList.remove('hidden');
 
+            const projectName = (order.projectName || 'Allgemein').trim() || 'Allgemein';
             document.getElementById('detailOrderPackage').textContent = `${order.packageName || 'Heizung'} (${order.price || 149} €)`;
+            document.getElementById('detailOrderProjectBadge').textContent = `Projekt: ${projectName}`;
             document.getElementById('detailOrderId').textContent = `Auftrag ${order.id}`;
+
+            const projectEditInput = document.getElementById('clientProjectEditInput');
+            if (projectEditInput) {
+                projectEditInput.value = projectName;
+            }
 
             const rejectedBanner = document.getElementById('orderRejectedBanner');
             const cancelledBanner = document.getElementById('orderCancelledBanner');
@@ -1508,7 +1733,6 @@
 
         async function cancelOrderAsClient() {
             if (!activeOrderId) return;
-            if (!confirm('Möchten Sie diesen Auftrag wirklich stornieren?')) return;
 
             const order = userOrders.find(o => o.id === activeOrderId);
             if (!order || !order.idDoc) return;
@@ -1522,8 +1746,8 @@
                         status: 6,
                         paymentStatus: 'paid'
                     });
-                    alert('Auftrag wurde storniert.');
-                    loadUserOrders();
+                    alert('Auftrag wurde storniert. Sie können ihn nun bei Bedarf über das ✕-Symbol aus Ihrer Liste ausblenden.');
+                    await loadUserOrders();
                     selectClientOrder(order.id);
                 } catch(e) {
                     alert('Fehler beim Stornieren: ' + e.message);
@@ -1608,7 +1832,6 @@
                         customersList.push({ idDoc: doc.id, ...doc.data() });
                     });
 
-                    // Auftragsanzahl pro E-Mail berechnen und prüfen, ob ein 'Kunde' >= 10 Aufträge erreicht hat
                     const orderCounts = {};
                     adminOrders.forEach(o => {
                         if (o.email) {
@@ -1713,7 +1936,6 @@
                 }
             }
 
-            // Auftragsanzahl pro E-Mail berechnen
             const orderCounts = {};
             adminOrders.forEach(o => {
                 if (o.email) {
@@ -1725,7 +1947,6 @@
             const uniqueCustomers = {};
             const mainAdminMailKey = ADMIN_EMAIL.toLowerCase().trim();
 
-            // 1. Hauptadmin immer als festen System-Eintrag vorhalten
             uniqueCustomers[mainAdminMailKey] = {
                 idDoc: null,
                 email: ADMIN_EMAIL,
@@ -1735,7 +1956,6 @@
                 createdAt: ''
             };
 
-            // 2. Registrierte Kunden aus der 'customers'-Collection zusammenführen
             customersList.forEach(c => {
                 if (c.email) {
                     const mail = c.email.toLowerCase().trim();
@@ -1757,7 +1977,6 @@
                 }
             });
 
-            // 3. Kunden aus 'adminOrders' ergänzen
             adminOrders.forEach(o => {
                 if (o.email) {
                     const mail = o.email.toLowerCase().trim();
@@ -1786,7 +2005,6 @@
 
             const allCustomersArray = Object.values(uniqueCustomers);
 
-            // Suche & Rang-Filter anwenden
             const filteredCustomers = allCustomersArray.filter(c => {
                 const isTargetMainAdmin = isMainAdminEmail(c.email);
                 const currentRole = isTargetMainAdmin ? 'Hauptadmin' : (c.role || 'Kunde');
@@ -2120,7 +2338,6 @@
         }
 
         async function deleteMarketPrice(idDoc) {
-            if (!confirm('Möchten Sie diesen Eintrag löschen?')) return;
             if (db) {
                 try {
                     await db.collection('market_prices').doc(idDoc).delete();
@@ -2362,6 +2579,7 @@
             const manualDiscount = parseFloat(o.manualDiscount) || 0;
             const displayPrice = Math.max(0, basePrice - manualDiscount);
             const customerName = (o.firstName && o.lastName) ? `${o.firstName} ${o.lastName}` : o.email;
+            const projectName = (o.projectName || 'Allgemein').trim() || 'Allgemein';
 
             let pendingBadgeHtml = '';
             if (o.pendingAction === 'reject') {
@@ -2377,6 +2595,11 @@
                         <span class="text-xs text-slate-300 font-medium">${customerName}</span>
                     </div>
                     <h4 class="text-white font-semibold text-sm truncate">${o.email}</h4>
+                    <div class="mt-1.5 flex flex-wrap items-center gap-1.5">
+                        <span class="inline-flex items-center px-2 py-0.5 rounded text-[10px] font-semibold bg-sky-500/10 text-sky-400 border border-sky-500/20">
+                            <i class="fa-solid fa-folder mr-1"></i>${projectName}
+                        </span>
+                    </div>
                     <div class="mt-2 text-xs text-emerald-400 font-medium">
                         <i class="fa-solid fa-box mr-1"></i>${o.packageName || 'Heizungs-Angebot'} (${displayPrice} €)
                     </div>
@@ -2398,7 +2621,6 @@
             const directRow = document.getElementById('adminDirectRejectCancelRow');
             const clerkRow = document.getElementById('clerkPreliminaryRejectCancelRow');
 
-            // Dropdown-Optionen 5 & 6 für Sachbearbeiter sperren
             if (optReject && optCancel) {
                 optReject.disabled = !isAdminOrMain;
                 optCancel.disabled = !isAdminOrMain;
@@ -2406,7 +2628,6 @@
                 optCancel.textContent = isAdminOrMain ? '6. Storniert' : '6. Storniert (Nur Admin)';
             }
 
-            // Aktionsbuttons umschalten
             if (directRow && clerkRow) {
                 if (isAdminOrMain) {
                     directRow.classList.remove('hidden');
@@ -2417,14 +2638,13 @@
                 }
             }
 
-            // Freigabe-Banner anzeigen, falls eine vorläufige Ablehnung/Stornierung vorliegt
             const approvalBanner = document.getElementById('adminPendingApprovalBanner');
             const approvalTitle = document.getElementById('pendingApprovalTitle');
             const approvalDesc = document.getElementById('pendingApprovalDesc');
             const adminActions = document.getElementById('pendingApprovalAdminActions');
             const clerkHint = document.getElementById('pendingApprovalClerkHint');
 
-            if (order && order.pendingAction) {
+            if (order && (order.pendingAction === 'reject' || order.pendingAction === 'cancel')) {
                 approvalBanner.classList.remove('hidden');
                 const actionLabel = order.pendingAction === 'reject' ? 'Vorläufige Ablehnung' : 'Vorläufige Stornierung';
                 approvalTitle.textContent = `${actionLabel} wartet auf Admin-Freigabe`;
@@ -2458,8 +2678,10 @@
             const basePrice = order.price || 149;
             const manualDiscount = parseFloat(order.manualDiscount) || 0;
             const displayPrice = Math.max(0, basePrice - manualDiscount);
+            const projectName = (order.projectName || 'Allgemein').trim() || 'Allgemein';
 
             document.getElementById('adminEditOrderId').textContent = `Auftrag ${order.id} — ${order.packageName || 'Paket'} (${displayPrice} €)`;
+            document.getElementById('adminEditProjectBadge').textContent = `Projekt: ${projectName}`;
             document.getElementById('adminEditCustomerEmail').textContent = order.email;
             document.getElementById('adminStatusSelect').value = order.status || 1;
             document.getElementById('adminPaymentSelect').value = order.paymentStatus || 'unpaid';
@@ -2534,37 +2756,35 @@
             window.location.href = `mailto:${order.email}?subject=${subject}&body=${body}`;
         }
 
-        // NEU: Sachbearbeiter reicht vorläufige Ablehnung oder Stornierung ein
+        // Sachbearbeiter reicht vorläufige Ablehnung oder Stornierung ein (ohne blockierendes confirm)
         async function requestPreliminaryOrderAction(actionType) {
             if (!selectedAdminOrderId) return;
             const order = adminOrders.find(o => o.id === selectedAdminOrderId);
-            if (!order || !order.idDoc) return;
+            if (!order) return;
 
-            const actionName = actionType === 'reject' ? 'vorläufig ablehnen' : 'vorläufig stornieren';
-            if (!confirm(`Möchten Sie diesen Auftrag ${actionName}? Ein Admin muss diese Aktion anschließend freigeben.`)) return;
-
+            const currentOrderId = order.id;
             order.pendingAction = actionType;
             order.pendingActionBy = currentUser ? currentUser.email : 'Sachbearbeiter';
             order.pendingActionAt = new Date().toISOString();
 
-            if (db) {
+            if (db && order.idDoc) {
                 try {
                     await db.collection('orders').doc(order.idDoc).update({
                         pendingAction: order.pendingAction,
                         pendingActionBy: order.pendingActionBy,
                         pendingActionAt: order.pendingActionAt
                     });
-                    alert(`Auftrag wurde zur ${actionType === 'reject' ? 'Ablehnung' : 'Stornierung'} vorgemerkt und wartet auf Admin-Freigabe.`);
                 } catch (e) {
                     alert('Fehler beim Speichern der Vorabanfrage: ' + e.message);
+                    return;
                 }
             }
 
-            updateAdminEditorRolePermissions(order);
-            renderAdminDashboard();
+            await loadAdminOrders();
+            selectAdminOrder(currentOrderId);
         }
 
-        // NEU: Admin gibt vorläufige Ablehnung / Stornierung frei
+        // Admin gibt vorläufige Ablehnung / Stornierung endgültig frei
         async function approvePreliminaryAction() {
             if (!canManageRoles()) {
                 alert('Nur Administratoren und der Hauptadmin können diese Aktion freigeben.');
@@ -2572,16 +2792,12 @@
             }
             if (!selectedAdminOrderId) return;
             const order = adminOrders.find(o => o.id === selectedAdminOrderId);
-            if (!order || !order.idDoc || !order.pendingAction) return;
+            if (!order || !order.pendingAction) return;
 
+            const currentOrderId = order.id;
             const isReject = order.pendingAction === 'reject';
-            const confirmText = isReject
-                ? 'Vorläufige Ablehnung jetzt endgültig freigeben und Auftrag ablehnen?'
-                : 'Vorläufige Stornierung jetzt endgültig freigeben und Auftrag stornieren?';
-
-            if (!confirm(confirmText)) return;
-
             const newStatus = isReject ? 5 : 6;
+
             const updates = {
                 status: newStatus,
                 pendingAction: null,
@@ -2598,12 +2814,12 @@
             order.pendingActionAt = null;
             if (!isReject) order.paymentStatus = 'paid';
 
-            if (db) {
+            if (db && order.idDoc) {
                 try {
                     await db.collection('orders').doc(order.idDoc).update(updates);
-                    alert(isReject ? 'Ablehnung wurde freigegeben.' : 'Stornierung wurde freigegeben.');
                 } catch (e) {
                     alert('Fehler bei der Freigabe: ' + e.message);
+                    return;
                 }
             }
 
@@ -2614,36 +2830,53 @@
             }
 
             await loadAdminOrders();
-            selectAdminOrder(order.id);
+            selectAdminOrder(currentOrderId);
         }
 
-        // NEU: Admin verwirft vorläufige Anfrage (oder Sachbearbeiter zieht sie zurück)
+        // GEFIXT: Admin verwirft vorläufige Anfrage / setzt sie zurück (ohne blockierendes confirm, inkl. sauberem Reload)
         async function denyPreliminaryAction() {
             if (!selectedAdminOrderId) return;
             const order = adminOrders.find(o => o.id === selectedAdminOrderId);
-            if (!order || !order.idDoc) return;
+            if (!order) return;
 
-            if (!confirm('Möchten Sie die vorläufige Anfrage wirklich zurücksetzen?')) return;
+            const currentOrderId = order.id;
 
+            // Lokalen Status sofort zurücksetzen
             order.pendingAction = null;
             order.pendingActionBy = null;
             order.pendingActionAt = null;
+            updateAdminEditorRolePermissions(order);
 
+            // In Firestore speichern (falls idDoc fehlt, per Auftrags-ID suchen)
             if (db) {
                 try {
-                    await db.collection('orders').doc(order.idDoc).update({
-                        pendingAction: null,
-                        pendingActionBy: null,
-                        pendingActionAt: null
-                    });
-                    alert('Vorläufige Anfrage wurde zurückgesetzt.');
+                    if (order.idDoc) {
+                        await db.collection('orders').doc(order.idDoc).update({
+                            pendingAction: null,
+                            pendingActionBy: null,
+                            pendingActionAt: null
+                        });
+                    } else {
+                        const snap = await db.collection('orders').where('id', '==', currentOrderId).get();
+                        const batch = db.batch();
+                        snap.forEach(doc => {
+                            batch.update(doc.ref, {
+                                pendingAction: null,
+                                pendingActionBy: null,
+                                pendingActionAt: null
+                            });
+                        });
+                        await batch.commit();
+                    }
                 } catch (e) {
+                    console.error('Fehler beim Zurücksetzen der Vorabanfrage:', e);
                     alert('Fehler beim Zurücksetzen: ' + e.message);
+                    return;
                 }
             }
 
-            updateAdminEditorRolePermissions(order);
-            renderAdminDashboard();
+            await loadAdminOrders();
+            selectAdminOrder(currentOrderId);
         }
 
         // Direkte Ablehnung (Nur für Admin & Hauptadmin)
@@ -2653,7 +2886,6 @@
                 return;
             }
             if (!selectedAdminOrderId) return;
-            if (!confirm('Möchten Sie diesen Auftrag wirklich ablehnen?')) return;
 
             const order = adminOrders.find(o => o.id === selectedAdminOrderId);
             if (!order || !order.idDoc) return;
@@ -2669,7 +2901,6 @@
                         pendingActionBy: null,
                         pendingActionAt: null
                     });
-                    alert('Auftrag wurde abgelehnt.');
                 } catch(e) {
                     alert('Fehler: ' + e.message);
                 }
@@ -2679,7 +2910,7 @@
             const body = encodeURIComponent(`Hallo,\n\nleider mussten wir Ihren Auftrag (${order.packageName}) ablehnen. Bei Fragen wenden Sie sich gerne an unseren Support.\n\nMit freundlichen Grüßen\nSHK Angebotsprüfung`);
             window.open(`mailto:${order.email}?subject=${subject}&body=${body}`);
 
-            loadAdminOrders();
+            await loadAdminOrders();
         }
 
         // Direkte Stornierung (Nur für Admin & Hauptadmin)
@@ -2689,7 +2920,6 @@
                 return;
             }
             if (!selectedAdminOrderId) return;
-            if (!confirm('Möchten Sie diesen Auftrag wirklich direkt stornieren?')) return;
 
             const order = adminOrders.find(o => o.id === selectedAdminOrderId);
             if (!order || !order.idDoc) return;
@@ -2707,18 +2937,16 @@
                         pendingActionBy: null,
                         pendingActionAt: null
                     });
-                    alert('Auftrag wurde storniert.');
                 } catch (e) {
                     alert('Fehler: ' + e.message);
                 }
             }
 
-            loadAdminOrders();
+            await loadAdminOrders();
         }
 
         async function archiveAdminOrder() {
             if (!selectedAdminOrderId) return;
-            if (!confirm('Möchten Sie diesen Auftrag in das Archiv verschieben?')) return;
 
             const order = adminOrders.find(o => o.id === selectedAdminOrderId);
             if (!order || !order.idDoc) return;
@@ -2728,12 +2956,11 @@
             if (db) {
                 try {
                     await db.collection('orders').doc(order.idDoc).update({ isArchived: true });
-                    alert('Auftrag wurde ins Archiv verschoben.');
                 } catch(e) {
                     alert('Fehler: ' + e.message);
                 }
             }
-            loadAdminOrders();
+            await loadAdminOrders();
         }
 
         async function saveAdminOrderChanges() {
@@ -2744,7 +2971,6 @@
             const oldStatus = order.status;
             let newStatus = parseInt(document.getElementById('adminStatusSelect').value);
 
-            // Schutzprüfung: Sachbearbeiter dürfen Status 5 (Abgelehnt) oder 6 (Storniert) nicht direkt setzen
             if (!canManageRoles() && (newStatus === 5 || newStatus === 6)) {
                 alert('Als Sachbearbeiter können Sie Aufträge nicht direkt ablehnen oder stornieren. Bitte nutzen Sie die Buttons für die vorläufige Ablehnung/Stornierung.');
                 document.getElementById('adminStatusSelect').value = oldStatus || 1;
@@ -2804,7 +3030,7 @@
                 window.open(`mailto:${order.email}?subject=${subject}&body=${body}`);
             }
 
-            loadAdminOrders();
+            await loadAdminOrders();
         }
 
         function openAuthModal(mode) {
