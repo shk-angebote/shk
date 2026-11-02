@@ -355,32 +355,50 @@
                     </div>
 
                     <div id="activeOrderDetailsPanel" class="hidden space-y-6">
-                        <!-- Abgelehnt Hinweis Box (inkl. Weg-X-en Button) -->
-                        <div id="orderRejectedBanner" class="hidden bg-rose-500/10 border border-rose-500/30 rounded-2xl p-6 shadow-xl flex items-start justify-between gap-4">
-                            <div class="flex items-start space-x-4">
-                                <i class="fa-solid fa-circle-xmark text-rose-400 text-2xl mt-1"></i>
-                                <div>
-                                    <h3 class="text-lg font-bold text-rose-400">Auftrag abgelehnt</h3>
-                                    <p class="text-xs text-slate-300 mt-1">Leider konnte dieser Auftrag nicht angenommen oder geprüft werden. Bei Fragen wenden Sie sich bitte direkt per E-Mail an den Support.</p>
+                        <!-- Abgelehnt Hinweis Box (inkl. Weg-X-en Button & sichtbarem Ablehnungsgrund) -->
+                        <div id="orderRejectedBanner" class="hidden bg-rose-500/10 border border-rose-500/30 rounded-2xl p-6 shadow-xl space-y-3">
+                            <div class="flex items-start justify-between gap-4">
+                                <div class="flex items-start space-x-4">
+                                    <i class="fa-solid fa-circle-xmark text-rose-400 text-2xl mt-1"></i>
+                                    <div>
+                                        <h3 class="text-lg font-bold text-rose-400">Auftrag abgelehnt</h3>
+                                        <p class="text-xs text-slate-300 mt-1">Leider konnte dieser Auftrag nicht angenommen oder geprüft werden. Bei Fragen wenden Sie sich bitte direkt per E-Mail an den Support.</p>
+                                    </div>
                                 </div>
+                                <button type="button" onclick="dismissClientOrder(activeOrderId)" class="bg-rose-500/20 hover:bg-rose-500/30 text-rose-300 border border-rose-500/30 px-3 py-1.5 rounded-lg text-xs font-bold transition whitespace-nowrap" title="Aus meiner Ansicht entfernen">
+                                    <i class="fa-solid fa-xmark mr-1"></i>Ausblenden
+                                </button>
                             </div>
-                            <button type="button" onclick="dismissClientOrder(activeOrderId)" class="bg-rose-500/20 hover:bg-rose-500/30 text-rose-300 border border-rose-500/30 px-3 py-1.5 rounded-lg text-xs font-bold transition whitespace-nowrap" title="Aus meiner Ansicht entfernen">
-                                <i class="fa-solid fa-xmark mr-1"></i>Ausblenden
-                            </button>
+                            <!-- NEU: Für den Kunden freigegebener Ablehnungsgrund -->
+                            <div id="clientRejectedReasonBox" class="hidden bg-slate-950/90 border border-rose-500/30 rounded-xl p-3.5 text-xs">
+                                <span class="font-bold text-rose-400 block mb-1">
+                                    <i class="fa-solid fa-comment-dots mr-1.5"></i>Begründung / Hinweis vom Prüfer:
+                                </span>
+                                <p id="clientRejectedReasonText" class="text-slate-200 whitespace-pre-line"></p>
+                            </div>
                         </div>
 
-                        <!-- Storniert Hinweis Box (inkl. Weg-X-en Button) -->
-                        <div id="orderCancelledBanner" class="hidden bg-amber-500/10 border border-amber-500/30 rounded-2xl p-6 shadow-xl flex items-start justify-between gap-4">
-                            <div class="flex items-start space-x-4">
-                                <i class="fa-solid fa-ban text-amber-400 text-2xl mt-1"></i>
-                                <div>
-                                    <h3 class="text-lg font-bold text-amber-400">Auftrag storniert</h3>
-                                    <p class="text-xs text-slate-300 mt-1">Dieser Auftrag wurde erfolgreich storniert.</p>
+                        <!-- Storniert Hinweis Box (inkl. Weg-X-en Button & optionaler Begründung) -->
+                        <div id="orderCancelledBanner" class="hidden bg-amber-500/10 border border-amber-500/30 rounded-2xl p-6 shadow-xl space-y-3">
+                            <div class="flex items-start justify-between gap-4">
+                                <div class="flex items-start space-x-4">
+                                    <i class="fa-solid fa-ban text-amber-400 text-2xl mt-1"></i>
+                                    <div>
+                                        <h3 class="text-lg font-bold text-amber-400">Auftrag storniert</h3>
+                                        <p class="text-xs text-slate-300 mt-1">Dieser Auftrag wurde erfolgreich storniert.</p>
+                                    </div>
                                 </div>
+                                <button type="button" onclick="dismissClientOrder(activeOrderId)" class="bg-amber-500/20 hover:bg-amber-500/30 text-amber-300 border border-amber-500/30 px-3 py-1.5 rounded-lg text-xs font-bold transition whitespace-nowrap" title="Aus meiner Ansicht entfernen">
+                                    <i class="fa-solid fa-xmark mr-1"></i>Ausblenden
+                                </button>
                             </div>
-                            <button type="button" onclick="dismissClientOrder(activeOrderId)" class="bg-amber-500/20 hover:bg-amber-500/30 text-amber-300 border border-amber-500/30 px-3 py-1.5 rounded-lg text-xs font-bold transition whitespace-nowrap" title="Aus meiner Ansicht entfernen">
-                                <i class="fa-solid fa-xmark mr-1"></i>Ausblenden
-                            </button>
+                            <!-- NEU: Für den Kunden freigegebener Stornierungsgrund -->
+                            <div id="clientCancelledReasonBox" class="hidden bg-slate-950/90 border border-amber-500/30 rounded-xl p-3.5 text-xs">
+                                <span class="font-bold text-amber-400 block mb-1">
+                                    <i class="fa-solid fa-comment-dots mr-1.5"></i>Begründung / Hinweis zur Stornierung:
+                                </span>
+                                <p id="clientCancelledReasonText" class="text-slate-200 whitespace-pre-line"></p>
+                            </div>
                         </div>
 
                         <!-- Projekt-Zuordnung im Kundenportal bearbeiten -->
@@ -526,10 +544,14 @@
                 </div>
             </div>
 
-            <!-- Admin Reiter Navigation -->
+            <!-- Admin Reiter Navigation (inkl. neuem Reiter "Offene Freigaben") -->
             <div class="flex flex-wrap gap-2 border-b border-slate-800 mb-6">
                 <button type="button" onclick="switchAdminTab('active')" id="tabBtnActive" class="px-5 py-3 text-sm font-bold border-b-2 border-emerald-500 text-emerald-400 transition">
                     <i class="fa-solid fa-list-check mr-2"></i>Aktive Aufträge
+                </button>
+                <button type="button" onclick="switchAdminTab('approvals')" id="tabBtnApprovals" class="px-5 py-3 text-sm font-bold border-b-2 border-transparent text-slate-400 hover:text-white transition flex items-center">
+                    <i class="fa-solid fa-hourglass-half mr-2 text-amber-400"></i>Offene Freigaben
+                    <span id="approvalsCountBadge" class="ml-2 px-2 py-0.5 rounded-full text-[10px] font-black bg-amber-500 text-slate-950 hidden">0</span>
                 </button>
                 <button type="button" onclick="switchAdminTab('rejected')" id="tabBtnRejected" class="px-5 py-3 text-sm font-bold border-b-2 border-transparent text-slate-400 hover:text-white transition">
                     <i class="fa-solid fa-ban mr-2"></i>Abgelehnt
@@ -742,7 +764,7 @@
                             </div>
                         </div>
 
-                        <!-- Banner für vorläufige Ablehnung / Stornierung (Freigabe-Workflow inkl. Sachbearbeiter-Notiz) -->
+                        <!-- Banner für vorläufige Ablehnung / Stornierung (Freigabe-Workflow inkl. Kunden-Sichtbarkeit) -->
                         <div id="adminPendingApprovalBanner" class="hidden bg-amber-500/10 border-2 border-amber-500/40 rounded-xl p-4 space-y-3">
                             <div class="flex items-start justify-between gap-3">
                                 <div class="flex items-start space-x-3">
@@ -755,7 +777,7 @@
                                 <span class="px-2.5 py-1 rounded-full text-[10px] font-bold bg-amber-500 text-slate-950 uppercase whitespace-nowrap">Freigabe nötig</span>
                             </div>
 
-                            <!-- NEU: Anzeige der internen Sachbearbeiter-Notiz im Freigabe-Banner -->
+                            <!-- Anzeige der internen Sachbearbeiter-Notiz im Freigabe-Banner -->
                             <div id="pendingApprovalReasonBox" class="hidden bg-slate-950/90 border border-amber-500/30 rounded-lg p-3 text-xs">
                                 <span class="text-[10px] font-bold uppercase tracking-wider text-amber-400 block mb-1">
                                     <i class="fa-solid fa-comment-dots mr-1"></i>Interne Notiz / Begründung vom Sachbearbeiter:
@@ -763,15 +785,28 @@
                                 <p id="pendingApprovalReasonText" class="text-slate-200 whitespace-pre-line"></p>
                             </div>
 
-                            <!-- Buttons für Admin / Hauptadmin -->
-                            <div id="pendingApprovalAdminActions" class="hidden flex flex-wrap gap-2 pt-2 border-t border-amber-500/20">
-                                <button type="button" onclick="approvePreliminaryAction()" class="bg-emerald-500 hover:bg-emerald-600 text-slate-950 font-bold px-4 py-2 rounded-lg text-xs transition shadow-lg shadow-emerald-500/20">
-                                    <i class="fa-solid fa-check mr-1"></i>Freigeben & Endgültig ausführen
-                                </button>
-                                <button type="button" onclick="denyPreliminaryAction()" class="bg-slate-800 hover:bg-slate-700 text-slate-200 border border-slate-700 font-semibold px-4 py-2 rounded-lg text-xs transition">
-                                    <i class="fa-solid fa-rotate-left mr-1"></i>Anfrage ablehnen / Zurücksetzen
-                                </button>
+                            <!-- NEU: Option & Textfeld für Admin, um den Grund für den Kunden sichtbar zu machen -->
+                            <div id="pendingApprovalAdminActions" class="hidden space-y-3 pt-2 border-t border-amber-500/20">
+                                <div class="bg-slate-950/80 border border-slate-800 rounded-xl p-3 space-y-2">
+                                    <label class="flex items-center space-x-2.5 cursor-pointer select-none">
+                                        <input type="checkbox" id="shareApprovalReasonWithClientCheck" checked class="w-4 h-4 rounded accent-emerald-500 cursor-pointer">
+                                        <span class="text-xs font-semibold text-white">Begründung für den Kunden im Kundenportal & per E-Mail sichtbar machen</span>
+                                    </label>
+                                    <div>
+                                        <label class="block text-[11px] text-slate-400 mb-1">Text für den Kunden (vor Freigabe bei Bedarf anpassbar):</label>
+                                        <textarea id="adminApprovalPublicReasonInput" rows="2" placeholder="Begründung für den Kunden (z. B. Das eingereichte Dokument enthält keine Einzelpreise)..." class="w-full bg-slate-900 border border-slate-700 rounded-lg px-3 py-2 text-xs text-white focus:border-emerald-500 focus:outline-none"></textarea>
+                                    </div>
+                                </div>
+                                <div class="flex flex-wrap gap-2">
+                                    <button type="button" onclick="approvePreliminaryAction()" class="bg-emerald-500 hover:bg-emerald-600 text-slate-950 font-bold px-4 py-2 rounded-lg text-xs transition shadow-lg shadow-emerald-500/20">
+                                        <i class="fa-solid fa-check mr-1"></i>Freigeben & Endgültig ausführen
+                                    </button>
+                                    <button type="button" onclick="denyPreliminaryAction()" class="bg-slate-800 hover:bg-slate-700 text-slate-200 border border-slate-700 font-semibold px-4 py-2 rounded-lg text-xs transition">
+                                        <i class="fa-solid fa-rotate-left mr-1"></i>Anfrage ablehnen / Zurücksetzen
+                                    </button>
+                                </div>
                             </div>
+
                             <!-- Hinweis für Sachbearbeiter -->
                             <div id="pendingApprovalClerkHint" class="hidden flex items-center justify-between pt-2 border-t border-amber-500/20 text-xs text-slate-400">
                                 <span><i class="fa-solid fa-lock mr-1 text-amber-400"></i>Ein Admin oder Hauptadmin muss diese Anfrage noch bestätigen.</span>
@@ -863,24 +898,36 @@
                                     </button>
                                 </div>
 
-                                <!-- Direkte Ablehnung / Stornierung (Nur für Admin & Hauptadmin sichtbar) -->
-                                <div id="adminDirectRejectCancelRow" class="grid grid-cols-1 sm:grid-cols-2 gap-3">
-                                    <button type="button" onclick="rejectAdminOrder()" class="bg-rose-500/10 hover:bg-rose-500/20 text-rose-400 border border-rose-500/30 font-bold py-2.5 rounded-xl text-xs transition">
-                                        <i class="fa-solid fa-ban mr-1"></i>Auftrag direkt ablehnen
-                                    </button>
-                                    <button type="button" onclick="cancelAdminOrderDirect()" class="bg-rose-500/10 hover:bg-rose-500/20 text-rose-400 border border-rose-500/30 font-bold py-2.5 rounded-xl text-xs transition">
-                                        <i class="fa-solid fa-circle-xmark mr-1"></i>Auftrag direkt stornieren
-                                    </button>
+                                <!-- NEU: Direkte Ablehnung / Stornierung inkl. Kunden-Begründung (Nur für Admin & Hauptadmin sichtbar) -->
+                                <div id="adminDirectRejectCancelRow" class="bg-slate-950 border border-rose-500/30 rounded-xl p-4 space-y-3">
+                                    <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-2">
+                                        <label class="text-xs font-semibold text-rose-400">
+                                            <i class="fa-solid fa-comment-dots mr-1.5"></i>Begründung bei direkter Ablehnung / Stornierung (optional)
+                                        </label>
+                                        <label class="flex items-center space-x-2 cursor-pointer select-none">
+                                            <input type="checkbox" id="adminDirectShareReasonCheck" checked class="w-3.5 h-3.5 rounded accent-emerald-500 cursor-pointer">
+                                            <span class="text-[11px] text-slate-300 font-medium">Für Kunden im Portal sichtbar machen</span>
+                                        </label>
+                                    </div>
+                                    <textarea id="adminDirectReasonInput" rows="2" placeholder="Grund für den Kunden eintragen (wird bei gesetztem Haken im Kundenportal & in der E-Mail angezeigt)..." class="w-full bg-slate-900 border border-slate-700 rounded-xl px-3.5 py-2 text-xs text-white focus:border-rose-500 focus:outline-none"></textarea>
+                                    <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                                        <button type="button" onclick="rejectAdminOrder()" class="bg-rose-500/10 hover:bg-rose-500/20 text-rose-400 border border-rose-500/30 font-bold py-2.5 rounded-xl text-xs transition">
+                                            <i class="fa-solid fa-ban mr-1"></i>Auftrag direkt ablehnen
+                                        </button>
+                                        <button type="button" onclick="cancelAdminOrderDirect()" class="bg-rose-500/10 hover:bg-rose-500/20 text-rose-400 border border-rose-500/30 font-bold py-2.5 rounded-xl text-xs transition">
+                                            <i class="fa-solid fa-circle-xmark mr-1"></i>Auftrag direkt stornieren
+                                        </button>
+                                    </div>
                                 </div>
 
-                                <!-- NEU: Vorläufige Ablehnung / Stornierung inkl. internem Notizfeld (Nur für Sachbearbeiter sichtbar) -->
+                                <!-- Vorläufige Ablehnung / Stornierung inkl. internem Notizfeld (Nur für Sachbearbeiter sichtbar) -->
                                 <div id="clerkPreliminaryRejectCancelRow" class="hidden bg-slate-950 border border-amber-500/30 rounded-xl p-4 space-y-3">
                                     <div>
                                         <label class="block text-xs font-semibold text-amber-400 mb-1">
                                             <i class="fa-solid fa-comment-medical mr-1.5"></i>Interne Notiz / Begründung für vorläufige Ablehnung oder Stornierung
                                         </label>
                                         <textarea id="clerkPreliminaryReasonInput" rows="2" placeholder="Bitte kurze Begründung für den Admin eintragen (z. B. Dokument unleserlich, falsches Gewerk, Kundenwunsch)..." class="w-full bg-slate-900 border border-slate-700 rounded-xl px-3.5 py-2 text-xs text-white focus:border-amber-500 focus:outline-none"></textarea>
-                                        <span class="text-[11px] text-slate-400 mt-0.5 block">Diese Notiz ist nur intern für Sachbearbeiter und Administratoren sichtbar.</span>
+                                        <span class="text-[11px] text-slate-400 mt-0.5 block">Der Admin kann bei der Freigabe entscheiden, ob diese Begründung auch für den Kunden sichtbar geschaltet wird.</span>
                                     </div>
                                     <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
                                         <button type="button" onclick="requestPreliminaryOrderAction('reject')" class="bg-amber-500/10 hover:bg-amber-500/20 text-amber-300 border border-amber-500/30 font-bold py-2.5 rounded-xl text-xs transition">
@@ -1376,6 +1423,7 @@
                         pendingAction: null,
                         pendingActionBy: null,
                         pendingActionReason: null,
+                        clientVisibleReason: null,
                         savings: '3200 €',
                         summary: 'Das Angebot wurde technisch erfasst. Die Detailprüfung auf Plausibilität läuft.',
                         defects: [
@@ -1662,6 +1710,11 @@
 
             const rejectedBanner = document.getElementById('orderRejectedBanner');
             const cancelledBanner = document.getElementById('orderCancelledBanner');
+            const rejectedReasonBox = document.getElementById('clientRejectedReasonBox');
+            const rejectedReasonText = document.getElementById('clientRejectedReasonText');
+            const cancelledReasonBox = document.getElementById('clientCancelledReasonBox');
+            const cancelledReasonText = document.getElementById('clientCancelledReasonText');
+
             const trackerCard = document.getElementById('orderTrackerCard');
             const reportCard = document.getElementById('completedReportCard');
             const reportDownloadBtn = document.getElementById('clientReportDownloadBtn');
@@ -1701,11 +1754,28 @@
                 cancelledBanner.classList.add('hidden');
                 trackerCard.classList.add('hidden');
                 reportCard.classList.add('hidden');
+
+                // Prüfen, ob für den Kunden ein Ablehnungsgrund freigegeben wurde
+                if (order.clientVisibleReason && order.clientVisibleReason.trim().length > 0) {
+                    rejectedReasonBox.classList.remove('hidden');
+                    rejectedReasonText.textContent = order.clientVisibleReason;
+                } else {
+                    rejectedReasonBox.classList.add('hidden');
+                    rejectedReasonText.textContent = '';
+                }
             } else if (order.status == 6) {
                 rejectedBanner.classList.add('hidden');
                 cancelledBanner.classList.remove('hidden');
                 trackerCard.classList.add('hidden');
                 reportCard.classList.add('hidden');
+
+                if (order.clientVisibleReason && order.clientVisibleReason.trim().length > 0) {
+                    cancelledReasonBox.classList.remove('hidden');
+                    cancelledReasonText.textContent = order.clientVisibleReason;
+                } else {
+                    cancelledReasonBox.classList.add('hidden');
+                    cancelledReasonText.textContent = '';
+                }
             } else {
                 rejectedBanner.classList.add('hidden');
                 cancelledBanner.classList.add('hidden');
@@ -2445,6 +2515,7 @@
             activeArchiveYear = year;
 
             document.getElementById('tabBtnActive').className = "px-5 py-3 text-sm font-bold border-b-2 " + (tabName === 'active' ? "border-emerald-500 text-emerald-400" : "border-transparent text-slate-400 hover:text-white") + " transition";
+            document.getElementById('tabBtnApprovals').className = "px-5 py-3 text-sm font-bold border-b-2 " + (tabName === 'approvals' ? "border-amber-500 text-amber-400" : "border-transparent text-slate-400 hover:text-white") + " transition flex items-center";
             document.getElementById('tabBtnRejected').className = "px-5 py-3 text-sm font-bold border-b-2 " + (tabName === 'rejected' ? "border-emerald-500 text-emerald-400" : "border-transparent text-slate-400 hover:text-white") + " transition";
             document.getElementById('tabBtnCancelled').className = "px-5 py-3 text-sm font-bold border-b-2 " + (tabName === 'cancelled' ? "border-emerald-500 text-emerald-400" : "border-transparent text-slate-400 hover:text-white") + " transition";
             document.getElementById('tabBtnArchive').className = "px-5 py-3 text-sm font-bold border-b-2 " + (tabName === 'archive' ? "border-emerald-500 text-emerald-400" : "border-transparent text-slate-400 hover:text-white") + " transition";
@@ -2516,6 +2587,18 @@
             });
             document.getElementById('adminStatSavings').textContent = totalSavingsNum.toLocaleString('de-DE') + ' €';
 
+            // Zähler-Badge für den Reiter "Offene Freigaben" aktualisieren
+            const pendingApprovalOrders = adminOrders.filter(o => !o.isArchived && (o.pendingAction === 'reject' || o.pendingAction === 'cancel'));
+            const approvalsBadge = document.getElementById('approvalsCountBadge');
+            if (approvalsBadge) {
+                if (pendingApprovalOrders.length > 0) {
+                    approvalsBadge.textContent = pendingApprovalOrders.length;
+                    approvalsBadge.classList.remove('hidden');
+                } else {
+                    approvalsBadge.classList.add('hidden');
+                }
+            }
+
             const container = document.getElementById('adminOrdersList');
             const listTitle = document.getElementById('adminListTitle');
 
@@ -2527,6 +2610,18 @@
                     return;
                 }
                 container.innerHTML = activeOrders.map(o => renderOrderCard(o)).join('');
+            } else if (currentAdminTab === 'approvals') {
+                listTitle.textContent = `Offene Freigaben (${pendingApprovalOrders.length})`;
+                if (pendingApprovalOrders.length === 0) {
+                    container.innerHTML = `
+                        <div class="bg-slate-900 border border-slate-800 rounded-xl p-6 text-center text-xs text-slate-400">
+                            <i class="fa-solid fa-circle-check text-emerald-400 text-2xl mb-2 block"></i>
+                            Aktuell liegen keine offenen Freigabe-Anfragen von Sachbearbeitern vor.
+                        </div>
+                    `;
+                    return;
+                }
+                container.innerHTML = pendingApprovalOrders.map(o => renderOrderCard(o)).join('');
             } else if (currentAdminTab === 'rejected') {
                 listTitle.textContent = "Abgelehnte Aufträge";
                 const rejectedOrders = adminOrders.filter(o => !o.isArchived && o.status == 5);
@@ -2616,6 +2711,10 @@
                 `;
             }
 
+            const clientReasonHint = (o.status == 5 || o.status == 6) && o.clientVisibleReason
+                ? `<div class="mt-1.5 text-[10px] text-rose-300 truncate"><i class="fa-solid fa-eye mr-1"></i>Kundengrund: ${o.clientVisibleReason}</div>`
+                : '';
+
             return `
                 <div onclick="selectAdminOrder('${o.id}')" class="bg-slate-900 border ${selectedAdminOrderId === o.id ? 'border-amber-500' : (o.pendingAction ? 'border-amber-500/50' : 'border-slate-800')} hover:border-slate-700 rounded-xl p-4 cursor-pointer transition mb-3">
                     <div class="flex justify-between items-center mb-1">
@@ -2633,6 +2732,7 @@
                     </div>
                     ${o.discountApplied ? `<div class="mt-1 text-[10px] text-emerald-300"><i class="fa-solid fa-tag mr-1"></i>${o.discountApplied}</div>` : ''}
                     ${pendingBadgeHtml}
+                    ${clientReasonHint}
                     <div class="flex justify-between items-center mt-2 text-xs text-slate-400">
                         <span class="${o.status == 5 || o.status == 6 ? 'text-rose-400 font-bold' : ''}">${statusLabel}</span>
                         <span>${o.paymentStatus === 'paid' ? 'Bezahlt' : (o.paymentStatus === 'partial' ? 'Angezahlt' : 'Offen')}</span>
@@ -2649,6 +2749,7 @@
             const directRow = document.getElementById('adminDirectRejectCancelRow');
             const clerkRow = document.getElementById('clerkPreliminaryRejectCancelRow');
             const clerkReasonInput = document.getElementById('clerkPreliminaryReasonInput');
+            const directReasonInput = document.getElementById('adminDirectReasonInput');
 
             if (optReject && optCancel) {
                 optReject.disabled = !isAdminOrMain;
@@ -2670,12 +2771,16 @@
             if (clerkReasonInput) {
                 clerkReasonInput.value = (order && order.pendingActionReason) ? order.pendingActionReason : '';
             }
+            if (directReasonInput) {
+                directReasonInput.value = (order && order.clientVisibleReason) ? order.clientVisibleReason : '';
+            }
 
             const approvalBanner = document.getElementById('adminPendingApprovalBanner');
             const approvalTitle = document.getElementById('pendingApprovalTitle');
             const approvalDesc = document.getElementById('pendingApprovalDesc');
             const reasonBox = document.getElementById('pendingApprovalReasonBox');
             const reasonText = document.getElementById('pendingApprovalReasonText');
+            const publicReasonInput = document.getElementById('adminApprovalPublicReasonInput');
             const adminActions = document.getElementById('pendingApprovalAdminActions');
             const clerkHint = document.getElementById('pendingApprovalClerkHint');
 
@@ -2691,6 +2796,11 @@
                 } else {
                     reasonBox.classList.add('hidden');
                     reasonText.textContent = '';
+                }
+
+                // Editierbares Kunden-Begründungsfeld für den Admin mit der Sachbearbeiter-Notiz vorbefüllen
+                if (publicReasonInput) {
+                    publicReasonInput.value = order.pendingActionReason || order.clientVisibleReason || '';
                 }
 
                 if (isAdminOrMain) {
@@ -2838,7 +2948,7 @@
             selectAdminOrder(currentOrderId);
         }
 
-        // Admin gibt vorläufige Ablehnung / Stornierung endgültig frei
+        // Admin gibt vorläufige Ablehnung / Stornierung endgültig frei (inkl. Entscheidung über Kunden-Sichtbarkeit)
         async function approvePreliminaryAction() {
             if (!canManageRoles()) {
                 alert('Nur Administratoren und der Hauptadmin können diese Aktion freigeben.');
@@ -2852,8 +2962,16 @@
             const isReject = order.pendingAction === 'reject';
             const newStatus = isReject ? 5 : 6;
 
+            const shareWithClientCheck = document.getElementById('shareApprovalReasonWithClientCheck');
+            const publicReasonInput = document.getElementById('adminApprovalPublicReasonInput');
+            const shouldShareReason = shareWithClientCheck ? shareWithClientCheck.checked : false;
+            const finalReasonText = publicReasonInput ? publicReasonInput.value.trim() : (order.pendingActionReason || '');
+
+            const clientVisibleReasonValue = (shouldShareReason && finalReasonText) ? finalReasonText : null;
+
             const updates = {
                 status: newStatus,
+                clientVisibleReason: clientVisibleReasonValue,
                 pendingAction: null,
                 pendingActionBy: null,
                 pendingActionAt: null
@@ -2863,6 +2981,7 @@
             }
 
             order.status = newStatus;
+            order.clientVisibleReason = clientVisibleReasonValue;
             order.pendingAction = null;
             order.pendingActionBy = null;
             order.pendingActionAt = null;
@@ -2879,7 +2998,8 @@
 
             if (isReject) {
                 const subject = encodeURIComponent(`Aktualisierung zu Ihrem Auftrag ${order.id}`);
-                const body = encodeURIComponent(`Hallo,\n\nleider mussten wir Ihren Auftrag (${order.packageName}) ablehnen. Bei Fragen wenden Sie sich gerne an unseren Support.\n\nMit freundlichen Grüßen\nSHK Angebotsprüfung`);
+                const reasonMailPart = clientVisibleReasonValue ? `\n\nBegründung / Hinweis:\n${clientVisibleReasonValue}\n` : '\n';
+                const body = encodeURIComponent(`Hallo,\n\nleider mussten wir Ihren Auftrag (${order.packageName}) ablehnen.${reasonMailPart}\nBei Fragen wenden Sie sich gerne an unseren Support.\n\nMit freundlichen Grüßen\nSHK Angebotsprüfung`);
                 window.open(`mailto:${order.email}?subject=${subject}&body=${body}`);
             }
 
@@ -2934,7 +3054,7 @@
             selectAdminOrder(currentOrderId);
         }
 
-        // Direkte Ablehnung (Nur für Admin & Hauptadmin)
+        // Direkte Ablehnung (Nur für Admin & Hauptadmin, inkl. optionaler Kunden-Begründung)
         async function rejectAdminOrder() {
             if (!canManageRoles()) {
                 await requestPreliminaryOrderAction('reject');
@@ -2945,13 +3065,21 @@
             const order = adminOrders.find(o => o.id === selectedAdminOrderId);
             if (!order || !order.idDoc) return;
 
+            const directReasonInput = document.getElementById('adminDirectReasonInput');
+            const directShareCheck = document.getElementById('adminDirectShareReasonCheck');
+            const reasonText = directReasonInput ? directReasonInput.value.trim() : '';
+            const shouldShare = directShareCheck ? directShareCheck.checked : false;
+            const clientVisibleReasonValue = (shouldShare && reasonText) ? reasonText : null;
+
             order.status = 5;
+            order.clientVisibleReason = clientVisibleReasonValue;
             order.pendingAction = null;
 
             if (db) {
                 try {
                     await db.collection('orders').doc(order.idDoc).update({
                         status: 5,
+                        clientVisibleReason: clientVisibleReasonValue,
                         pendingAction: null,
                         pendingActionBy: null,
                         pendingActionAt: null
@@ -2962,13 +3090,14 @@
             }
 
             const subject = encodeURIComponent(`Aktualisierung zu Ihrem Auftrag ${order.id}`);
-            const body = encodeURIComponent(`Hallo,\n\nleider mussten wir Ihren Auftrag (${order.packageName}) ablehnen. Bei Fragen wenden Sie sich gerne an unseren Support.\n\nMit freundlichen Grüßen\nSHK Angebotsprüfung`);
+            const reasonMailPart = clientVisibleReasonValue ? `\n\nBegründung / Hinweis:\n${clientVisibleReasonValue}\n` : '\n';
+            const body = encodeURIComponent(`Hallo,\n\nleider mussten wir Ihren Auftrag (${order.packageName}) ablehnen.${reasonMailPart}\nBei Fragen wenden Sie sich gerne an unseren Support.\n\nMit freundlichen Grüßen\nSHK Angebotsprüfung`);
             window.open(`mailto:${order.email}?subject=${subject}&body=${body}`);
 
             await loadAdminOrders();
         }
 
-        // Direkte Stornierung (Nur für Admin & Hauptadmin)
+        // Direkte Stornierung (Nur für Admin & Hauptadmin, inkl. optionaler Kunden-Begründung)
         async function cancelAdminOrderDirect() {
             if (!canManageRoles()) {
                 await requestPreliminaryOrderAction('cancel');
@@ -2979,8 +3108,15 @@
             const order = adminOrders.find(o => o.id === selectedAdminOrderId);
             if (!order || !order.idDoc) return;
 
+            const directReasonInput = document.getElementById('adminDirectReasonInput');
+            const directShareCheck = document.getElementById('adminDirectShareReasonCheck');
+            const reasonText = directReasonInput ? directReasonInput.value.trim() : '';
+            const shouldShare = directShareCheck ? directShareCheck.checked : false;
+            const clientVisibleReasonValue = (shouldShare && reasonText) ? reasonText : null;
+
             order.status = 6;
             order.paymentStatus = 'paid';
+            order.clientVisibleReason = clientVisibleReasonValue;
             order.pendingAction = null;
 
             if (db) {
@@ -2988,6 +3124,7 @@
                     await db.collection('orders').doc(order.idDoc).update({
                         status: 6,
                         paymentStatus: 'paid',
+                        clientVisibleReason: clientVisibleReasonValue,
                         pendingAction: null,
                         pendingActionBy: null,
                         pendingActionAt: null
