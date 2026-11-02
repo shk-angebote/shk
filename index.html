@@ -217,7 +217,7 @@
                                 </div>
                             </div>
 
-                            <!-- NEU: Projekt-Zuordnung direkt bei der Anfrage -->
+                            <!-- Projekt-Zuordnung direkt bei der Anfrage -->
                             <div>
                                 <label class="block text-xs font-medium text-slate-300 mb-1">
                                     <i class="fa-solid fa-folder-tree text-emerald-400 mr-1"></i>Projekt / Bauvorhaben (optional zur besseren Übersicht im Kundenportal)
@@ -337,7 +337,7 @@
                         <h2 class="text-lg font-bold text-white">Ihre Aufträge & Projekte</h2>
                     </div>
 
-                    <!-- NEU: Projekt-Filterleiste im Kundenportal -->
+                    <!-- Projekt-Filterleiste im Kundenportal -->
                     <div id="clientProjectFilterBar" class="flex flex-wrap gap-1.5 pb-1">
                         <!-- Dynamisch befüllt -->
                     </div>
@@ -383,7 +383,7 @@
                             </button>
                         </div>
 
-                        <!-- NEU: Projekt-Zuordnung im Kundenportal bearbeiten -->
+                        <!-- Projekt-Zuordnung im Kundenportal bearbeiten -->
                         <div class="bg-slate-900 border border-slate-800 rounded-2xl p-5 shadow-xl">
                             <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
                                 <div>
@@ -742,7 +742,7 @@
                             </div>
                         </div>
 
-                        <!-- Banner für vorläufige Ablehnung / Stornierung (Freigabe-Workflow) -->
+                        <!-- Banner für vorläufige Ablehnung / Stornierung (Freigabe-Workflow inkl. Sachbearbeiter-Notiz) -->
                         <div id="adminPendingApprovalBanner" class="hidden bg-amber-500/10 border-2 border-amber-500/40 rounded-xl p-4 space-y-3">
                             <div class="flex items-start justify-between gap-3">
                                 <div class="flex items-start space-x-3">
@@ -754,6 +754,15 @@
                                 </div>
                                 <span class="px-2.5 py-1 rounded-full text-[10px] font-bold bg-amber-500 text-slate-950 uppercase whitespace-nowrap">Freigabe nötig</span>
                             </div>
+
+                            <!-- NEU: Anzeige der internen Sachbearbeiter-Notiz im Freigabe-Banner -->
+                            <div id="pendingApprovalReasonBox" class="hidden bg-slate-950/90 border border-amber-500/30 rounded-lg p-3 text-xs">
+                                <span class="text-[10px] font-bold uppercase tracking-wider text-amber-400 block mb-1">
+                                    <i class="fa-solid fa-comment-dots mr-1"></i>Interne Notiz / Begründung vom Sachbearbeiter:
+                                </span>
+                                <p id="pendingApprovalReasonText" class="text-slate-200 whitespace-pre-line"></p>
+                            </div>
+
                             <!-- Buttons für Admin / Hauptadmin -->
                             <div id="pendingApprovalAdminActions" class="hidden flex flex-wrap gap-2 pt-2 border-t border-amber-500/20">
                                 <button type="button" onclick="approvePreliminaryAction()" class="bg-emerald-500 hover:bg-emerald-600 text-slate-950 font-bold px-4 py-2 rounded-lg text-xs transition shadow-lg shadow-emerald-500/20">
@@ -864,14 +873,23 @@
                                     </button>
                                 </div>
 
-                                <!-- Vorläufige Ablehnung / Stornierung (Nur für Sachbearbeiter sichtbar) -->
-                                <div id="clerkPreliminaryRejectCancelRow" class="hidden grid grid-cols-1 sm:grid-cols-2 gap-3">
-                                    <button type="button" onclick="requestPreliminaryOrderAction('reject')" class="bg-amber-500/10 hover:bg-amber-500/20 text-amber-300 border border-amber-500/30 font-bold py-2.5 rounded-xl text-xs transition">
-                                        <i class="fa-solid fa-hourglass-start mr-1"></i>Vorläufig ablehnen (Admin-Freigabe)
-                                    </button>
-                                    <button type="button" onclick="requestPreliminaryOrderAction('cancel')" class="bg-amber-500/10 hover:bg-amber-500/20 text-amber-300 border border-amber-500/30 font-bold py-2.5 rounded-xl text-xs transition">
-                                        <i class="fa-solid fa-hourglass-start mr-1"></i>Vorläufig stornieren (Admin-Freigabe)
-                                    </button>
+                                <!-- NEU: Vorläufige Ablehnung / Stornierung inkl. internem Notizfeld (Nur für Sachbearbeiter sichtbar) -->
+                                <div id="clerkPreliminaryRejectCancelRow" class="hidden bg-slate-950 border border-amber-500/30 rounded-xl p-4 space-y-3">
+                                    <div>
+                                        <label class="block text-xs font-semibold text-amber-400 mb-1">
+                                            <i class="fa-solid fa-comment-medical mr-1.5"></i>Interne Notiz / Begründung für vorläufige Ablehnung oder Stornierung
+                                        </label>
+                                        <textarea id="clerkPreliminaryReasonInput" rows="2" placeholder="Bitte kurze Begründung für den Admin eintragen (z. B. Dokument unleserlich, falsches Gewerk, Kundenwunsch)..." class="w-full bg-slate-900 border border-slate-700 rounded-xl px-3.5 py-2 text-xs text-white focus:border-amber-500 focus:outline-none"></textarea>
+                                        <span class="text-[11px] text-slate-400 mt-0.5 block">Diese Notiz ist nur intern für Sachbearbeiter und Administratoren sichtbar.</span>
+                                    </div>
+                                    <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                                        <button type="button" onclick="requestPreliminaryOrderAction('reject')" class="bg-amber-500/10 hover:bg-amber-500/20 text-amber-300 border border-amber-500/30 font-bold py-2.5 rounded-xl text-xs transition">
+                                            <i class="fa-solid fa-hourglass-start mr-1"></i>Vorläufig ablehnen (Admin-Freigabe)
+                                        </button>
+                                        <button type="button" onclick="requestPreliminaryOrderAction('cancel')" class="bg-amber-500/10 hover:bg-amber-500/20 text-amber-300 border border-amber-500/30 font-bold py-2.5 rounded-xl text-xs transition">
+                                            <i class="fa-solid fa-hourglass-start mr-1"></i>Vorläufig stornieren (Admin-Freigabe)
+                                        </button>
+                                    </div>
                                 </div>
                             </div>
                         </div>
@@ -1357,6 +1375,7 @@
                         hiddenByClient: false,
                         pendingAction: null,
                         pendingActionBy: null,
+                        pendingActionReason: null,
                         savings: '3200 €',
                         summary: 'Das Angebot wurde technisch erfasst. Die Detailprüfung auf Plausibilität läuft.',
                         defects: [
@@ -1399,7 +1418,6 @@
                         userOrders.push({ idDoc: doc.id, ...doc.data() });
                     });
 
-                    // Falls der eingeloggte Kunde >= 10 Aufträge erreicht hat, automatisch auf Stammkunde prüfen
                     if (currentUserRole === 'Kunde' && userOrders.length >= STAMMKUNDE_ORDER_THRESHOLD) {
                         currentUserRole = await checkAndAutoUpgradeStammkunde(currentUser.email, 0);
                         isStammkundeActive = (currentUserRole === 'Stammkunde');
@@ -1437,7 +1455,7 @@
             document.getElementById('clientStatDone').textContent = completedOrders;
         }
 
-        // NEU: Rendert die Projekt-Filter-Buttons im Kundenportal
+        // Rendert die Projekt-Filter-Buttons im Kundenportal
         function renderClientProjectFilterBar() {
             const bar = document.getElementById('clientProjectFilterBar');
             if (!bar) return;
@@ -1485,7 +1503,7 @@
             renderClientOrdersList();
         }
 
-        // NEU: Kundenauftrag per X aus der Kundenansicht ausblenden (nur für abgelehnte/stornierte Aufträge)
+        // Kundenauftrag per X aus der Kundenansicht ausblenden (nur für abgelehnte/stornierte Aufträge)
         async function dismissClientOrder(orderId, event = null) {
             if (event) {
                 event.stopPropagation();
@@ -1519,7 +1537,7 @@
             renderClientOrdersList();
         }
 
-        // NEU: Projekt-Zuordnung eines Auftrags im Kundenportal speichern
+        // Projekt-Zuordnung eines Auftrags im Kundenportal speichern
         async function saveClientOrderProject() {
             if (!activeOrderId) return;
             const order = userOrders.find(o => o.id === activeOrderId);
@@ -2582,10 +2600,20 @@
             const projectName = (o.projectName || 'Allgemein').trim() || 'Allgemein';
 
             let pendingBadgeHtml = '';
-            if (o.pendingAction === 'reject') {
-                pendingBadgeHtml = `<div class="mt-2 px-2.5 py-1 rounded-lg bg-amber-500/20 border border-amber-500/40 text-amber-300 text-[11px] font-bold flex items-center justify-between"><span><i class="fa-solid fa-hourglass-half mr-1.5"></i>Vorl. Ablehnung</span><span class="uppercase text-[9px] bg-amber-500 text-slate-950 px-1.5 py-0.5 rounded font-black">Freigabe nötig</span></div>`;
-            } else if (o.pendingAction === 'cancel') {
-                pendingBadgeHtml = `<div class="mt-2 px-2.5 py-1 rounded-lg bg-amber-500/20 border border-amber-500/40 text-amber-300 text-[11px] font-bold flex items-center justify-between"><span><i class="fa-solid fa-hourglass-half mr-1.5"></i>Vorl. Stornierung</span><span class="uppercase text-[9px] bg-amber-500 text-slate-950 px-1.5 py-0.5 rounded font-black">Freigabe nötig</span></div>`;
+            if (o.pendingAction === 'reject' || o.pendingAction === 'cancel') {
+                const labelText = o.pendingAction === 'reject' ? 'Vorl. Ablehnung' : 'Vorl. Stornierung';
+                const reasonPreview = o.pendingActionReason
+                    ? `<div class="mt-1 text-[10px] text-amber-200/90 italic truncate"><i class="fa-solid fa-comment-dots mr-1"></i>„${o.pendingActionReason}“</div>`
+                    : '';
+                pendingBadgeHtml = `
+                    <div class="mt-2 px-2.5 py-1.5 rounded-lg bg-amber-500/20 border border-amber-500/40 text-amber-300 text-[11px] font-bold">
+                        <div class="flex items-center justify-between">
+                            <span><i class="fa-solid fa-hourglass-half mr-1.5"></i>${labelText}</span>
+                            <span class="uppercase text-[9px] bg-amber-500 text-slate-950 px-1.5 py-0.5 rounded font-black">Freigabe nötig</span>
+                        </div>
+                        ${reasonPreview}
+                    </div>
+                `;
             }
 
             return `
@@ -2620,6 +2648,7 @@
             const optCancel = document.getElementById('statusOptCancel');
             const directRow = document.getElementById('adminDirectRejectCancelRow');
             const clerkRow = document.getElementById('clerkPreliminaryRejectCancelRow');
+            const clerkReasonInput = document.getElementById('clerkPreliminaryReasonInput');
 
             if (optReject && optCancel) {
                 optReject.disabled = !isAdminOrMain;
@@ -2638,9 +2667,15 @@
                 }
             }
 
+            if (clerkReasonInput) {
+                clerkReasonInput.value = (order && order.pendingActionReason) ? order.pendingActionReason : '';
+            }
+
             const approvalBanner = document.getElementById('adminPendingApprovalBanner');
             const approvalTitle = document.getElementById('pendingApprovalTitle');
             const approvalDesc = document.getElementById('pendingApprovalDesc');
+            const reasonBox = document.getElementById('pendingApprovalReasonBox');
+            const reasonText = document.getElementById('pendingApprovalReasonText');
             const adminActions = document.getElementById('pendingApprovalAdminActions');
             const clerkHint = document.getElementById('pendingApprovalClerkHint');
 
@@ -2649,6 +2684,14 @@
                 const actionLabel = order.pendingAction === 'reject' ? 'Vorläufige Ablehnung' : 'Vorläufige Stornierung';
                 approvalTitle.textContent = `${actionLabel} wartet auf Admin-Freigabe`;
                 approvalDesc.textContent = `Beantragt von: ${order.pendingActionBy || 'Sachbearbeiter'}${order.pendingActionAt ? ' am ' + new Date(order.pendingActionAt).toLocaleString('de-DE') : ''}`;
+
+                if (order.pendingActionReason && order.pendingActionReason.trim().length > 0) {
+                    reasonBox.classList.remove('hidden');
+                    reasonText.textContent = order.pendingActionReason;
+                } else {
+                    reasonBox.classList.add('hidden');
+                    reasonText.textContent = '';
+                }
 
                 if (isAdminOrMain) {
                     adminActions.classList.remove('hidden');
@@ -2756,23 +2799,34 @@
             window.location.href = `mailto:${order.email}?subject=${subject}&body=${body}`;
         }
 
-        // Sachbearbeiter reicht vorläufige Ablehnung oder Stornierung ein (ohne blockierendes confirm)
+        // Sachbearbeiter reicht vorläufige Ablehnung oder Stornierung inkl. interner Notiz ein
         async function requestPreliminaryOrderAction(actionType) {
             if (!selectedAdminOrderId) return;
             const order = adminOrders.find(o => o.id === selectedAdminOrderId);
             if (!order) return;
 
+            const reasonInput = document.getElementById('clerkPreliminaryReasonInput');
+            const reasonText = reasonInput ? reasonInput.value.trim() : '';
+
+            if (actionType === 'reject' && !reasonText) {
+                alert('Bitte tragen Sie im internen Notizfeld eine kurze Begründung für die vorläufige Ablehnung ein.');
+                if (reasonInput) reasonInput.focus();
+                return;
+            }
+
             const currentOrderId = order.id;
             order.pendingAction = actionType;
             order.pendingActionBy = currentUser ? currentUser.email : 'Sachbearbeiter';
             order.pendingActionAt = new Date().toISOString();
+            order.pendingActionReason = reasonText || null;
 
             if (db && order.idDoc) {
                 try {
                     await db.collection('orders').doc(order.idDoc).update({
                         pendingAction: order.pendingAction,
                         pendingActionBy: order.pendingActionBy,
-                        pendingActionAt: order.pendingActionAt
+                        pendingActionAt: order.pendingActionAt,
+                        pendingActionReason: order.pendingActionReason
                     });
                 } catch (e) {
                     alert('Fehler beim Speichern der Vorabanfrage: ' + e.message);
@@ -2833,7 +2887,7 @@
             selectAdminOrder(currentOrderId);
         }
 
-        // GEFIXT: Admin verwirft vorläufige Anfrage / setzt sie zurück (ohne blockierendes confirm, inkl. sauberem Reload)
+        // Admin verwirft vorläufige Anfrage / setzt sie inkl. Notiz zurück
         async function denyPreliminaryAction() {
             if (!selectedAdminOrderId) return;
             const order = adminOrders.find(o => o.id === selectedAdminOrderId);
@@ -2841,20 +2895,20 @@
 
             const currentOrderId = order.id;
 
-            // Lokalen Status sofort zurücksetzen
             order.pendingAction = null;
             order.pendingActionBy = null;
             order.pendingActionAt = null;
+            order.pendingActionReason = null;
             updateAdminEditorRolePermissions(order);
 
-            // In Firestore speichern (falls idDoc fehlt, per Auftrags-ID suchen)
             if (db) {
                 try {
                     if (order.idDoc) {
                         await db.collection('orders').doc(order.idDoc).update({
                             pendingAction: null,
                             pendingActionBy: null,
-                            pendingActionAt: null
+                            pendingActionAt: null,
+                            pendingActionReason: null
                         });
                     } else {
                         const snap = await db.collection('orders').where('id', '==', currentOrderId).get();
@@ -2863,7 +2917,8 @@
                             batch.update(doc.ref, {
                                 pendingAction: null,
                                 pendingActionBy: null,
-                                pendingActionAt: null
+                                pendingActionAt: null,
+                                pendingActionReason: null
                             });
                         });
                         await batch.commit();
