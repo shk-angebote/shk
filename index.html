@@ -601,12 +601,12 @@
                         <p>Wählen Sie links einen Auftrag oder eine Ansicht aus.</p>
                     </div>
 
-                    <!-- Kunden- & Rangverwaltungs-Panel -->
+                    <!-- Kunden- & Rangverwaltungs-Panel (inkl. Konto-Sperre für Hauptadmin) -->
                     <div id="adminCustomersPanel" class="hidden bg-slate-900 border border-slate-800 rounded-2xl p-6 shadow-xl space-y-6">
                         <div class="flex flex-col sm:flex-row sm:items-center justify-between border-b border-slate-800 pb-4 gap-2">
                             <div>
-                                <h3 class="text-lg font-bold text-white"><i class="fa-solid fa-users-gear text-emerald-400 mr-2"></i>Kunden & Rangverwaltung</h3>
-                                <p class="text-xs text-slate-400 mt-0.5">Weisen Sie Konten Ränge zu. Ab 10 Aufträgen erfolgt automatisch der Aufstieg zum Stammkunden.</p>
+                                <h3 class="text-lg font-bold text-white"><i class="fa-solid fa-users-gear text-emerald-400 mr-2"></i>Kunden, Ränge & Kontosperre</h3>
+                                <p class="text-xs text-slate-400 mt-0.5">Weisen Sie Ränge zu. Der Hauptadmin kann einzelne Konten zudem sperren bzw. entsperren.</p>
                             </div>
                             <span id="roleManagementPermissionHint" class="text-xs px-3 py-1 rounded-lg bg-emerald-500/10 text-emerald-400 border border-emerald-500/20 font-semibold">
                                 Rollenvergabe aktiv
@@ -628,12 +628,12 @@
                                 <span class="text-slate-400">Keine Rollenvergabe; Ablehnung/Storno nur vorläufig.</span>
                             </div>
                             <div class="bg-slate-950 border border-purple-500/30 rounded-xl p-3">
-                                <span class="font-bold text-purple-400 block"><i class="fa-solid fa-user-shield mr-1.5"></i>Admin</span>
+                                <span class="font-bold text-purple-400 block"><i class="fa-solid fa-user-shield mr-1.5"></i>Admin (inkl. Demo-Konto)</span>
                                 <span class="text-slate-400">Volle Rechte + Freigaben, außer Hauptadmin-Rolle.</span>
                             </div>
                             <div class="bg-slate-950 border border-amber-500/30 rounded-xl p-3 sm:col-span-2 lg:col-span-2">
                                 <span class="font-bold text-amber-400 block"><i class="fa-solid fa-crown mr-1.5"></i>Hauptadmin (System-E-Mail)</span>
-                                <span class="text-slate-400">Fest an die Admin-E-Mail aus dem Quelltext gebunden (Rolle kann nicht geändert werden).</span>
+                                <span class="text-slate-400">Unveränderbar. Besitzt exklusiv das Recht, Konten zu sperren und die gesamte Preis-DB zu leeren.</span>
                             </div>
                         </div>
 
@@ -642,7 +642,7 @@
                             <div class="flex flex-col sm:flex-row gap-3 items-center justify-between">
                                 <div class="relative w-full sm:flex-1">
                                     <i class="fa-solid fa-magnifying-glass text-slate-500 absolute left-3.5 top-1/2 -translate-y-1/2 text-xs"></i>
-                                    <input type="text" id="customerSearchInput" oninput="renderCustomersTable()" placeholder="Nach Name oder E-Mail-Adresse suchen..." class="w-full bg-slate-900 border border-slate-700 rounded-xl pl-9 pr-4 py-2 text-xs text-white focus:border-emerald-500 focus:outline-none">
+                                    <input type="text" id="customerSearchInput" oninput="renderCustomersTable()" placeholder="Nach Name, Benutzer (Demo) oder E-Mail suchen..." class="w-full bg-slate-900 border border-slate-700 rounded-xl pl-9 pr-4 py-2 text-xs text-white focus:border-emerald-500 focus:outline-none">
                                 </div>
                                 <span id="customerFilterCountBadge" class="text-[11px] text-slate-400 font-medium whitespace-nowrap">0 Konten angezeigt</span>
                             </div>
@@ -663,7 +663,7 @@
 
                     <!-- Marktpreise Management & Live-Prüf-Tool -->
                     <div id="adminMarketPricesPanel" class="hidden space-y-6">
-                        <!-- GAEB-, Excel- (.xlsx/.xls) & CSV-Importer + 100-€-Platzhalter-Bereinigung -->
+                        <!-- GAEB-, Excel- (.xlsx/.xls) & CSV-Importer + 100-€-Platzhalter-Bereinigung + Hauptadmin Komplettlöschung -->
                         <div class="bg-slate-900 border border-slate-800 rounded-2xl p-6 shadow-xl space-y-4">
                             <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-2">
                                 <h4 class="text-sm font-bold text-white">
@@ -673,8 +673,12 @@
                                     <button type="button" onclick="exportMarketPricesToCSV()" class="bg-slate-800 hover:bg-slate-700 text-emerald-400 border border-emerald-500/30 px-3 py-1 rounded-lg text-[11px] font-semibold transition" title="Datenbank als CSV für Excel exportieren">
                                         <i class="fa-solid fa-file-csv mr-1"></i>CSV/Excel Export
                                     </button>
-                                    <button type="button" onclick="cleanupOldPlaceholders()" class="bg-rose-500/10 hover:bg-rose-500/20 text-rose-400 border border-rose-500/30 px-3 py-1 rounded-lg text-[11px] font-bold transition" title="Löscht alte fehlerhafte 100-€-Platzhalter aus früheren x83-Importen">
+                                    <button type="button" onclick="cleanupOldPlaceholders()" class="bg-amber-500/10 hover:bg-amber-500/20 text-amber-400 border border-amber-500/30 px-3 py-1 rounded-lg text-[11px] font-bold transition" title="Löscht alte fehlerhafte 100-€-Platzhalter aus früheren x83-Importen">
                                         <i class="fa-solid fa-broom mr-1"></i>100-€-Platzhalter bereinigen
+                                    </button>
+                                    <!-- NEU: Button nur für Hauptadmin zum kompletten Leeren der Marktpreise-DB mit Passwortschutz -->
+                                    <button type="button" id="btnClearEntireMarketDb" onclick="openClearDbPasswordModal()" class="hidden bg-rose-500 hover:bg-rose-600 text-white px-3 py-1 rounded-lg text-[11px] font-bold transition shadow-lg shadow-rose-500/20" title="Nur Hauptadmin: Alle Positionen der Datenbank mit Passwort-Bestätigung löschen">
+                                        <i class="fa-solid fa-trash-can mr-1"></i>Alle Positionen löschen (Hauptadmin)
                                     </button>
                                 </div>
                             </div>
@@ -1017,22 +1021,22 @@
         </div>
     </main>
 
-    <!-- AUTH MODAL -->
+    <!-- AUTH MODAL (Unterstützt E-Mail-Login sowie Benutzer "Demo" / Passwort "Demo") -->
     <div id="authModal" class="fixed inset-0 z-50 flex items-center justify-center bg-slate-950/80 backdrop-blur-sm hidden">
         <div class="bg-slate-900 border border-slate-800 rounded-2xl p-8 max-w-md w-full mx-4 shadow-2xl relative">
             <button type="button" onclick="closeAuthModal()" class="absolute top-4 right-4 text-slate-400 hover:text-white"><i class="fa-solid fa-xmark text-lg"></i></button>
             
             <h3 id="authModalTitle" class="text-2xl font-bold text-white mb-2">Kundenportal Login</h3>
-            <p id="authModalSubtitle" class="text-slate-400 text-sm mb-6">Geben Sie Ihre Zugangsdaten ein, um Ihre Aufträge einzusehen.</p>
+            <p id="authModalSubtitle" class="text-slate-400 text-sm mb-6">Geben Sie Ihre Zugangsdaten ein (oder <code class="text-emerald-400">Demo</code> / <code class="text-emerald-400">Demo</code> für den Admin-Testzugang).</p>
 
             <form id="authForm" onsubmit="handleAuthSubmit(event)" class="space-y-4">
                 <div>
-                    <label class="block text-xs font-medium text-slate-300 mb-1">E-Mail-Adresse</label>
-                    <input type="email" id="authEmail" required class="w-full bg-slate-950 border border-slate-700 rounded-xl px-4 py-3 text-sm text-white focus:border-emerald-500 focus:outline-none">
+                    <label class="block text-xs font-medium text-slate-300 mb-1">E-Mail-Adresse oder Benutzername</label>
+                    <input type="text" id="authEmail" required placeholder="name@beispiel.de oder Demo" class="w-full bg-slate-950 border border-slate-700 rounded-xl px-4 py-3 text-sm text-white focus:border-emerald-500 focus:outline-none">
                 </div>
                 <div id="passwordFieldContainer">
                     <label class="block text-xs font-medium text-slate-300 mb-1">Passwort</label>
-                    <input type="password" id="authPassword" class="w-full bg-slate-950 border border-slate-700 rounded-xl px-4 py-3 text-sm text-white focus:border-emerald-500 focus:outline-none">
+                    <input type="password" id="authPassword" placeholder="Passwort" class="w-full bg-slate-950 border border-slate-700 rounded-xl px-4 py-3 text-sm text-white focus:border-emerald-500 focus:outline-none">
                 </div>
                 <button type="submit" id="authSubmitBtn" class="w-full bg-emerald-500 hover:bg-emerald-600 text-slate-950 font-bold py-3.5 rounded-xl text-sm transition shadow-lg shadow-emerald-500/20">
                     Anmelden
@@ -1046,6 +1050,37 @@
                 </div>
                 <button type="button" onclick="openForgotPasswordMode()" id="forgotPasswordBtn" class="text-slate-400 hover:text-emerald-400 transition">Passwort vergessen?</button>
             </div>
+        </div>
+    </div>
+
+    <!-- NEU: PASSWORT-MODAL FÜR HAUPTADMIN ZUM KOMPLETTEN LÖSCHEN DER MARKTPREISE-DATENBANK -->
+    <div id="clearDbPasswordModal" class="fixed inset-0 z-50 flex items-center justify-center bg-slate-950/85 backdrop-blur-sm hidden">
+        <div class="bg-slate-900 border-2 border-rose-500/50 rounded-2xl p-8 max-w-md w-full mx-4 shadow-2xl relative space-y-4">
+            <button type="button" onclick="closeClearDbPasswordModal()" class="absolute top-4 right-4 text-slate-400 hover:text-white">
+                <i class="fa-solid fa-xmark text-lg"></i>
+            </button>
+            <div class="flex items-center space-x-3 text-rose-400">
+                <i class="fa-solid fa-triangle-exclamation text-2xl"></i>
+                <h3 class="text-xl font-extrabold text-white">Gesamte Marktpreise-DB löschen</h3>
+            </div>
+            <p class="text-xs text-slate-300 leading-relaxed">
+                Achtung: Sie sind dabei, <strong>alle gespeicherten Positionen</strong> unwiderruflich aus der Marktpreise-Datenbank zu löschen. Bitte geben Sie zur Bestätigung Ihr <strong>Hauptadmin-Passwort</strong> ein:
+            </p>
+            <form onsubmit="confirmDeleteAllMarketPrices(event)" class="space-y-4">
+                <div>
+                    <label class="block text-xs font-medium text-slate-300 mb-1">Hauptadmin-Passwort (<span class="text-amber-400">admin@shk-angebote-pruefen.web.app</span>)</label>
+                    <input type="password" id="mainAdminClearDbPasswordInput" required placeholder="Hauptadmin-Passwort eingeben..." class="w-full bg-slate-950 border border-slate-700 rounded-xl px-4 py-3 text-sm text-white focus:border-rose-500 focus:outline-none">
+                    <span id="clearDbModalError" class="text-xs text-rose-400 font-semibold mt-1.5 hidden block"></span>
+                </div>
+                <div class="flex gap-3 pt-2">
+                    <button type="button" onclick="closeClearDbPasswordModal()" class="flex-1 bg-slate-800 hover:bg-slate-700 text-slate-300 font-semibold py-3 rounded-xl text-xs transition">
+                        Abbrechen
+                    </button>
+                    <button type="submit" id="confirmClearDbSubmitBtn" class="flex-1 bg-rose-500 hover:bg-rose-600 text-white font-bold py-3 rounded-xl text-xs transition shadow-lg shadow-rose-500/25">
+                        <i class="fa-solid fa-trash-can mr-1.5"></i>Jetzt alle löschen
+                    </button>
+                </div>
+            </form>
         </div>
     </div>
 
@@ -1077,11 +1112,12 @@
         }
 
         const ADMIN_EMAIL = "admin@shk-angebote-pruefen.web.app";
-        const STAMMKUNDE_ORDER_THRESHOLD = 10; // Automatischer Aufstieg ab 10 Aufträgen
+        const DEMO_IDENTIFIER = "demo";
+        const STAMMKUNDE_ORDER_THRESHOLD = 10;
 
         let currentUser = null;
         let currentUserRole = 'Kunde'; // 'Kunde' | 'Stammkunde' | 'Sachbearbeiter' | 'Admin' | 'Hauptadmin'
-        let isStammkundeActive = false; // Automatischer 5% Rabatt bei Auftragsanfrage
+        let isStammkundeActive = false;
         let isRegisterMode = false;
         let isForgotPasswordMode = false;
         let selectedPackageName = "Heizungs-Angebot";
@@ -1100,10 +1136,14 @@
         let activeCustomerRoleFilter = 'Alle';
         let lastCalculatedCheckDefect = null;
 
-        // Hilfsfunktionen für Rollen-Berechtigungen
+        // Hilfsfunktionen für Rollen & Berechtigungen
         function isMainAdminEmail(email) {
             if (!email) return false;
             return email.toLowerCase().trim() === ADMIN_EMAIL.toLowerCase().trim();
+        }
+
+        function isMainAdminUser() {
+            return currentUser && isMainAdminEmail(currentUser.email) && currentUserRole === 'Hauptadmin';
         }
 
         function hasAdminAccess(role = currentUserRole) {
@@ -1114,7 +1154,28 @@
             return ['Hauptadmin', 'Admin'].includes(role);
         }
 
-        // Prüft, ob ein Auftrag die erste Angebotsanfrage eines Neukunden ist
+        // Prüft, ob ein Konto vom Hauptadmin gesperrt wurde
+        async function isAccountBlocked(email) {
+            if (!email || isMainAdminEmail(email)) return false;
+            const cleanMail = email.toLowerCase().trim();
+            if (db) {
+                try {
+                    const snapshot = await db.collection('customers').get();
+                    let blocked = false;
+                    snapshot.forEach(doc => {
+                        const d = doc.data();
+                        if (d.email && d.email.toLowerCase().trim() === cleanMail && d.isBlocked === true) {
+                            blocked = true;
+                        }
+                    });
+                    return blocked;
+                } catch (e) {
+                    console.warn("Fehler beim Prüfen des Sperrstatus:", e);
+                }
+            }
+            return false;
+        }
+
         function isFirstCustomerInquiryOrder(order) {
             if (!order || !order.email) return false;
             if (order.isFirstInquiry === true) return true;
@@ -1128,7 +1189,6 @@
             return false;
         }
 
-        // Prüft, ob ein Neukunden-Auftrag für Status 2, 3 oder 4 gesperrt ist (solange keine 50% Rechnung/Anzahlung erfolgt ist)
         function isNewCustomerLockedForWork(order) {
             if (!order) return false;
             const isFirst = isFirstCustomerInquiryOrder(order);
@@ -1137,11 +1197,11 @@
             return isFirst && isUnpaid && invoiceNotSent;
         }
 
-        // Stuft Kunden ab 10 Aufträgen automatisch auf Stammkunde hoch
         async function checkAndAutoUpgradeStammkunde(email, additionalNewOrder = 0) {
             if (!db || !email) return 'Kunde';
             const cleanMail = email.toLowerCase().trim();
             if (isMainAdminEmail(cleanMail)) return 'Hauptadmin';
+            if (cleanMail === DEMO_IDENTIFIER) return 'Admin';
 
             try {
                 const ordersSnap = await db.collection('orders').where('email', '==', email.trim()).get();
@@ -1171,6 +1231,7 @@
                             firstName: '',
                             lastName: '',
                             role: 'Stammkunde',
+                            isBlocked: false,
                             createdAt: new Date().toISOString(),
                             autoPromotedAt: new Date().toISOString()
                         });
@@ -1178,7 +1239,7 @@
                 }
                 return currentRole;
             } catch (e) {
-                console.warn("Fehler beim Prüfen des automatischen Stammkunden-Aufstiegs:", e);
+                console.warn("Fehler beim Prüfen des Stammkunden-Aufstiegs:", e);
                 return 'Kunde';
             }
         }
@@ -1186,23 +1247,30 @@
         async function fetchRoleForEmail(email) {
             if (!email) return 'Kunde';
             const cleanMail = email.toLowerCase().trim();
-            if (isMainAdminEmail(cleanMail)) {
-                return 'Hauptadmin';
-            }
+            if (isMainAdminEmail(cleanMail)) return 'Hauptadmin';
             if (db) {
                 try {
+                    const snap = await db.collection('customers').get();
+                    let dbRole = null;
+                    snap.forEach(doc => {
+                        const d = doc.data();
+                        if (d.email && d.email.toLowerCase().trim() === cleanMail && d.role) {
+                            dbRole = d.role;
+                        }
+                    });
+                    if (cleanMail === DEMO_IDENTIFIER) return dbRole || 'Admin';
                     return await checkAndAutoUpgradeStammkunde(email, 0);
                 } catch (e) {
                     console.warn("Fehler beim Abrufen der Rolle:", e);
                 }
             }
-            return 'Kunde';
+            return cleanMail === DEMO_IDENTIFIER ? 'Admin' : 'Kunde';
         }
 
-        async function ensureCustomerRecord(email, firstName = '', lastName = '') {
+        async function ensureCustomerRecord(email, firstName = '', lastName = '', forcedDefaultRole = null) {
             if (!db || !email) return;
             const cleanMail = email.toLowerCase().trim();
-            const defaultRole = isMainAdminEmail(cleanMail) ? 'Hauptadmin' : 'Kunde';
+            const defaultRole = forcedDefaultRole || (isMainAdminEmail(cleanMail) ? 'Hauptadmin' : (cleanMail === DEMO_IDENTIFIER ? 'Admin' : 'Kunde'));
 
             try {
                 const snapshot = await db.collection('customers').get();
@@ -1217,9 +1285,10 @@
                 if (!existingDoc) {
                     await db.collection('customers').add({
                         email: email.trim(),
-                        firstName: firstName || (isMainAdminEmail(cleanMail) ? 'Hauptadmin' : ''),
-                        lastName: lastName || '',
+                        firstName: firstName || (isMainAdminEmail(cleanMail) ? 'System' : (cleanMail === DEMO_IDENTIFIER ? 'Demo' : '')),
+                        lastName: lastName || (isMainAdminEmail(cleanMail) ? 'Hauptadmin' : (cleanMail === DEMO_IDENTIFIER ? 'Admin-Konto' : '')),
                         role: defaultRole,
+                        isBlocked: false,
                         createdAt: new Date().toISOString()
                     });
                 } else {
@@ -1227,7 +1296,7 @@
                     if (isMainAdminEmail(cleanMail) && existingDoc.role !== 'Hauptadmin') {
                         updates.role = 'Hauptadmin';
                     } else if (!existingDoc.role) {
-                        updates.role = 'Kunde';
+                        updates.role = defaultRole;
                     }
                     if (!existingDoc.firstName && firstName) updates.firstName = firstName;
                     if (!existingDoc.lastName && lastName) updates.lastName = lastName;
@@ -1243,8 +1312,41 @@
 
         if (auth) {
             auth.onAuthStateChanged(async user => {
-                currentUser = user;
+                // Falls aktives Demo-Session-Login besteht und kein Firebase-User eingeloggt ist
+                if (!user && sessionStorage.getItem('shk_demo_session') === 'true') {
+                    const blocked = await isAccountBlocked('Demo');
+                    if (blocked) {
+                        sessionStorage.removeItem('shk_demo_session');
+                        alert('Das Demo-Konto wurde vom Hauptadmin gesperrt.');
+                        return;
+                    }
+                    currentUser = { email: 'Demo', uid: 'demo_admin_uid', isDemo: true };
+                    await ensureCustomerRecord('Demo', 'Demo', 'Admin-Konto', 'Admin');
+                    currentUserRole = await fetchRoleForEmail('Demo');
+                    isStammkundeActive = (currentUserRole === 'Stammkunde');
+                    updateNavbarUI();
+                    loadUserOrders();
+                    if (hasAdminAccess()) {
+                        await loadAdminOrders();
+                        await loadMarketPrices();
+                        await loadCustomers();
+                    }
+                    return;
+                }
+
                 if (user) {
+                    const blocked = await isAccountBlocked(user.email);
+                    if (blocked) {
+                        await auth.signOut();
+                        currentUser = null;
+                        currentUserRole = 'Kunde';
+                        updateNavbarUI();
+                        switchView('landing');
+                        alert('Ihr Konto wurde vom Administrator gesperrt. Bei Fragen wenden Sie sich bitte an den Support.');
+                        return;
+                    }
+
+                    currentUser = user;
                     await ensureCustomerRecord(user.email);
                     currentUserRole = await fetchRoleForEmail(user.email);
                     isStammkundeActive = (currentUserRole === 'Stammkunde');
@@ -1265,6 +1367,7 @@
                         await loadCustomers();
                     }
                 } else {
+                    currentUser = null;
                     currentUserRole = 'Kunde';
                     isStammkundeActive = false;
                     updateStammkundenBannerUI();
@@ -1282,6 +1385,7 @@
             const roleBadge = document.getElementById('navUserRoleBadge');
             const clientPortalBadge = document.getElementById('clientPortalRoleBadge');
             const adminHeaderBadge = document.getElementById('adminHeaderRoleBadge');
+            const clearDbBtn = document.getElementById('btnClearEntireMarketDb');
 
             if (currentUser) {
                 authNav.classList.add('hidden');
@@ -1304,10 +1408,20 @@
                 } else {
                     adminBtn.classList.add('hidden');
                 }
+
+                // Hauptadmin-Button zum kompletten Leeren der Marktpreise-DB nur für Hauptadmin einblenden
+                if (clearDbBtn) {
+                    if (isMainAdminUser()) {
+                        clearDbBtn.classList.remove('hidden');
+                    } else {
+                        clearDbBtn.classList.add('hidden');
+                    }
+                }
             } else {
                 authNav.classList.remove('hidden');
                 userNav.classList.add('hidden');
                 userNav.classList.remove('flex');
+                if (clearDbBtn) clearDbBtn.classList.add('hidden');
             }
         }
 
@@ -1357,6 +1471,7 @@
                     return;
                 }
                 document.getElementById('adminPortalView').classList.remove('hidden');
+                updateNavbarUI();
                 loadAdminOrders();
                 loadMarketPrices();
                 loadCustomers();
@@ -1418,7 +1533,6 @@
             }
         }
 
-        // Auftragsabgabe inkl. Erkennung der ersten Angebotsanfrage (Neukunde)
         async function handleOrderSubmission(event) {
             event.preventDefault();
             const email = document.getElementById('orderEmail').value.trim();
@@ -1433,6 +1547,11 @@
 
             if (!file) {
                 alert("Bitte wählen Sie eine Angebotsdatei (PDF oder Bild) aus.");
+                return;
+            }
+
+            if (await isAccountBlocked(email)) {
+                alert("Dieses Kundenkonto wurde vom Administrator gesperrt. Es können keine Aufträge eingereicht werden.");
                 return;
             }
 
@@ -1469,7 +1588,7 @@
                         try {
                             await auth.signInWithEmailAndPassword(email, password);
                         } catch (pwErr) {
-                            console.warn("Falsches Passwort eingegeben, Fortfahren als Bestandskunde ohne Login:", pwErr);
+                            console.warn("Fortfahren als Bestandskunde ohne Login:", pwErr);
                         }
                     }
                 }
@@ -2041,6 +2160,7 @@
                                     firstName: sampleOrder ? (sampleOrder.firstName || 'Kunde') : 'Kunde',
                                     lastName: sampleOrder ? (sampleOrder.lastName || '') : '',
                                     role: 'Stammkunde',
+                                    isBlocked: false,
                                     createdAt: sampleOrder && sampleOrder.createdAt ? sampleOrder.createdAt : new Date().toISOString(),
                                     autoPromotedAt: new Date().toISOString()
                                 });
@@ -2050,6 +2170,7 @@
                                     firstName: sampleOrder ? (sampleOrder.firstName || 'Kunde') : 'Kunde',
                                     lastName: sampleOrder ? (sampleOrder.lastName || '') : '',
                                     role: 'Stammkunde',
+                                    isBlocked: false,
                                     createdAt: sampleOrder && sampleOrder.createdAt ? sampleOrder.createdAt : new Date().toISOString()
                                 });
                             }
@@ -2080,21 +2201,26 @@
             renderCustomersTable();
         }
 
-        function getRoleBadgeHtml(role, orderCount = 0) {
+        function getRoleBadgeHtml(role, orderCount = 0, isBlocked = false) {
+            const blockedTag = isBlocked
+                ? `<span class="ml-1.5 inline-flex items-center px-2 py-0.5 rounded text-[10px] font-black bg-rose-500 text-white uppercase"><i class="fa-solid fa-ban mr-1"></i>Gesperrt</span>`
+                : '';
+
             switch (role) {
                 case 'Hauptadmin':
                     return `<span class="inline-flex items-center px-2.5 py-1 rounded-lg text-xs font-bold bg-amber-500/20 text-amber-400 border border-amber-500/40"><i class="fa-solid fa-crown mr-1.5"></i>Hauptadmin</span>`;
                 case 'Admin':
-                    return `<span class="inline-flex items-center px-2.5 py-1 rounded-lg text-xs font-bold bg-purple-500/20 text-purple-400 border border-purple-500/40"><i class="fa-solid fa-user-shield mr-1.5"></i>Admin</span>`;
+                    return `<span class="inline-flex items-center px-2.5 py-1 rounded-lg text-xs font-bold bg-purple-500/20 text-purple-400 border border-purple-500/40"><i class="fa-solid fa-user-shield mr-1.5"></i>Admin</span>${blockedTag}`;
                 case 'Sachbearbeiter':
-                    return `<span class="inline-flex items-center px-2.5 py-1 rounded-lg text-xs font-bold bg-sky-500/20 text-sky-400 border border-sky-500/40"><i class="fa-solid fa-user-tie mr-1.5"></i>Sachbearbeiter</span>`;
+                    return `<span class="inline-flex items-center px-2.5 py-1 rounded-lg text-xs font-bold bg-sky-500/20 text-sky-400 border border-sky-500/40"><i class="fa-solid fa-user-tie mr-1.5"></i>Sachbearbeiter</span>${blockedTag}`;
                 case 'Stammkunde':
-                    return `<span class="inline-flex items-center px-2.5 py-1 rounded-lg text-xs font-bold bg-emerald-500/20 text-emerald-400 border border-emerald-500/40"><i class="fa-solid fa-star mr-1.5"></i>Stammkunde (-5%)${orderCount >= STAMMKUNDE_ORDER_THRESHOLD ? ' • 10+ Auftr.' : ''}</span>`;
+                    return `<span class="inline-flex items-center px-2.5 py-1 rounded-lg text-xs font-bold bg-emerald-500/20 text-emerald-400 border border-emerald-500/40"><i class="fa-solid fa-star mr-1.5"></i>Stammkunde (-5%)${orderCount >= STAMMKUNDE_ORDER_THRESHOLD ? ' • 10+ Auftr.' : ''}</span>${blockedTag}`;
                 default:
-                    return `<span class="inline-flex items-center px-2.5 py-1 rounded-lg text-xs font-semibold bg-slate-800 text-slate-300 border border-slate-700"><i class="fa-solid fa-user mr-1.5"></i>Kunde (${orderCount}/${STAMMKUNDE_ORDER_THRESHOLD})</span>`;
+                    return `<span class="inline-flex items-center px-2.5 py-1 rounded-lg text-xs font-semibold bg-slate-800 text-slate-300 border border-slate-700"><i class="fa-solid fa-user mr-1.5"></i>Kunde (${orderCount}/${STAMMKUNDE_ORDER_THRESHOLD})</span>${blockedTag}`;
             }
         }
 
+        // Rendert die Kundentabelle inkl. "Konto sperren"-Button exklusiv für den Hauptadmin
         function renderCustomersTable() {
             const container = document.getElementById('adminCustomersTableContainer');
             const permHint = document.getElementById('roleManagementPermissionHint');
@@ -2105,7 +2231,10 @@
             const searchQuery = searchInput ? searchInput.value.toLowerCase().trim() : '';
 
             if (permHint) {
-                if (canManageRoles()) {
+                if (isMainAdminUser()) {
+                    permHint.textContent = `Eingeloggt als Hauptadmin: Rollenvergabe & Kontosperre aktiv`;
+                    permHint.className = "text-xs px-3 py-1 rounded-lg bg-amber-500/10 text-amber-400 border border-amber-500/20 font-semibold";
+                } else if (canManageRoles()) {
                     permHint.textContent = `Eingeloggt als ${currentUserRole}: Rollenvergabe aktiv`;
                     permHint.className = "text-xs px-3 py-1 rounded-lg bg-emerald-500/10 text-emerald-400 border border-emerald-500/20 font-semibold";
                 } else {
@@ -2131,6 +2260,18 @@
                 firstName: 'System',
                 lastName: 'Hauptadmin',
                 role: 'Hauptadmin',
+                isBlocked: false,
+                createdAt: ''
+            };
+
+            // Demo-Konto ("Demo" / "Demo") immer in der Übersicht vorhalten
+            uniqueCustomers[DEMO_IDENTIFIER] = {
+                idDoc: null,
+                email: 'Demo',
+                firstName: 'Demo',
+                lastName: 'Admin-Konto',
+                role: 'Admin',
+                isBlocked: false,
                 createdAt: ''
             };
 
@@ -2139,7 +2280,7 @@
                     const mail = c.email.toLowerCase().trim();
                     const isMain = isMainAdminEmail(mail);
                     const count = orderCounts[mail] || 0;
-                    let resolvedRole = isMain ? 'Hauptadmin' : (c.role || 'Kunde');
+                    let resolvedRole = isMain ? 'Hauptadmin' : (c.role || (mail === DEMO_IDENTIFIER ? 'Admin' : 'Kunde'));
                     if (resolvedRole === 'Kunde' && count >= STAMMKUNDE_ORDER_THRESHOLD) {
                         resolvedRole = 'Stammkunde';
                     }
@@ -2147,9 +2288,10 @@
                     uniqueCustomers[mail] = {
                         idDoc: c.idDoc || null,
                         email: c.email,
-                        firstName: c.firstName || (isMain ? 'System' : 'Kunde'),
-                        lastName: c.lastName || (isMain ? 'Hauptadmin' : ''),
+                        firstName: c.firstName || (isMain ? 'System' : (mail === DEMO_IDENTIFIER ? 'Demo' : 'Kunde')),
+                        lastName: c.lastName || (isMain ? 'Hauptadmin' : (mail === DEMO_IDENTIFIER ? 'Admin-Konto' : '')),
                         role: resolvedRole,
+                        isBlocked: isMain ? false : Boolean(c.isBlocked),
                         createdAt: c.createdAt || ''
                     };
                 }
@@ -2167,6 +2309,7 @@
                             firstName: o.firstName || (isMain ? 'System' : 'Unbekannt'),
                             lastName: o.lastName || (isMain ? 'Hauptadmin' : ''),
                             role: isMain ? 'Hauptadmin' : (count >= STAMMKUNDE_ORDER_THRESHOLD ? 'Stammkunde' : 'Kunde'),
+                            isBlocked: false,
                             createdAt: o.createdAt || ''
                         };
                     } else {
@@ -2216,16 +2359,19 @@
                 { value: 'Admin', label: 'Admin' }
             ];
 
+            const showBlockCol = isMainAdminUser();
+
             container.innerHTML = `
                 <table class="w-full text-left text-xs text-slate-300">
                     <thead class="bg-slate-950 text-slate-400 uppercase border-b border-slate-800">
                         <tr>
                             <th class="p-3">Name</th>
-                            <th class="p-3">E-Mail-Adresse</th>
+                            <th class="p-3">E-Mail / Kennung</th>
                             <th class="p-3">Aktueller Rang</th>
                             <th class="p-3">Rang zuweisen</th>
                             <th class="p-3 text-center">Aufträge</th>
                             <th class="p-3">Registriert</th>
+                            ${showBlockCol ? `<th class="p-3 text-right">Kontosperre (Hauptadmin)</th>` : ''}
                         </tr>
                     </thead>
                     <tbody class="divide-y divide-slate-800">
@@ -2234,6 +2380,7 @@
                             const count = orderCounts[c.email.toLowerCase().trim()] || 0;
                             const currentRole = isTargetMainAdmin ? 'Hauptadmin' : (c.role || 'Kunde');
                             const safeEmailAttr = c.email.replace(/'/g, "\\'");
+                            const isBlocked = Boolean(c.isBlocked);
 
                             let roleControlHtml = '';
                             if (isTargetMainAdmin) {
@@ -2256,22 +2403,79 @@
                                 `;
                             }
 
+                            let blockActionHtml = '';
+                            if (showBlockCol) {
+                                if (isTargetMainAdmin) {
+                                    blockActionHtml = `<td class="p-3 text-right text-[11px] text-slate-500 italic">Geschützt</td>`;
+                                } else {
+                                    blockActionHtml = `
+                                        <td class="p-3 text-right whitespace-nowrap">
+                                            <button type="button" onclick="toggleCustomerBlock('${safeEmailAttr}', ${isBlocked})" class="px-3 py-1.5 rounded-lg text-[11px] font-bold transition ${isBlocked ? 'bg-emerald-500/15 hover:bg-emerald-500/25 text-emerald-400 border border-emerald-500/30' : 'bg-rose-500/15 hover:bg-rose-500/25 text-rose-400 border border-rose-500/30'}">
+                                                <i class="fa-solid ${isBlocked ? 'fa-lock-open' : 'fa-user-lock'} mr-1"></i>${isBlocked ? 'Konto entsperren' : 'Konto sperren'}
+                                            </button>
+                                        </td>
+                                    `;
+                                }
+                            }
+
                             return `
-                                <tr class="hover:bg-slate-950/50">
+                                <tr class="hover:bg-slate-950/50 ${isBlocked ? 'opacity-60 bg-rose-950/10' : ''}">
                                     <td class="p-3 font-semibold text-white">${c.firstName} ${c.lastName}</td>
                                     <td class="p-3 text-emerald-400">${c.email}</td>
-                                    <td class="p-3">${getRoleBadgeHtml(currentRole, count)}</td>
+                                    <td class="p-3">${getRoleBadgeHtml(currentRole, count, isBlocked)}</td>
                                     <td class="p-3">${roleControlHtml}</td>
                                     <td class="p-3 text-center">
                                         <span class="font-bold ${count >= STAMMKUNDE_ORDER_THRESHOLD ? 'text-emerald-400' : 'text-white'}">${count}</span>
                                     </td>
                                     <td class="p-3">${c.createdAt ? new Date(c.createdAt).toLocaleDateString('de-DE') : '-'}</td>
+                                    ${blockActionHtml}
                                 </tr>
                             `;
                         }).join('')}
                     </tbody>
                 </table>
             `;
+        }
+
+        // NEU: Nur Hauptadmin kann Konten sperren / entsperren
+        async function toggleCustomerBlock(targetEmail, currentlyBlocked) {
+            if (!isMainAdminUser()) {
+                alert('Zugriff verweigert: Nur der Hauptadmin kann Kundenkonten sperren oder entsperren.');
+                return;
+            }
+            if (isMainAdminEmail(targetEmail)) {
+                alert('Das Hauptadmin-Konto kann nicht gesperrt werden.');
+                return;
+            }
+
+            const newBlockedState = !currentlyBlocked;
+            const cleanTarget = targetEmail.toLowerCase().trim();
+            const existingCustomer = customersList.find(c => c.email && c.email.toLowerCase().trim() === cleanTarget);
+            const relatedOrder = adminOrders.find(o => o.email && o.email.toLowerCase().trim() === cleanTarget);
+
+            if (db) {
+                try {
+                    if (existingCustomer && existingCustomer.idDoc) {
+                        await db.collection('customers').doc(existingCustomer.idDoc).update({
+                            isBlocked: newBlockedState,
+                            updatedAt: new Date().toISOString()
+                        });
+                    } else {
+                        await db.collection('customers').add({
+                            email: targetEmail.trim(),
+                            firstName: cleanTarget === DEMO_IDENTIFIER ? 'Demo' : (relatedOrder ? (relatedOrder.firstName || 'Kunde') : 'Kunde'),
+                            lastName: cleanTarget === DEMO_IDENTIFIER ? 'Admin-Konto' : (relatedOrder ? (relatedOrder.lastName || '') : ''),
+                            role: cleanTarget === DEMO_IDENTIFIER ? 'Admin' : 'Kunde',
+                            isBlocked: newBlockedState,
+                            createdAt: new Date().toISOString(),
+                            updatedAt: new Date().toISOString()
+                        });
+                    }
+                    await loadCustomers();
+                } catch (e) {
+                    alert('Fehler beim Ändern des Sperrstatus: ' + e.message);
+                }
+            }
         }
 
         async function updateCustomerRole(targetEmail, newRole) {
@@ -2307,9 +2511,10 @@
                     } else {
                         await db.collection('customers').add({
                             email: targetEmail.trim(),
-                            firstName: relatedOrder ? (relatedOrder.firstName || 'Kunde') : 'Kunde',
-                            lastName: relatedOrder ? (relatedOrder.lastName || '') : '',
+                            firstName: cleanTarget === DEMO_IDENTIFIER ? 'Demo' : (relatedOrder ? (relatedOrder.firstName || 'Kunde') : 'Kunde'),
+                            lastName: cleanTarget === DEMO_IDENTIFIER ? 'Admin-Konto' : (relatedOrder ? (relatedOrder.lastName || '') : ''),
                             role: newRole,
+                            isBlocked: false,
                             createdAt: relatedOrder && relatedOrder.createdAt ? relatedOrder.createdAt : new Date().toISOString(),
                             updatedAt: new Date().toISOString()
                         });
@@ -2327,6 +2532,92 @@
                     renderAdminDashboard();
                 } catch (e) {
                     alert('Fehler beim Speichern des Rangs: ' + e.message);
+                }
+            }
+        }
+
+        // ============================================================================
+        // HAUPTADMIN: ALLE POSITIONEN DER DATENBANK MIT PASSWORT-ABFRAGE LÖSCHEN
+        // ============================================================================
+
+        function openClearDbPasswordModal() {
+            if (!isMainAdminUser()) {
+                alert('Nur der Hauptadmin ist berechtigt, die gesamte Marktpreise-Datenbank zu leeren.');
+                return;
+            }
+            const pwInput = document.getElementById('mainAdminClearDbPasswordInput');
+            const errSpan = document.getElementById('clearDbModalError');
+            if (pwInput) pwInput.value = '';
+            if (errSpan) {
+                errSpan.textContent = '';
+                errSpan.classList.add('hidden');
+            }
+            document.getElementById('clearDbPasswordModal').classList.remove('hidden');
+            if (pwInput) pwInput.focus();
+        }
+
+        function closeClearDbPasswordModal() {
+            document.getElementById('clearDbPasswordModal').classList.add('hidden');
+        }
+
+        async function confirmDeleteAllMarketPrices(event) {
+            event.preventDefault();
+            if (!isMainAdminUser()) return;
+
+            const pwInput = document.getElementById('mainAdminClearDbPasswordInput');
+            const errSpan = document.getElementById('clearDbModalError');
+            const submitBtn = document.getElementById('confirmClearDbSubmitBtn');
+            const feedback = document.getElementById('importFeedback');
+            const enteredPassword = pwInput ? pwInput.value : '';
+
+            if (!enteredPassword) return;
+
+            if (errSpan) errSpan.classList.add('hidden');
+            if (submitBtn) {
+                submitBtn.disabled = true;
+                submitBtn.textContent = 'Prüfe Passwort & lösche...';
+            }
+
+            try {
+                // 1. Hauptadmin-Passwort gegen Firebase Auth verifizieren
+                if (auth && auth.currentUser) {
+                    const cred = firebase.auth.EmailAuthProvider.credential(ADMIN_EMAIL, enteredPassword);
+                    await auth.currentUser.reauthenticateWithCredential(cred);
+                } else if (auth) {
+                    await auth.signInWithEmailAndPassword(ADMIN_EMAIL, enteredPassword);
+                }
+
+                // 2. Alle Dokumente in 'market_prices' löschen
+                if (db) {
+                    const snap = await db.collection('market_prices').get();
+                    const totalDocs = snap.size;
+
+                    if (totalDocs > 0) {
+                        const docs = snap.docs;
+                        for (let i = 0; i < docs.length; i += 400) {
+                            const batch = db.batch();
+                            docs.slice(i, i + 400).forEach(d => batch.delete(d.ref));
+                            await batch.commit();
+                        }
+                    }
+
+                    closeClearDbPasswordModal();
+                    if (feedback) {
+                        feedback.textContent = `✓ Gesamte Marktpreise-Datenbank wurde durch den Hauptadmin geleert (${totalDocs} Positionen gelöscht).`;
+                        feedback.className = "text-xs block text-emerald-400 font-semibold";
+                    }
+                    await loadMarketPrices();
+                }
+            } catch (err) {
+                console.error("Fehler bei Passwortprüfung / DB-Löschung:", err);
+                if (errSpan) {
+                    errSpan.textContent = '✕ Falsches Hauptadmin-Passwort! Löschvorgang wurde abgebrochen.';
+                    errSpan.classList.remove('hidden');
+                }
+            } finally {
+                if (submitBtn) {
+                    submitBtn.disabled = false;
+                    submitBtn.innerHTML = '<i class="fa-solid fa-trash-can mr-1.5"></i>Jetzt alle löschen';
                 }
             }
         }
@@ -2371,7 +2662,6 @@
                 .trim();
         }
 
-        // Extrahiert aus GAEB-XML-Knoten STRIKT NUR DEN KURZTEXT (ignoriert DetailTxt / Langtext)
         function extractStrictGAEBShortText(itemNode) {
             const shortTextNode = itemNode.querySelector(
                 'OutlineText OutlTxt TextOutlTxt, OutlineText TextOutlTxt, OutlTxt TextOutlTxt, OutlineText OutlTxt, OutlTxt, ShortDesc, Kurztext, Headline'
@@ -2396,7 +2686,6 @@
             return '';
         }
 
-        // Extrahiert optional den Langtext (DetailTxt / LongText) separat für den Info-Tooltip
         function extractOptionalGAEBLongText(itemNode) {
             const longNodes = itemNode.querySelectorAll('DetailTxt, CompleteTextDetail, LongText, TextComplement');
             if (!longNodes || longNodes.length === 0) return '';
@@ -2985,7 +3274,6 @@
             selectAdminOrder(order.id);
         }
 
-        // Manueller Speichervorgang inkl. Einheit, optionalem Langtext-Tooltip & Duplikat-Prüfung
         async function saveMarketPriceItem(event) {
             event.preventDefault();
             let docId = document.getElementById('marketPriceDocId').value;
@@ -3089,7 +3377,6 @@
             renderMarketPricesTable();
         }
 
-        // Rendert die Marktpreise-Tabelle inkl. optionalem GAEB-Langtext als Info-Tooltip
         function renderMarketPricesTable() {
             const container = document.getElementById('marketPricesTableContainer');
             const searchInput = document.getElementById('marketPriceSearchInput');
@@ -3192,6 +3479,7 @@
             if (tabName === 'marketprices') {
                 marketPricesPanel.classList.remove('hidden');
                 searchContainer.classList.remove('hidden');
+                updateNavbarUI();
                 loadMarketPrices();
             } else if (tabName === 'customers') {
                 customersPanel.classList.remove('hidden');
@@ -3325,9 +3613,9 @@
                 listTitle.textContent = "Kunden & Ränge";
                 container.innerHTML = `
                     <div class="bg-slate-900 border border-slate-800 rounded-xl p-4 space-y-2 text-xs text-slate-400">
-                        <p class="text-white font-semibold"><i class="fa-solid fa-circle-info text-emerald-400 mr-1.5"></i>Rang-Automatik & Filter</p>
-                        <p>Nutzen Sie die Suchleiste und die Rang-Buttons rechts über der Tabelle, um Kunden gezielt zu filtern.</p>
-                        <p class="text-emerald-400 font-medium"><i class="fa-solid fa-bolt mr-1"></i>Kunden mit 10 oder mehr Aufträgen werden automatisch zum Stammkunden (5 % Rabatt) hochgestuft.</p>
+                        <p class="text-white font-semibold"><i class="fa-solid fa-circle-info text-emerald-400 mr-1.5"></i>Rang-Automatik & Kontosperre</p>
+                        <p>Ab 10 Aufträgen erfolgt automatisch der Aufstieg zum Stammkunden (5 % Rabatt).</p>
+                        <p class="text-amber-400 font-medium"><i class="fa-solid fa-shield-halved mr-1"></i>Der Hauptadmin kann einzelne Konten rechts in der Tabelle sperren.</p>
                     </div>
                 `;
             } else if (currentAdminTab === 'marketprices') {
@@ -3517,7 +3805,6 @@
 
             updateAdminEditorRolePermissions(order);
 
-            // Status-Sperre im Dropdown für Neukunden ohne 50% Anzahlungsrechnung / Zahlung anwenden
             const lockedForWork = isNewCustomerLockedForWork(order);
             const statusSelect = document.getElementById('adminStatusSelect');
             if (statusSelect) {
@@ -3609,7 +3896,6 @@
             window.location.href = `mailto:${order.email}?subject=${subject}&body=${body}`;
         }
 
-        // Automatischer PDF-Rechnungsgenerator (50% Anzahlung & 100% Gesamtrechnung) via jsPDF
         function generateInvoicePDFDocument(order, type) {
             if (!window.jspdf || !window.jspdf.jsPDF) {
                 alert('PDF-Generator (jsPDF) wird geladen oder ist nicht verfügbar.');
@@ -3630,7 +3916,6 @@
             const customerName = `${order.firstName || ''} ${order.lastName || ''}`.trim() || order.email;
             const projectName = (order.projectName || 'Allgemein').trim();
 
-            // Kopfbereich
             doc.setFont('helvetica', 'bold');
             doc.setFontSize(18);
             doc.setTextColor(16, 185, 129);
@@ -3641,7 +3926,6 @@
             doc.setTextColor(100, 116, 139);
             doc.text('Technische & Kaufmännische TGA-/SHK-Analyse', 20, 28);
 
-            // Empfänger & Rechnungsmetadaten
             doc.setTextColor(15, 23, 42);
             doc.setFontSize(10);
             doc.setFont('helvetica', 'bold');
@@ -3657,7 +3941,6 @@
             doc.text(`Auftrags-Nr.: ${order.id}`, 125, 56);
             doc.text(`Projekt: ${projectName}`, 125, 61);
 
-            // Rechnungstitel
             doc.setFont('helvetica', 'bold');
             doc.setFontSize(14);
             const titleText = type === '50'
@@ -3665,7 +3948,6 @@
                 : 'Rechnung (100 % Gesamtabrechnung)';
             doc.text(titleText, 20, 80);
 
-            // Tabellenkopf
             doc.setFillColor(241, 245, 249);
             doc.rect(20, 88, 170, 9, 'F');
             doc.setFontSize(9);
@@ -3673,7 +3955,6 @@
             doc.text('Leistungsbeschreibung', 38, 94);
             doc.text('Betrag (brutto)', 155, 94);
 
-            // Positionszeilen
             doc.setFont('helvetica', 'normal');
             doc.setFontSize(10);
             doc.text('1', 24, 106);
@@ -3691,7 +3972,6 @@
             doc.setFont('helvetica', 'bold');
             doc.text(`${billedGross.toFixed(2).replace('.', ',')} €`, 155, 106);
 
-            // Summenblock
             const sumY = 145;
             doc.setDrawColor(203, 213, 225);
             doc.line(20, sumY - 6, 190, sumY - 6);
@@ -3709,7 +3989,6 @@
             doc.text('Rechnungsbetrag (Brutto):', 115, sumY + 16);
             doc.text(`${billedGross.toFixed(2).replace('.', ',')} €`, 160, sumY + 16);
 
-            // Fußnote
             doc.setFont('helvetica', 'normal');
             doc.setFontSize(9);
             doc.setTextColor(71, 85, 105);
@@ -3721,20 +4000,17 @@
             doc.save(`Rechnung_${order.id}_${type}Prozent.pdf`);
         }
 
-        // Erzeugt die PDF-Rechnung, hebt bei 50% die Neukunden-Status-Sperre auf und öffnet die E-Mail
         async function sendInvoiceEmail(type, markDepositSent = false) {
             if (!selectedAdminOrderId) return;
             const order = adminOrders.find(o => o.id === selectedAdminOrderId);
             if (!order) return;
 
-            // 1. PDF automatisch generieren und herunterladen
             generateInvoicePDFDocument(order, type);
 
             const basePrice = order.price || 149;
             const manualDiscount = parseFloat(order.manualDiscount) || 0;
             const finalPrice = Math.max(0, basePrice - manualDiscount);
 
-            // 2. Bei 50%-Rechnung den Versandstatus in Firestore speichern & Status-Sperre aufheben
             if (type === '50' && markDepositSent) {
                 order.depositInvoiceSent = true;
                 if (db && order.idDoc) {
@@ -4015,7 +4291,6 @@
                 return;
             }
 
-            // Status-Sperre für Neukunden prüfen (sofern der Bezahlstatus nicht gerade auf partial/paid gesetzt wurde)
             const stillLocked = isFirstCustomerInquiryOrder(order) && selectedPaymentStatus === 'unpaid' && !order.depositInvoiceSent;
             if ([2, 3, 4].includes(newStatus) && stillLocked) {
                 alert('Status-Sperre aktiv: Bei der ersten Anfrage eines Neukunden muss vor Arbeitsbeginn (Status 2–4) zuerst die 50% PDF-Anzahlungsrechnung erstellt/versendet oder der Bezahlstatus auf „Angezahlt (50%)“ / „Bezahlt“ gesetzt werden!');
@@ -4131,7 +4406,7 @@
                 forgotBtn.classList.add('hidden');
             } else {
                 title.textContent = "Kundenportal Login";
-                subtitle.textContent = "Geben Sie Ihre Zugangsdaten ein, um Ihre Aufträge einzusehen.";
+                subtitle.textContent = "Geben Sie Ihre Zugangsdaten ein (oder Demo / Demo für den Admin-Testzugang).";
                 btn.textContent = "Anmelden";
                 passwordContainer.classList.remove('hidden');
                 document.getElementById('authPassword').required = true;
@@ -4141,14 +4416,41 @@
             }
         }
 
+        // Login inkl. Demo-Konto ("Demo" / "Demo" -> Admin-Rechte) & Sperrprüfung
         async function handleAuthSubmit(event) {
             event.preventDefault();
-            const email = document.getElementById('authEmail').value.trim();
+            const rawInput = document.getElementById('authEmail').value.trim();
             const password = document.getElementById('authPassword').value;
 
+            // 1. Spezieller Login für Demo-Konto: Benutzer "Demo" + Passwort "Demo"
+            if (!isForgotPasswordMode && !isRegisterMode && rawInput.toLowerCase() === DEMO_IDENTIFIER && password === 'Demo') {
+                if (await isAccountBlocked('Demo')) {
+                    alert('Das Demo-Konto wurde vom Hauptadmin gesperrt.');
+                    return;
+                }
+                sessionStorage.setItem('shk_demo_session', 'true');
+                currentUser = { email: 'Demo', uid: 'demo_admin_uid', isDemo: true };
+                await ensureCustomerRecord('Demo', 'Demo', 'Admin-Konto', 'Admin');
+                currentUserRole = await fetchRoleForEmail('Demo');
+                isStammkundeActive = (currentUserRole === 'Stammkunde');
+                updateNavbarUI();
+                closeAuthModal();
+                await loadAdminOrders();
+                await loadMarketPrices();
+                await loadCustomers();
+                openAdminPortal();
+                return;
+            }
+
+            // 2. Prüfen, ob Konto vom Hauptadmin gesperrt wurde
+            if (await isAccountBlocked(rawInput)) {
+                alert('Ihr Konto wurde vom Administrator gesperrt. Ein Login ist nicht möglich.');
+                return;
+            }
+
             if (!auth) {
-                currentUser = { email: email, uid: 'demo_user_123' };
-                currentUserRole = isMainAdminEmail(email) ? 'Hauptadmin' : 'Kunde';
+                currentUser = { email: rawInput, uid: 'demo_user_123' };
+                currentUserRole = isMainAdminEmail(rawInput) ? 'Hauptadmin' : 'Kunde';
                 updateNavbarUI();
                 closeAuthModal();
                 openClientPortal();
@@ -4156,19 +4458,20 @@
             }
 
             try {
+                sessionStorage.removeItem('shk_demo_session');
                 if (isForgotPasswordMode) {
-                    await auth.sendPasswordResetEmail(email);
-                    alert('Eine E-Mail zum Zurücksetzen des Passworts wurde an ' + email + ' gesendet!');
+                    await auth.sendPasswordResetEmail(rawInput);
+                    alert('Eine E-Mail zum Zurücksetzen des Passworts wurde an ' + rawInput + ' gesendet!');
                     openAuthModal('login');
                 } else if (isRegisterMode) {
-                    await auth.createUserWithEmailAndPassword(email, password);
-                    await ensureCustomerRecord(email);
+                    await auth.createUserWithEmailAndPassword(rawInput, password);
+                    await ensureCustomerRecord(rawInput);
                     alert('Registrierung erfolgreich!');
                     closeAuthModal();
                     openClientPortal();
                 } else {
-                    await auth.signInWithEmailAndPassword(email, password);
-                    await ensureCustomerRecord(email);
+                    await auth.signInWithEmailAndPassword(rawInput, password);
+                    await ensureCustomerRecord(rawInput);
                     closeAuthModal();
                     openClientPortal();
                 }
@@ -4178,7 +4481,8 @@
         }
 
         async function logoutUser() {
-            if (auth) {
+            sessionStorage.removeItem('shk_demo_session');
+            if (auth && auth.currentUser) {
                 await auth.signOut();
             }
             currentUser = null;
