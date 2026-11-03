@@ -1031,6 +1031,9 @@
                                     </p>
                                 </div>
                                 <div class="flex flex-wrap items-center gap-2">
+                                    <button type="button" onclick="triggerAutoOverdueDunningEmails()" class="bg-amber-500 hover:bg-amber-400 text-slate-950 px-3.5 py-2 rounded-xl text-xs font-bold transition whitespace-nowrap shadow-lg shadow-amber-500/15 flex items-center gap-1.5">
+                                        <i class="fa-solid fa-paper-plane"></i><span>Überfällige (&gt; 14 Tage) automatisch mahnen</span>
+                                    </button>
                                     <button type="button" onclick="exportAdminMonthlyReportCSV()" class="bg-slate-800 hover:bg-slate-700 text-emerald-400 border border-emerald-500/30 px-3.5 py-2 rounded-xl text-xs font-bold transition whitespace-nowrap">
                                         <i class="fa-solid fa-file-csv mr-1.5"></i>CSV-Bericht
                                     </button>
@@ -1042,6 +1045,9 @@
                                     </button>
                                 </div>
                             </div>
+
+                            <!-- Simulations-Protokoll für automatischen Mahnungsversand (> 14 Tage überfällig) -->
+                            <div id="adminAutoDunningSimulationLog" class="hidden bg-slate-950 border border-amber-500/40 rounded-xl p-4 space-y-2"></div>
 
                             <div id="adminInvoicesTableContainer" class="space-y-4">
                                 <!-- Dynamisch befüllt -->
@@ -1173,6 +1179,19 @@
                                     <option value="6" id="statusOptCancel">6. Storniert</option>
                                 </select>
                             </div>
+                        </div>
+
+                        <!-- KUNDENBEWERTUNG (1-5 STERNE) ZUM PRÜFBERICHT IM ADMIN-PANEL -->
+                        <div id="adminOrderCustomerRatingBox" class="bg-slate-950 border border-amber-500/30 rounded-xl p-4 space-y-2">
+                            <div class="flex flex-wrap items-center justify-between gap-2">
+                                <span id="adminOrderRatingTitle" class="text-xs font-bold text-amber-400 flex items-center gap-1.5">
+                                    <i class="fa-solid fa-star text-amber-400"></i>
+                                    <span>Kundenbewertung zum Prüfbericht</span>
+                                </span>
+                                <span id="adminOrderRatingDate" class="text-[11px] text-slate-400 font-mono">Noch nicht bewertet</span>
+                            </div>
+                            <div id="adminOrderRatingStarsRow" class="text-xs text-slate-400">Für diesen Auftrag wurde noch keine Bewertung abgegeben.</div>
+                            <p id="adminOrderRatingComment" class="hidden text-xs text-slate-200 italic bg-slate-900 p-3 rounded-lg border border-slate-800"></p>
                         </div>
 
                         <!-- Vorläufige Freigabe Banner -->
@@ -5352,6 +5371,12 @@ function populateFileCheckTargetOrderDropdown() {
         }
 
         function selectClientReportRatingStar(stars) {
+            const order = (typeof userOrders !== 'undefined' ? userOrders : []).find(o => o.id === (typeof activeOrderId !== 'undefined' ? activeOrderId : selectedClientOrderId));
+            const alreadyRated = order && Number(order.ratingStars || (order.invoiceMeta && order.invoiceMeta.ratingStars) || 0) >= 1;
+            if (alreadyRated) {
+                showToast('Ihre Bewertung wurde bereits verbindlich gespeichert und kann nicht mehr geändert werden.', 'info');
+                return;
+            }
             const s = Math.max(1, Math.min(5, Number(stars) || 5));
             currentClientRatingSelection = s;
             const buttons = document.querySelectorAll('#clientRatingStarsBar .client-star-btn');
@@ -5379,30 +5404,66 @@ function populateFileCheckTargetOrderDropdown() {
             const savedBadge = document.getElementById('clientRatingSavedBadge');
             const tsInfo = document.getElementById('clientRatingTimestampInfo');
             const submitBtn = document.getElementById('btnSubmitClientRating');
+            const buttons = document.querySelectorAll('#clientRatingStarsBar .client-star-btn');
 
             if (savedStars >= 1 && savedStars <= 5) {
-                selectClientReportRatingStar(savedStars);
-                if (commentInput) commentInput.value = savedComment;
-                if (savedBadge) savedBadge.classList.remove('hidden');
-                if (tsInfo) tsInfo.textContent = 'Bewertet am ' + savedAt + ' (' + savedStars + '/5 Sterne). Sie können Ihre Bewertung jederzeit anpassen.';
-                if (submitBtn) submitBtn.innerHTML = '<i class="fa-solid fa-pen-to-square"></i><span>Bewertung aktualisieren</span>';
+                currentClientRatingSelection = savedStars;
+                buttons.forEach(btn => {
+                    const btnStar = Number(btn.getAttribute('data-star') || 0);
+                    btn.disabled = true;
+                    if (btnStar <= savedStars) {
+                        btn.className = 'client-star-btn w-10 h-10 rounded-xl bg-amber-500/20 border border-amber-500/50 flex items-center justify-center text-lg text-amber-400 opacity-90 cursor-not-allowed';
+                    } else {
+                        btn.className = 'client-star-btn w-10 h-10 rounded-xl bg-slate-900 border border-slate-800 flex items-center justify-center text-lg text-slate-700 opacity-60 cursor-not-allowed';
+                    }
+                });
+                const labelEl = document.getElementById('clientRatingSelectionLabel');
+                if (labelEl) labelEl.textContent = getStarRatingLabelText(savedStars);
+                if (commentInput) {
+                    commentInput.value = savedComment || 'Keine schriftliche Anmerkung hinterlegt.';
+                    commentInput.readOnly = true;
+                    commentInput.disabled = true;
+                }
+                if (savedBadge) {
+                    savedBadge.classList.remove('hidden');
+                    savedBadge.innerHTML = '<i class="fa-solid fa-lock mr-1"></i>Verbindlich bewertet (' + savedStars + '/5 ★)';
+                }
+                if (tsInfo) tsInfo.textContent = 'Verbindlich bewertet am ' + savedAt + ' (' + savedStars + '/5 Sterne). Nach dem Absenden nicht mehr änderbar.';
+                if (submitBtn) submitBtn.classList.add('hidden');
             } else {
+                buttons.forEach(btn => { btn.disabled = false; });
                 selectClientReportRatingStar(5);
-                if (commentInput) commentInput.value = '';
+                if (commentInput) {
+                    commentInput.value = '';
+                    commentInput.readOnly = false;
+                    commentInput.disabled = false;
+                }
                 if (savedBadge) savedBadge.classList.add('hidden');
-                if (tsInfo) tsInfo.textContent = 'Ihr Feedback hilft unserem Meister-Team bei der Qualitätssicherung.';
-                if (submitBtn) submitBtn.innerHTML = '<i class="fa-solid fa-paper-plane"></i><span>Bewertung absenden</span>';
+                if (tsInfo) tsInfo.textContent = 'Hinweis: Nach dem Absenden ist Ihre Bewertung verbindlich und kann nicht mehr geändert werden.';
+                if (submitBtn) {
+                    submitBtn.classList.remove('hidden');
+                    submitBtn.innerHTML = '<i class="fa-solid fa-paper-plane"></i><span>Bewertung verbindlich absenden</span>';
+                }
             }
         }
 
         async function submitClientOrderRating() {
-            const order = clientOrders.find(o => o.id === selectedClientOrderId);
+            const activeId = typeof activeOrderId !== 'undefined' && activeOrderId ? activeOrderId : (typeof selectedClientOrderId !== 'undefined' ? selectedClientOrderId : null);
+            const sourceList = (typeof userOrders !== 'undefined' && Array.isArray(userOrders)) ? userOrders : [];
+            const order = sourceList.find(o => o.id === activeId) || adminOrders.find(o => o.id === activeId);
             if (!order) {
                 showToast('Kein Prüfauftrag ausgewählt.', 'error');
                 return;
             }
             if (Number(order.status) !== 4) {
                 showToast('Eine Bewertung ist erst nach Abschluss des Prüfberichts möglich.', 'error');
+                return;
+            }
+
+            const existingStars = Number(order.ratingStars || (order.invoiceMeta && order.invoiceMeta.ratingStars) || 0);
+            if (existingStars >= 1) {
+                showToast('Diese Bewertung wurde bereits verbindlich abgegeben und kann nicht mehr geändert werden.', 'info');
+                syncClientRatingUIFromOrder(order);
                 return;
             }
 
@@ -5432,27 +5493,200 @@ function populateFileCheckTargetOrderDropdown() {
                 });
             }
 
-            if (supabaseClient) {
+            if (typeof db !== 'undefined' && db && order.idDoc) {
                 try {
-                    await supabaseClient.from('orders').update({
+                    await db.collection('orders').doc(order.idDoc).update({
                         invoiceMeta: order.invoiceMeta
-                    }).eq('id', order.id);
+                    });
                 } catch (err) {
-                    console.warn('Supabase Rating-Update Hinweis:', err);
+                    console.warn('DB Rating-Update Hinweis:', err);
                 }
             }
 
             syncClientRatingUIFromOrder(order);
+            if (typeof renderClientOrdersList === 'function') renderClientOrdersList();
+            if (typeof renderAdminDashboard === 'function') renderAdminDashboard();
             if (typeof pushAdminNotification === 'function') {
                 pushAdminNotification(
                     'new_order',
                     'Neue Kundenbewertung (' + stars + '/5 ★) für ' + order.id,
-                    (order.email || 'Kunde') + ' hat den Prüfbericht mit ' + stars + ' Sternen bewertet' + (comment ? ': „' + comment + '“' : '.'),
+                    (order.email || 'Kunde') + ' hat den Prüfbericht verbindlich mit ' + stars + ' Sternen bewertet' + (comment ? ': „' + comment + '“' : '.'),
                     order.id,
                     order.email || 'ALL'
                 );
             }
-            showToast('Vielen Dank! Ihre ' + stars + '-Sterne-Bewertung für Auftrag ' + order.id + ' wurde gespeichert.');
+            showToast('Vielen Dank! Ihre ' + stars + '-Sterne-Bewertung für Auftrag ' + order.id + ' wurde verbindlich gespeichert.');
+        }
+
+        function renderAdminOrderRatingBox(order) {
+            const box = document.getElementById('adminOrderCustomerRatingBox');
+            const dateEl = document.getElementById('adminOrderRatingDate');
+            const starsRow = document.getElementById('adminOrderRatingStarsRow');
+            const commentEl = document.getElementById('adminOrderRatingComment');
+            if (!box || !starsRow) return;
+
+            const stars = Number(order && (order.ratingStars || (order.invoiceMeta && order.invoiceMeta.ratingStars)) || 0);
+            const comment = (order && (order.ratingComment || (order.invoiceMeta && order.invoiceMeta.ratingComment))) || '';
+            const ratedAt = (order && (order.ratedAt || (order.invoiceMeta && order.invoiceMeta.ratedAt))) || '';
+
+            if (stars >= 1 && stars <= 5) {
+                let starIcons = '';
+                for (let i = 1; i <= 5; i++) {
+                    starIcons += '<i class="fa-solid fa-star ' + (i <= stars ? 'text-amber-400' : 'text-slate-700') + ' mr-1"></i>';
+                }
+                if (dateEl) dateEl.textContent = ratedAt ? 'Bewertet am ' + ratedAt + ' (verbindlich)' : 'Verbindlich bewertet';
+                starsRow.innerHTML = '<div class="flex items-center gap-2">' + starIcons + '<span class="font-bold text-amber-400">' + stars + ' von 5 Sternen</span></div>';
+                if (commentEl) {
+                    if (comment) {
+                        commentEl.textContent = '„' + comment + '“';
+                        commentEl.classList.remove('hidden');
+                    } else {
+                        commentEl.classList.add('hidden');
+                    }
+                }
+            } else {
+                if (dateEl) dateEl.textContent = 'Noch keine Bewertung';
+                starsRow.innerHTML = '<span class="text-slate-500">Kunde hat diesen Prüfbericht noch nicht bewertet (Bewertung nach Abschluss im Kundenportal möglich).</span>';
+                if (commentEl) commentEl.classList.add('hidden');
+            }
+        }
+
+        // --- AUTOMATISCHE E-MAIL-MAHNUNG FÜR ALLE RECHNUNGEN > 14 TAGE ÜBERFÄLLIG ---
+        function parseInvoiceDateToMs(dateStr) {
+            if (!dateStr) return null;
+            const clean = String(dateStr).trim();
+            // Format DD.MM.YYYY oder DD.MM.YY
+            const deMatch = clean.match(/^(\d{1,2})\.(\d{1,2})\.(\d{2,4})(?:[,\s]+(\d{1,2}):(\d{2}))?/);
+            if (deMatch) {
+                let year = parseInt(deMatch[3], 10);
+                if (year < 100) year += 2000;
+                const month = parseInt(deMatch[2], 10) - 1;
+                const day = parseInt(deMatch[1], 10);
+                const hr = deMatch[4] ? parseInt(deMatch[4], 10) : 12;
+                const min = deMatch[5] ? parseInt(deMatch[5], 10) : 0;
+                return new Date(year, month, day, hr, min).getTime();
+            }
+            const parsed = Date.parse(clean.replace(' ', 'T'));
+            return isNaN(parsed) ? null : parsed;
+        }
+
+        function getDaysOverdueFromDateStr(dateStr) {
+            const ms = parseInvoiceDateToMs(dateStr);
+            if (!ms) return 0;
+            const refNow = Math.max(Date.now(), new Date('2026-11-03T12:00:00').getTime());
+            return Math.floor((refNow - ms) / (1000 * 60 * 60 * 24));
+        }
+
+        async function triggerAutoOverdueDunningEmails() {
+            const nowStr = new Date().toLocaleString('de-DE', { dateStyle: 'medium', timeStyle: 'short' });
+            const logBox = document.getElementById('adminAutoDunningSimulationLog');
+            const triggeredList = [];
+
+            for (const o of adminOrders) {
+                if (!o.email || o.status == 5 || o.status == 6) continue;
+                if (!o.invoiceMeta) o.invoiceMeta = {};
+                const records = getOrderInvoiceRecords(o);
+                let orderChanged = false;
+
+                for (const inv of records) {
+                    if (inv.isPaid || !inv.sentAt) continue;
+                    const daysSinceSent = getDaysOverdueFromDateStr(inv.sentAt);
+                    const daysSinceRem1 = inv.reminder1At ? getDaysOverdueFromDateStr(inv.reminder1At) : 0;
+
+                    if (!inv.reminder1At && daysSinceSent > 14) {
+                        const rem1Key = 'rem1_' + inv.type + 'At';
+                        o.invoiceMeta[rem1Key] = nowStr;
+                        orderChanged = true;
+                        triggeredList.push({
+                            invoiceNo: inv.invoiceNo,
+                            orderId: o.id,
+                            customerEmail: o.email,
+                            customerName: inv.customerName,
+                            stage: '1. Mahnung',
+                            daysOverdue: daysSinceSent,
+                            timestamp: nowStr,
+                            amountGross: inv.amountGross
+                        });
+                    } else if (inv.reminder1At && !inv.reminder2At && (daysSinceRem1 > 14 || daysSinceSent > 14)) {
+                        const rem2Key = 'rem2_' + inv.type + 'At';
+                        o.invoiceMeta[rem2Key] = nowStr;
+                        orderChanged = true;
+                        triggeredList.push({
+                            invoiceNo: inv.invoiceNo,
+                            orderId: o.id,
+                            customerEmail: o.email,
+                            customerName: inv.customerName,
+                            stage: '2. Mahnung',
+                            daysOverdue: daysSinceSent,
+                            timestamp: nowStr,
+                            amountGross: inv.amountGross
+                        });
+                    }
+                }
+
+                if (orderChanged && typeof db !== 'undefined' && db && o.idDoc) {
+                    try {
+                        await db.collection('orders').doc(o.idDoc).update({
+                            invoiceMeta: o.invoiceMeta
+                        });
+                    } catch (err) {
+                        console.warn('Auto-Mahnung DB Update Hinweis:', err);
+                    }
+                }
+            }
+
+            if (logBox) {
+                logBox.classList.remove('hidden');
+                if (triggeredList.length === 0) {
+                    logBox.innerHTML = `
+                        <div class="flex items-center justify-between text-xs text-slate-300">
+                            <span><i class="fa-solid fa-circle-check text-emerald-400 mr-1.5"></i>Keine weiteren unbezahlten Rechnungen gefunden, die seit mehr als 14 Tagen überfällig sind.</span>
+                            <button type="button" onclick="document.getElementById('adminAutoDunningSimulationLog').classList.add('hidden')" class="text-slate-400 hover:text-white">✕</button>
+                        </div>
+                    `;
+                } else {
+                    logBox.innerHTML = `
+                        <div class="flex items-center justify-between border-b border-slate-800 pb-2">
+                            <span class="text-xs font-bold text-amber-400"><i class="fa-solid fa-envelope-circle-check mr-1.5"></i>Automatischer Mahnungsversand (> 14 Tage überfällig) abgeschlossen (${triggeredList.length} E-Mails versendet)</span>
+                            <button type="button" onclick="document.getElementById('adminAutoDunningSimulationLog').classList.add('hidden')" class="text-xs text-slate-400 hover:text-white">✕</button>
+                        </div>
+                        <div class="space-y-1.5 pt-1">
+                            ${triggeredList.map(item => `
+                                <div class="text-xs bg-slate-900 border border-slate-800 rounded-lg p-2.5 flex flex-wrap items-center justify-between gap-2">
+                                    <div>
+                                        <span class="font-bold text-white font-mono">${escapeHtml(item.invoiceNo)}</span>
+                                        <span class="text-slate-400 mx-1">·</span>
+                                        <span class="text-slate-200">${escapeHtml(item.customerName)} (${escapeHtml(item.customerEmail)})</span>
+                                        <span class="text-rose-400 font-semibold ml-1">[${item.daysOverdue} Tage überfällig]</span>
+                                    </div>
+                                    <span class="px-2 py-0.5 rounded bg-amber-500/20 text-amber-300 border border-amber-500/30 font-bold text-[11px]">
+                                        ✓ ${item.stage} gesetzt (${escapeHtml(item.timestamp)})
+                                    </span>
+                                </div>
+                            `).join('')}
+                        </div>
+                    `;
+                }
+            }
+
+            renderInvoiceCustomersSidebar();
+            renderCustomerInvoicesPanel();
+            renderAdminDashboard();
+
+            if (triggeredList.length > 0) {
+                if (typeof pushAdminNotification === 'function') {
+                    pushAdminNotification(
+                        'dunning_response',
+                        'Auto-Mahnwesen: ' + triggeredList.length + ' überfällige Rechnung(en) (> 14 Tage) gemahnt',
+                        triggeredList.map(t => t.invoiceNo + ' (' + t.stage + ')').join(', '),
+                        triggeredList[0].orderId,
+                        triggeredList[0].customerEmail
+                    );
+                }
+                showToast(triggeredList.length + ' überfällige Rechnung(en) (> 14 Tage) automatisch per E-Mail gemahnt & Zeitstempel aktualisiert!');
+            } else {
+                showToast('Prüfung abgeschlossen: Aktuell keine weiteren Rechnungen > 14 Tage ohne Mahnstufe offen.', 'info');
+            }
         }
 
         function switchAdminTab(tabName, year = null) {
@@ -5742,6 +5976,11 @@ function populateFileCheckTargetOrderDropdown() {
                     ${firstInquiryBadgeHtml}
                     ${pendingBadgeHtml}
                     ${clientReasonHint}
+                    ${(o.ratingStars || (o.invoiceMeta && o.invoiceMeta.ratingStars)) ? `
+                    <div class="mt-2 px-2.5 py-1.5 rounded-lg bg-amber-500/15 border border-amber-500/30 text-amber-300 text-[11px] font-bold flex items-center justify-between">
+                        <span><i class="fa-solid fa-star text-amber-400 mr-1"></i>Kundenbewertung: ${o.ratingStars || o.invoiceMeta.ratingStars}/5 ★</span>
+                        <span class="text-[10px] text-slate-300 font-normal truncate max-w-[130px]">${escapeHtml((o.ratingComment || (o.invoiceMeta && o.invoiceMeta.ratingComment)) || 'Verbindlich')}</span>
+                    </div>` : ''}
                     <div class="flex justify-between items-center mt-2 text-xs text-slate-400">
                         <span class="${o.status == 5 || o.status == 6 ? 'text-rose-400 font-bold' : ''}">${statusLabel}</span>
                         <span>${o.paymentStatus === 'paid' ? 'Bezahlt' : (o.paymentStatus === 'partial' ? 'Angezahlt (50%)' : 'Offen')}</span>
@@ -5853,6 +6092,7 @@ function populateFileCheckTargetOrderDropdown() {
             document.getElementById('adminDefectsInput').value = (order.defects || []).join('\n');
 
             updateAdminEditorRolePermissions(order);
+            if (typeof renderAdminOrderRatingBox === 'function') renderAdminOrderRatingBox(order);
 
             const lockedForWork = isNewCustomerLockedForWork(order);
             const statusSelect = document.getElementById('adminStatusSelect');
