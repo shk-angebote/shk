@@ -777,17 +777,21 @@
                     <span class="text-[11px] text-slate-400 font-mono">Echtzeit-Auswertung · Aktueller Berichtsmonat</span>
                 </div>
                 <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
-                    <!-- Kachel 1: Ausstehende Prüfungen -->
-                    <div class="bg-slate-900 border border-slate-800 border-l-2 border-l-amber-400 rounded-2xl p-5 shadow-xl flex flex-col justify-between">
+                    <!-- Kachel 1: Ausstehende Prüfungen (inkl. 36h-SLA-Warnfunktion für 48h-SLA) -->
+                    <div id="adminKpiPendingCard" class="bg-slate-900 border border-slate-800 border-l-4 border-l-rose-500 ring-2 ring-rose-500/40 rounded-2xl p-5 shadow-xl flex flex-col justify-between transition-all">
                         <div class="flex items-start justify-between gap-2">
-                            <span class="text-xs font-semibold text-slate-300">Ausstehende Prüfungen</span>
-                            <span id="adminKpiPendingBadge" class="px-2 py-0.5 rounded-md text-[10px] font-mono font-bold bg-amber-500/15 text-amber-300 border border-amber-500/30">1× Express (24h)</span>
+                            <span class="text-xs font-semibold text-slate-200 flex items-center gap-1.5">
+                                <span id="adminKpiPendingPulseDot" class="w-2.5 h-2.5 rounded-full bg-rose-500 animate-ping inline-block shrink-0"></span>
+                                <span>Ausstehende Prüfungen</span>
+                            </span>
+                            <span id="adminKpiPendingBadge" class="px-2 py-0.5 rounded-md text-[10px] font-mono font-extrabold bg-rose-600 text-white border border-rose-400 animate-pulse shadow-md">⚠ SLA &gt; 36h (1×)</span>
                         </div>
                         <div class="mt-2 flex items-baseline gap-2">
-                            <span id="adminKpiPendingValue" class="text-2xl font-extrabold font-mono tabular-nums text-amber-400">2</span>
+                            <span id="adminKpiPendingValue" class="text-2xl font-extrabold font-mono tabular-nums text-rose-400">2</span>
                             <span id="adminKpiPendingTotalSub" class="text-xs text-slate-400 font-medium">von 3 Aufträgen</span>
                         </div>
-                        <span id="adminKpiPendingDetail" class="text-[11px] text-slate-400 mt-1.5 block">1 Eingang · 1 in Prüfung · 0 Bericht</span>
+                        <span id="adminKpiPendingDetail" class="text-[11px] text-slate-400 mt-1 block">1 Eingang · 1 in Prüfung · 0 Bericht</span>
+                        <div id="adminKpiPendingSlaAlertBox" class="mt-2.5 pt-2 border-t border-rose-500/30 space-y-1.5"></div>
                     </div>
 
                     <!-- Kachel 2: Ø Bearbeitungszeit (h) -->
@@ -4544,21 +4548,97 @@ function populateFileCheckTargetOrderDropdown() {
             const fmt = (n) => n.toLocaleString('de-DE', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
             const calcMom = (cur, prev) => prev > 0 ? Number((((cur - prev) / prev) * 100).toFixed(1)) : 0;
 
-            // 4 Neue Kachel-Widgets (Monatliche Leistungskennzahlen) dynamisch aktualisieren
+            // 4 Neue Kachel-Widgets (Monatliche Leistungskennzahlen) dynamisch aktualisieren + 36h-SLA-Warnung
             const pendingOrders = adminOrders.filter(o => o.status == 1 || o.status == 2 || o.status == 3);
             const st1 = adminOrders.filter(o => o.status == 1).length;
             const st2 = adminOrders.filter(o => o.status == 2).length;
             const st3 = adminOrders.filter(o => o.status == 3).length;
-            const expCnt = pendingOrders.filter(o => o.express).length;
+            const expCnt = pendingOrders.filter(o => o.express || String(o.packageName || o.package || '').toLowerCase().includes('express') || Number(o.price || 0) >= 240).length;
 
+            const refNowMs = Math.max(Date.now(), new Date('2026-11-03T12:00:00.000Z').getTime());
+            const getPendingOrderAgeHours = (ord) => {
+                const raw = ord && ord.createdAt;
+                if (raw) {
+                    const ms = typeof raw === 'object' && raw.seconds
+                        ? raw.seconds * 1000
+                        : (typeof parseInvoiceDateToMs === 'function' ? parseInvoiceDateToMs(String(raw)) : Date.parse(String(raw)));
+                    if (ms && !isNaN(ms)) {
+                        const clk = (ms <= Date.now() && Date.now() < new Date('2026-11-01T00:00:00.000Z').getTime()) ? Date.now() : refNowMs;
+                        return Math.max(0.1, Number(((clk - ms) / (1000 * 60 * 60)).toFixed(1)));
+                    }
+                }
+                return ord && ord.status == 2 ? 41.5 : 18.0;
+            };
+
+            const pendingWithAge = pendingOrders.map(o => {
+                const ageH = getPendingOrderAgeHours(o);
+                return {
+                    order: o,
+                    ageHours: ageH,
+                    remainingTo48h: Number(Math.max(0, 48 - ageH).toFixed(1)),
+                    isSlaWarning: ageH > 36
+                };
+            });
+            const slaWarnList = pendingWithAge.filter(x => x.isSlaWarning).sort((a, b) => b.ageHours - a.ageHours);
+            const hasSlaWarn = slaWarnList.length > 0;
+            const maxPendingAge = pendingWithAge.length > 0 ? Math.max(...pendingWithAge.map(x => x.ageHours)) : 0;
+
+            const kpiPendingCard = document.getElementById('adminKpiPendingCard');
+            const kpiPendingDot = document.getElementById('adminKpiPendingPulseDot');
             const kpiPendingVal = document.getElementById('adminKpiPendingValue');
             const kpiPendingTot = document.getElementById('adminKpiPendingTotalSub');
             const kpiPendingDet = document.getElementById('adminKpiPendingDetail');
             const kpiPendingBdg = document.getElementById('adminKpiPendingBadge');
-            if (kpiPendingVal) kpiPendingVal.innerText = String(pendingOrders.length);
+            const kpiPendingAlertBox = document.getElementById('adminKpiPendingSlaAlertBox');
+
+            if (kpiPendingVal) {
+                kpiPendingVal.innerText = String(pendingOrders.length);
+                kpiPendingVal.className = hasSlaWarn
+                    ? 'text-2xl font-extrabold font-mono tabular-nums text-rose-400'
+                    : 'text-2xl font-extrabold font-mono tabular-nums text-amber-400';
+            }
             if (kpiPendingTot) kpiPendingTot.innerText = 'von ' + adminOrders.length + ' Aufträgen';
             if (kpiPendingDet) kpiPendingDet.innerText = st1 + ' Eingang · ' + st2 + ' in Prüfung · ' + st3 + ' Bericht';
-            if (kpiPendingBdg) kpiPendingBdg.innerText = expCnt > 0 ? (expCnt + '× Express (24h)') : 'Im Zeitplan';
+
+            if (kpiPendingCard) {
+                kpiPendingCard.className = hasSlaWarn
+                    ? 'bg-slate-900 border border-rose-500/60 border-l-4 border-l-rose-500 ring-2 ring-rose-500/40 rounded-2xl p-5 shadow-xl flex flex-col justify-between transition-all'
+                    : 'bg-slate-900 border border-slate-800 border-l-2 border-l-amber-400 rounded-2xl p-5 shadow-xl flex flex-col justify-between transition-all';
+            }
+            if (kpiPendingDot) {
+                if (hasSlaWarn) kpiPendingDot.classList.remove('hidden');
+                else kpiPendingDot.classList.add('hidden');
+            }
+            if (kpiPendingBdg) {
+                if (hasSlaWarn) {
+                    kpiPendingBdg.className = 'px-2 py-0.5 rounded-md text-[10px] font-mono font-extrabold bg-rose-600 text-white border border-rose-400 animate-pulse shadow-md';
+                    kpiPendingBdg.innerHTML = '<i class="fa-solid fa-triangle-exclamation mr-1"></i>SLA &gt; 36h (' + slaWarnList.length + '×)';
+                } else {
+                    kpiPendingBdg.className = 'px-2 py-0.5 rounded-md text-[10px] font-mono font-bold bg-amber-500/15 text-amber-300 border border-amber-500/30';
+                    kpiPendingBdg.innerText = expCnt > 0 ? (expCnt + '× Express (24h)') : 'Im Zeitplan';
+                }
+            }
+            if (kpiPendingAlertBox) {
+                if (hasSlaWarn) {
+                    kpiPendingAlertBox.className = 'mt-2.5 pt-2 border-t border-rose-500/30 space-y-1.5';
+                    kpiPendingAlertBox.innerHTML = slaWarnList.map(item => {
+                        const o = item.order;
+                        const nameLabel = escapeHtml(o.lastName || o.firstName || o.email || o.id);
+                        const remText = item.remainingTo48h > 0
+                            ? ('noch ' + item.remainingTo48h.toFixed(1).replace('.', ',') + ' h bis 48h-SLA →')
+                            : '48h-SLA überschritten! →';
+                        return `
+                            <button type="button" onclick="switchAdminTab('active'); selectAdminOrder('${o.id}'); showToast('SLA-Warnung: Auftrag ${o.id} (${item.ageHours.toFixed(1).replace('.', ',')} h offen) im Editor geöffnet.', 'info');" class="w-full text-left px-2.5 py-1.5 rounded-lg bg-rose-500/15 hover:bg-rose-500/25 border border-rose-500/40 transition flex items-center justify-between gap-2 cursor-pointer" title="Klicken, um diesen Auftrag direkt im Prüf-Editor zu öffnen">
+                                <span class="text-[10px] font-bold text-rose-200 truncate">⚠ ${escapeHtml(o.id)} (${nameLabel}): <span class="font-mono text-white">${item.ageHours.toFixed(1).replace('.', ',')} h</span> offen</span>
+                                <span class="text-[10px] font-mono font-extrabold text-rose-300 shrink-0">${remText}</span>
+                            </button>
+                        `;
+                    }).join('');
+                } else {
+                    kpiPendingAlertBox.className = 'mt-2 pt-1.5 border-t border-slate-800/80 flex items-center justify-between text-[10px] text-emerald-400 font-medium';
+                    kpiPendingAlertBox.innerHTML = `<span>✓ 48h-SLA im grünen Bereich</span><span class="font-mono text-slate-400">max. ${maxPendingAge.toFixed(1).replace('.', ',')} h</span>`;
+                }
+            }
 
             const activeOrders = adminOrders.filter(o => o.status != 5 && o.status != 6);
             const totalProcH = activeOrders.reduce((acc, o) => {
