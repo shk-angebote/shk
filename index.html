@@ -315,8 +315,8 @@
                     </div>
                     <p class="text-slate-400 text-sm mt-1">Übersicht Ihrer eingereichten Angebote, Projekte und Bearbeitungsstatus in Echtzeit.</p>
                 </div>
-                <button type="button" onclick="switchView('landing')" class="bg-slate-800 hover:bg-slate-700 text-white px-4 py-2 rounded-xl text-sm font-medium transition">
-                    <i class="fa-solid fa-plus mr-2"></i>Weiteres Angebot prüfen lassen
+                <button type="button" onclick="openNewOrderModal()" class="bg-emerald-500 hover:bg-emerald-600 text-slate-950 px-4 py-2.5 rounded-xl text-sm font-bold transition shadow-lg shadow-emerald-500/25">
+                    <i class="fa-solid fa-plus mr-2"></i>Neuen Auftrag erstellen
                 </button>
             </div>
 
@@ -1278,7 +1278,65 @@
             </div>
         </div>
     </div>
+<!-- NEUER AUFTRAG MODAL (FÜR DAS KUNDENPORTAL) -->
+    <div id="clientNewOrderModal" class="fixed inset-0 z-50 flex items-center justify-center bg-slate-950/85 backdrop-blur-sm hidden">
+        <div class="bg-slate-900 border border-slate-800 rounded-2xl p-8 max-w-2xl w-full mx-4 shadow-2xl relative max-h-[90vh] overflow-y-auto">
+            <button type="button" onclick="closeNewOrderModal()" class="absolute top-4 right-4 text-slate-400 hover:text-white">
+                <i class="fa-solid fa-xmark text-lg"></i>
+            </button>
+            
+            <h3 class="text-2xl font-bold text-white mb-2"><i class="fa-solid fa-cloud-arrow-up text-emerald-400 mr-2"></i>Neuen Auftrag erstellen</h3>
+            <p class="text-slate-400 text-sm mb-6">Wählen Sie Ihr Paket und laden Sie das neue Angebot hoch.</p>
 
+            <!-- Paket-Auswahl im Modal -->
+            <div class="grid grid-cols-1 sm:grid-cols-3 gap-3 mb-6">
+                <button type="button" onclick="selectModalPackage('Heizungs-Angebot', 149, this)" class="modalPkgBtn p-3 rounded-xl border border-emerald-500 bg-emerald-500/10 text-left transition">
+                    <span class="text-xs font-bold text-emerald-400 block">Basis</span>
+                    <span class="text-sm font-bold text-white block">Heizung</span>
+                    <span class="text-xs text-slate-300">149 €</span>
+                </button>
+                <button type="button" onclick="selectModalPackage('Komplettbad / Sanitär', 249, this)" class="modalPkgBtn p-3 rounded-xl border border-slate-700 bg-slate-950 text-left hover:border-slate-500 transition">
+                    <span class="text-xs font-bold text-emerald-400 block">Premium</span>
+                    <span class="text-sm font-bold text-white block">Komplettbad</span>
+                    <span class="text-xs text-slate-300">249 €</span>
+                </button>
+                <button type="button" onclick="selectModalPackage('Angebotsvergleich', 349, this)" class="modalPkgBtn p-3 rounded-xl border border-slate-700 bg-slate-950 text-left hover:border-slate-500 transition">
+                    <span class="text-xs font-bold text-emerald-400 block">Multi</span>
+                    <span class="text-sm font-bold text-white block">Vergleich</span>
+                    <span class="text-xs text-slate-300">349 €</span>
+                </button>
+            </div>
+
+            <form id="clientModalOrderForm" onsubmit="handleClientModalOrderSubmission(event)" class="space-y-4">
+                <div>
+                    <label class="block text-xs font-medium text-slate-300 mb-1">Projekt / Bauvorhaben (optional)</label>
+                    <input type="text" id="modalOrderProject" list="existingProjectsDatalist" placeholder="z. B. Badsanierung OG, Wärmepumpe..." class="w-full bg-slate-950 border border-slate-700 rounded-xl px-4 py-3 text-sm text-white focus:border-emerald-500 focus:outline-none">
+                </div>
+                <div>
+                    <label class="block text-xs font-medium text-slate-300 mb-1">Angebotsdatei (PDF, JPG, PNG)</label>
+                    <div class="border-2 border-dashed border-slate-700 hover:border-emerald-500 rounded-xl p-5 text-center cursor-pointer transition bg-slate-950/50">
+                        <input type="file" id="modalOfferFile" required class="hidden" onchange="handleModalFileSelect(event)">
+                        <label for="modalOfferFile" class="cursor-pointer">
+                            <i class="fa-solid fa-file-arrow-up text-2xl text-emerald-400 mb-1.5"></i>
+                            <p id="modalFileNameDisplay" class="text-xs text-slate-300 font-medium">Klicken zum Hochladen oder Datei hierher ziehen</p>
+                        </label>
+                    </div>
+                </div>
+                <div>
+                    <label class="block text-xs font-medium text-slate-300 mb-1">Zusätzliche Hinweise an den Prüfer</label>
+                    <textarea id="modalOrderNotes" rows="2" placeholder="Besonderheiten zum Objekt..." class="w-full bg-slate-950 border border-slate-700 rounded-xl px-4 py-3 text-sm text-white focus:border-emerald-500 focus:outline-none"></textarea>
+                </div>
+                <div class="flex gap-3 pt-2">
+                    <button type="button" onclick="closeNewOrderModal()" class="flex-1 bg-slate-800 hover:bg-slate-700 text-slate-300 font-semibold py-3.5 rounded-xl text-sm transition">
+                        Abbrechen
+                    </button>
+                    <button type="submit" class="flex-1 bg-emerald-500 hover:bg-emerald-600 text-slate-950 font-bold py-3.5 rounded-xl text-sm transition shadow-lg shadow-emerald-500/20">
+                        <i class="fa-solid fa-paper-plane mr-2"></i>Auftrag einreichen
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
     <!-- PASSWORT-MODAL FÜR HAUPTADMIN ZUM KOMPLETTEN LÖSCHEN DER MARKTPREISE-DATENBANK -->
     <div id="clearDbPasswordModal" class="fixed inset-0 z-50 flex items-center justify-center bg-slate-950/85 backdrop-blur-sm hidden">
         <div class="bg-slate-900 border-2 border-rose-500/50 rounded-2xl p-8 max-w-md w-full mx-4 shadow-2xl relative space-y-4">
@@ -5916,7 +5974,102 @@ function populateFileCheckTargetOrderDropdown() {
                 alert('Fehler: ' + error.message);
             }
         }
+let modalSelectedPackageName = "Heizungs-Angebot";
+        let modalSelectedPackagePrice = 149;
 
+        function openNewOrderModal() {
+            if (!currentUser) {
+                openAuthModal('login');
+                return;
+            }
+            document.getElementById('clientNewOrderModal').classList.remove('hidden');
+        }
+
+        function closeNewOrderModal() {
+            document.getElementById('clientNewOrderModal').classList.add('hidden');
+        }
+
+        function selectModalPackage(name, price, btnElement) {
+            modalSelectedPackageName = name;
+            modalSelectedPackagePrice = price;
+            document.querySelectorAll('.modalPkgBtn').forEach(b => {
+                b.className = "modalPkgBtn p-3 rounded-xl border border-slate-700 bg-slate-950 text-left hover:border-slate-500 transition";
+            });
+            btnElement.className = "modalPkgBtn p-3 rounded-xl border border-emerald-500 bg-emerald-500/10 text-left transition";
+        }
+
+        function handleModalFileSelect(event) {
+            const file = event.target.files[0];
+            if (file) {
+                document.getElementById('modalFileNameDisplay').textContent = `Ausgewählt: ${file.name}`;
+            }
+        }
+
+        async function handleClientModalOrderSubmission(event) {
+            event.preventDefault();
+            if (!currentUser) return;
+
+            const projectName = (document.getElementById('modalOrderProject').value || '').trim() || 'Allgemein';
+            const notes = document.getElementById('modalOrderNotes').value;
+            const fileInput = document.getElementById('modalOfferFile');
+            const file = fileInput.files[0];
+
+            if (!file) {
+                alert("Bitte wählen Sie eine Angebotsdatei aus.");
+                return;
+            }
+
+            const reader = new FileReader();
+            reader.readAsDataURL(file);
+
+            reader.onload = async function () {
+                const fileBase64 = reader.result;
+                const orderId = 'SHK-' + Math.floor(100000 + Math.random() * 900000);
+                const finalCalculatedPrice = getCalculatedOrderPrice(modalSelectedPackagePrice, isStammkundeActive, 0);
+
+                let discountLabels = [];
+                if (isStammkundeActive) discountLabels.push('Stammkunde (5%)');
+
+                const newOrder = {
+                    id: orderId,
+                    packageName: modalSelectedPackageName,
+                    projectName: projectName,
+                    price: finalCalculatedPrice,
+                    originalPrice: modalSelectedPackagePrice,
+                    discountApplied: discountLabels.length > 0 ? discountLabels.join(' + ') : null,
+                    stammkundenRabatt: isStammkundeActive,
+                    manualDiscount: 0,
+                    email: currentUser.email,
+                    firstName: currentUser.displayName || '',
+                    lastName: '',
+                    notes: notes,
+                    fileName: file.name,
+                    fileData: fileBase64,
+                    additionalFiles: [],
+                    status: 1,
+                    paymentStatus: 'unpaid',
+                    isFirstInquiry: false,
+                    depositInvoiceSent: false,
+                    isArchived: false,
+                    hiddenByClient: false,
+                    pendingAction: null,
+                    savings: '3.200 €',
+                    summary: 'Das Angebot wurde technisch erfasst. Die Detailprüfung läuft.',
+                    defects: ['Hydraulischer Abgleich Position unklar (-350 €)'],
+                    createdAt: new Date().toISOString(),
+                    userId: currentUser.uid
+                };
+
+                if (db) {
+                    await db.collection('orders').add(newOrder);
+                }
+
+                closeNewOrderModal();
+                alert('Neuer Auftrag erfolgreich im Kundenportal erstellt!');
+                await loadUserOrders();
+                selectClientOrder(orderId);
+            };
+        }
         async function logoutUser() {
             sessionStorage.removeItem('shk_demo_session');
             if (auth && auth.currentUser) {
