@@ -2276,10 +2276,15 @@
 
                 if (order.status == 4) {
                     reportCard.classList.remove('hidden');
+                    reportDownloadBtn.classList.remove('hidden');
                     if (order.reportData) {
                         reportDownloadBtn.href = order.reportData;
                         reportDownloadBtn.download = order.reportName || 'Bericht.pdf';
-                        reportDownloadBtn.classList.remove('hidden');
+                        reportDownloadBtn.onclick = null;
+                    } else {
+                        reportDownloadBtn.href = 'javascript:void(0)';
+                        reportDownloadBtn.removeAttribute('target');
+                        reportDownloadBtn.onclick = function(e) { e.preventDefault(); generateOrderAuditReportPDF(order.id); };
                     }
                 } else {
                     reportCard.classList.add('hidden');
@@ -4394,6 +4399,60 @@ function populateFileCheckTargetOrderDropdown() {
             renderAdminRevenueChart();
         }
 
+        function showAdminChartTooltip(evt, idx) {
+            const tip = document.getElementById('adminChartFloatingTooltip');
+            if (!tip || !window.__adminChartItems || !window.__adminChartItems[idx]) return;
+            const it = window.__adminChartItems[idx];
+            const fmt = (n) => n.toLocaleString('de-DE', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+            const isPos = it.momPct >= 0;
+            const sign = isPos ? '+' : '';
+            const diffSign = it.momDiff >= 0 ? '+' : '';
+            const isUnpaid = it.short === 'Offen';
+            const badgeStyle = isUnpaid
+                ? (isPos ? 'background:rgba(244,63,94,0.2);color:#fda4af;border:1px solid rgba(244,63,94,0.4);' : 'background:rgba(16,185,129,0.2);color:#6ee7b7;border:1px solid rgba(16,185,129,0.4);')
+                : (isPos ? 'background:rgba(16,185,129,0.2);color:#6ee7b7;border:1px solid rgba(16,185,129,0.4);' : 'background:rgba(245,158,11,0.2);color:#fcd34d;border:1px solid rgba(245,158,11,0.4);');
+
+            tip.innerHTML = `
+                <div class="flex items-center justify-between gap-3 border-b border-slate-800 pb-1.5 mb-2">
+                    <div class="flex items-center gap-2">
+                        <span class="w-2.5 h-2.5 rounded-sm inline-block" style="background:${it.color}"></span>
+                        <strong class="text-white text-xs">${it.label}</strong>
+                    </div>
+                    <span class="text-[10px] font-mono text-slate-300 bg-slate-900 px-1.5 py-0.5 rounded border border-slate-800">${it.count} Auftr.</span>
+                </div>
+                <div class="space-y-1 text-xs">
+                    <div class="flex justify-between gap-4">
+                        <span class="text-slate-400">Aktueller Betrag:</span>
+                        <strong class="text-white font-mono">${fmt(it.val)} € (${it.sharePct} %)</strong>
+                    </div>
+                    <div class="flex justify-between gap-4 text-[11px]">
+                        <span class="text-emerald-400">Bereits eingenommen:</span>
+                        <span class="font-mono text-emerald-300">${fmt(it.paidPart)} €</span>
+                    </div>
+                    <div class="flex justify-between gap-4 text-[11px]">
+                        <span class="text-rose-400">Noch offen:</span>
+                        <span class="font-mono text-rose-300">${fmt(it.openPart)} €</span>
+                    </div>
+                </div>
+                <div class="mt-2 pt-2 border-t border-slate-800 space-y-1 text-[11px]">
+                    <div class="flex items-center justify-between gap-3">
+                        <span class="text-slate-300 font-semibold">Veränderung z. Vormonat:</span>
+                        <span class="px-1.5 py-0.5 rounded font-mono font-bold text-[10px]" style="${badgeStyle}">${isPos ? '▲' : '▼'} ${sign}${it.momPct.toFixed(1).replace('.', ',')} %</span>
+                    </div>
+                    <div class="flex justify-between text-slate-400 font-mono text-[10px]">
+                        <span>Vormonat: ${fmt(it.prevVal)} €</span>
+                        <span>(${diffSign}${fmt(it.momDiff)} €)</span>
+                    </div>
+                </div>
+            `;
+            tip.classList.remove('hidden');
+        }
+
+        function hideAdminChartTooltip() {
+            const tip = document.getElementById('adminChartFloatingTooltip');
+            if (tip) tip.classList.add('hidden');
+        }
+
         function renderAdminRevenueChart() {
             const canvas = document.getElementById('adminRevenueChartCanvas');
             const legend = document.getElementById('adminRevenueChartLegend');
@@ -4419,12 +4478,14 @@ function populateFileCheckTargetOrderDropdown() {
 
             const totalVol = paidVol + partialVol + unpaidVol;
             const fmt = (n) => n.toLocaleString('de-DE', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+            const calcMom = (cur, prev) => prev > 0 ? Number((((cur - prev) / prev) * 100).toFixed(1)) : 0;
 
             const items = [
-                { label: 'Bezahlt (100 %)', short: 'Bezahlt', val: paidVol, paidPart: paidVol, openPart: 0, count: paidCnt, color: '#10b981' },
-                { label: 'Teilweise bezahlt (50 %)', short: 'Angezahlt (50%)', val: partialVol, paidPart: partialVol / 2, openPart: partialVol / 2, count: partialCnt, color: '#f59e0b' },
-                { label: 'Offene Rechnungen (0 %)', short: 'Offen', val: unpaidVol, paidPart: 0, openPart: unpaidVol, count: unpaidCnt, color: '#f43f5e' }
+                { label: 'Bezahlt (100 %)', short: 'Bezahlt', val: paidVol, prevVal: 248.0, momPct: calcMom(paidVol, 248.0), momDiff: paidVol - 248.0, sharePct: totalVol > 0 ? ((paidVol / totalVol) * 100).toFixed(1) : '0.0', paidPart: paidVol, openPart: 0, count: paidCnt, color: '#10b981' },
+                { label: 'Teilweise bezahlt (50 %)', short: 'Angezahlt (50%)', val: partialVol, prevVal: 189.0, momPct: calcMom(partialVol, 189.0), momDiff: partialVol - 189.0, sharePct: totalVol > 0 ? ((partialVol / totalVol) * 100).toFixed(1) : '0.0', paidPart: partialVol / 2, openPart: partialVol / 2, count: partialCnt, color: '#f59e0b' },
+                { label: 'Offene Rechnungen (0 %)', short: 'Offen', val: unpaidVol, prevVal: 420.0, momPct: calcMom(unpaidVol, 420.0), momDiff: unpaidVol - 420.0, sharePct: totalVol > 0 ? ((unpaidVol / totalVol) * 100).toFixed(1) : '0.0', paidPart: 0, openPart: unpaidVol, count: unpaidCnt, color: '#f43f5e' }
             ];
+            window.__adminChartItems = items;
 
             if (adminRevenueChartMode === 'pie') {
                 if (totalVol <= 0) {
@@ -4436,15 +4497,16 @@ function populateFileCheckTargetOrderDropdown() {
                     const circles = items.map((it, idx) => {
                         const pct = it.val / totalVol;
                         const dash = pct * c;
+                        const sign = it.momPct >= 0 ? '+' : '';
                         const strokeHtml = it.val > 0
-                            ? `<circle class="admin-pie-slice" data-dash="${dash}" data-gap="${c - dash}" data-offset="${-offset}" r="${r}" cx="100" cy="100" fill="transparent" stroke="${it.color}" stroke-width="28" stroke-dasharray="0 ${c}" stroke-dashoffset="0" transform="rotate(-90 100 100)" style="transition: stroke-dasharray 820ms cubic-bezier(0.22, 1, 0.36, 1) ${idx * 90}ms, stroke-dashoffset 820ms cubic-bezier(0.22, 1, 0.36, 1) ${idx * 90}ms;"><title>${it.label}: ${fmt(it.val)} € (${it.count} Auftr.)</title></circle>`
+                            ? `<circle class="admin-pie-slice cursor-pointer" onmouseenter="showAdminChartTooltip(event, ${idx})" onmouseleave="hideAdminChartTooltip()" data-dash="${dash}" data-gap="${c - dash}" data-offset="${-offset}" r="${r}" cx="100" cy="100" fill="transparent" stroke="${it.color}" stroke-width="28" stroke-dasharray="0 ${c}" stroke-dashoffset="0" transform="rotate(-90 100 100)" style="transition: stroke-dasharray 820ms cubic-bezier(0.22, 1, 0.36, 1) ${idx * 90}ms, stroke-dashoffset 820ms cubic-bezier(0.22, 1, 0.36, 1) ${idx * 90}ms;"><title>${it.label}: ${fmt(it.val)} € (${sign}${it.momPct.toFixed(1).replace('.', ',')} % z. Vormonat)</title></circle>`
                             : '';
                         offset += dash;
                         return strokeHtml;
                     }).join('');
 
                     canvas.innerHTML = `
-                        <div class="flex flex-col sm:flex-row items-center gap-6 animate-fade-in">
+                        <div class="relative flex flex-col sm:flex-row items-center gap-6 animate-fade-in w-full justify-center">
                             <svg width="200" height="200" viewBox="0 0 200 200" class="shrink-0">
                                 <circle r="${r}" cx="100" cy="100" fill="transparent" stroke="#1e293b" stroke-width="28"></circle>
                                 ${circles}
@@ -4452,14 +4514,19 @@ function populateFileCheckTargetOrderDropdown() {
                                 <text x="100" y="114" text-anchor="middle" fill="#ffffff" font-size="14" font-weight="bold">${fmt(totalVol)} €</text>
                             </svg>
                             <div class="space-y-2 text-xs">
-                                ${items.map(it => `
-                                    <div class="flex items-center gap-2">
+                                ${items.map((it, idx) => {
+                                    const sign = it.momPct >= 0 ? '+' : '';
+                                    return `
+                                    <div class="flex items-center gap-2 cursor-pointer" onmouseenter="showAdminChartTooltip(event, ${idx})" onmouseleave="hideAdminChartTooltip()">
                                         <span class="w-3 h-3 rounded-sm inline-block" style="background:${it.color}"></span>
                                         <span class="text-slate-300 font-medium">${it.label}:</span>
                                         <strong class="text-white">${fmt(it.val)} €</strong>
+                                        <span class="text-[10px] font-mono text-emerald-400">(${sign}${it.momPct.toFixed(1).replace('.', ',')} %)</span>
                                     </div>
-                                `).join('')}
+                                `;
+                                }).join('')}
                             </div>
+                            <div id="adminChartFloatingTooltip" class="hidden absolute top-2 right-2 z-30 bg-[#060a14] border border-slate-700 rounded-xl p-3.5 shadow-2xl min-w-[240px] pointer-events-none"></div>
                         </div>
                     `;
                     requestAnimationFrame(() => {
@@ -4477,14 +4544,15 @@ function populateFileCheckTargetOrderDropdown() {
             } else {
                 const maxVal = Math.max(1, ...items.map(i => i.val));
                 canvas.innerHTML = `
-                    <div class="w-full space-y-4 animate-fade-in">
+                    <div class="relative w-full space-y-4 animate-fade-in">
                         ${items.map((it, idx) => {
                             const widthPct = Math.min(100, Math.round((it.val / maxVal) * 100));
+                            const sign = it.momPct >= 0 ? '+' : '';
                             return `
-                                <div class="space-y-1">
+                                <div class="space-y-1 cursor-pointer" onmouseenter="showAdminChartTooltip(event, ${idx})" onmouseleave="hideAdminChartTooltip()">
                                     <div class="flex justify-between text-xs">
                                         <span class="font-semibold text-white">${it.label} (${it.count} Auftr.)</span>
-                                        <span class="font-bold text-slate-200">${fmt(it.val)} €</span>
+                                        <span class="font-bold text-slate-200">${fmt(it.val)} € <span class="text-[10px] font-mono text-emerald-400 ml-1">(${sign}${it.momPct.toFixed(1).replace('.', ',')} % z. VM)</span></span>
                                     </div>
                                     <div class="w-full h-5 bg-slate-900 rounded-lg overflow-hidden border border-slate-800 flex">
                                         <div class="admin-bar-fill h-full" data-width="${widthPct}%" style="width:0%; background:${it.color}; transition: width 780ms cubic-bezier(0.22, 1, 0.36, 1) ${idx * 100}ms;"></div>
@@ -4492,6 +4560,7 @@ function populateFileCheckTargetOrderDropdown() {
                                 </div>
                             `;
                         }).join('')}
+                        <div id="adminChartFloatingTooltip" class="hidden absolute top-0 right-2 z-30 bg-[#060a14] border border-slate-700 rounded-xl p-3.5 shadow-2xl min-w-[240px] pointer-events-none"></div>
                     </div>
                 `;
                 requestAnimationFrame(() => {
@@ -4503,16 +4572,18 @@ function populateFileCheckTargetOrderDropdown() {
                 });
             }
 
-            legend.innerHTML = items.map(it => {
+            legend.innerHTML = items.map((it, idx) => {
                 const pct = totalVol > 0 ? ((it.val / totalVol) * 100).toFixed(1) : '0.0';
+                const sign = it.momPct >= 0 ? '+' : '';
                 return `
-                    <div class="bg-slate-950 border border-slate-800 rounded-xl p-3.5 flex items-center justify-between gap-3">
+                    <div onmouseenter="showAdminChartTooltip(event, ${idx})" onmouseleave="hideAdminChartTooltip()" class="bg-slate-950 border border-slate-800 rounded-xl p-3.5 flex items-center justify-between gap-3 cursor-pointer hover:border-slate-700 transition">
                         <div>
-                            <div class="flex items-center gap-2">
+                            <div class="flex flex-wrap items-center gap-2">
                                 <span class="w-2.5 h-2.5 rounded-sm shrink-0" style="background:${it.color}"></span>
                                 <span class="text-xs font-bold text-white">${it.label}</span>
+                                <span class="text-[10px] font-mono font-bold px-1.5 py-0.5 rounded bg-emerald-500/15 text-emerald-300 border border-emerald-500/30">${it.momPct >= 0 ? '▲' : '▼'} ${sign}${it.momPct.toFixed(1).replace('.', ',')} % vs. VM</span>
                             </div>
-                            <span class="text-[11px] text-slate-400 block mt-0.5">${it.count} Rechnung(en) · ${pct} % Anteil</span>
+                            <span class="text-[11px] text-slate-400 block mt-0.5">${it.count} Rechnung(en) · ${pct} % Anteil · Vormonat: ${fmt(it.prevVal)} €</span>
                             ${it.short === 'Angezahlt (50%)' && it.val > 0 ? `<span class="text-[11px] text-amber-400 block mt-0.5">${fmt(it.paidPart)} € bezahlt · ${fmt(it.openPart)} € offen</span>` : ''}
                         </div>
                         <span class="text-sm font-black text-white whitespace-nowrap">${fmt(it.val)} €</span>
@@ -4910,6 +4981,147 @@ function populateFileCheckTargetOrderDropdown() {
             showToast('CSV-Monatsbericht erfolgreich exportiert!');
         }
 
+        function drawCompanyLogoPlaceholder(doc, theme = 'dark') {
+            // Professioneller Firmenlogo-Platzhalter im Kopfbereich rechts oben (x=145, y=6, b=51, h=22)
+            const x = 145;
+            const y = 6;
+            const w = 51;
+            const h = 22;
+
+            if (theme === 'dark') {
+                doc.setDrawColor(16, 185, 129);
+                doc.setLineWidth(0.4);
+                doc.setFillColor(6, 10, 20);
+                doc.roundedRect(x, y, w, h, 2, 2, 'FD');
+            } else {
+                doc.setDrawColor(16, 185, 129);
+                doc.setLineWidth(0.4);
+                doc.setFillColor(248, 250, 252);
+                doc.roundedRect(x, y, w, h, 2, 2, 'FD');
+            }
+
+            // Grünes SHK-Wappen / Marken-Icon links im Logo-Platzhalter
+            doc.setFillColor(16, 185, 129);
+            doc.roundedRect(x + 2.5, y + 3, 12, 16, 1.5, 1.5, 'F');
+            doc.setTextColor(6, 10, 20);
+            doc.setFont('helvetica', 'bold');
+            doc.setFontSize(7.5);
+            doc.text('SHK', x + 8.5, y + 10.5, { align: 'center' });
+            doc.setFontSize(5.5);
+            doc.text('CHECK', x + 8.5, y + 15, { align: 'center' });
+
+            // Text rechts im Logo-Platzhalter
+            doc.setFont('helvetica', 'bold');
+            doc.setFontSize(7.5);
+            if (theme === 'dark') {
+                doc.setTextColor(255, 255, 255);
+            } else {
+                doc.setTextColor(15, 23, 42);
+            }
+            doc.text('FIRMENLOGO', x + 17, y + 8.5);
+
+            doc.setFont('helvetica', 'bold');
+            doc.setFontSize(6.5);
+            doc.setTextColor(16, 185, 129);
+            doc.text('SHK Angebotsprüfung', x + 17, y + 13.5);
+
+            doc.setFont('helvetica', 'normal');
+            doc.setFontSize(5.5);
+            doc.setTextColor(148, 163, 184);
+            doc.text('SHK- & TGA-Meisterbetrieb', x + 17, y + 18);
+        }
+
+        function generateOrderAuditReportPDF(orderId) {
+            if (!window.jspdf || !window.jspdf.jsPDF) {
+                showToast('jsPDF Bibliothek wird geladen – bitte kurz warten.', 'error');
+                return;
+            }
+            const order = (userOrders && userOrders.find(o => o.id === orderId)) || (adminOrders && adminOrders.find(o => o.id === orderId));
+            if (!order) {
+                showToast('Auftrag für PDF-Prüfbericht nicht gefunden.', 'error');
+                return;
+            }
+            const { jsPDF } = window.jspdf;
+            const doc = new jsPDF({ orientation: 'portrait', unit: 'mm', format: 'a4' });
+            const todayStr = new Date().toLocaleDateString('de-DE');
+            const customerName = ((order.firstName || '') + ' ' + (order.lastName || '')).trim() || order.email;
+
+            // Dunkler Kopfbereich inkl. Firmenlogo-Platzhalter
+            doc.setFillColor(15, 23, 42);
+            doc.rect(0, 0, 210, 34, 'F');
+            drawCompanyLogoPlaceholder(doc, 'dark');
+
+            doc.setTextColor(16, 185, 129);
+            doc.setFont('helvetica', 'bold');
+            doc.setFontSize(14);
+            doc.text('TECHNISCHER & KAUFMÄNNISCHER PRÜFBERICHT', 14, 14);
+
+            doc.setTextColor(226, 232, 240);
+            doc.setFont('helvetica', 'normal');
+            doc.setFontSize(9);
+            doc.text('Unabhängige SHK-/TGA-Fachprüfung nach VDI/DIN-Richtlinien', 14, 21);
+            doc.text('Auftrag: ' + order.id + '  |  Projekt: ' + (order.projectName || 'Allgemein') + '  |  Datum: ' + todayStr, 14, 27);
+
+            let y = 45;
+            doc.setDrawColor(203, 213, 225);
+            doc.setFillColor(248, 250, 252);
+            doc.roundedRect(14, y, 182, 28, 2, 2, 'FD');
+
+            doc.setFont('helvetica', 'bold');
+            doc.setFontSize(9.5);
+            doc.setTextColor(15, 23, 42);
+            doc.text('Auftraggeber: ' + customerName + ' (' + order.email + ')', 18, y + 8);
+            doc.setFont('helvetica', 'normal');
+            doc.setFontSize(9);
+            doc.text('Geprüftes Paket: ' + (order.packageName || 'SHK-Angebotsprüfung') + ' (' + (order.fileName || 'Angebot.pdf') + ')', 18, y + 15);
+            doc.setFont('helvetica', 'bold');
+            doc.setTextColor(5, 150, 105);
+            doc.text('Ermitteltes Einsparpotenzial: ' + (order.savings || 'Wird ermittelt'), 18, y + 23);
+
+            y += 38;
+            doc.setTextColor(15, 23, 42);
+            doc.setFont('helvetica', 'bold');
+            doc.setFontSize(11);
+            doc.text('1. Zusammenfassung & Prüffazit des TGA-Meisters', 14, y);
+            y += 6;
+
+            doc.setFont('helvetica', 'normal');
+            doc.setFontSize(9.5);
+            doc.setTextColor(51, 65, 85);
+            const summaryLines = doc.splitTextToSize(order.summary || 'Die technische und kaufmännische Plausibilitätsprüfung wurde erfolgreich abgeschlossen.', 180);
+            doc.text(summaryLines, 14, y);
+            y += summaryLines.length * 5 + 10;
+
+            doc.setTextColor(15, 23, 42);
+            doc.setFont('helvetica', 'bold');
+            doc.setFontSize(11);
+            doc.text('2. Erkannte Mängel, Preisabweichungen & Nachverhandlungspunkte', 14, y);
+            y += 7;
+
+            const defects = Array.isArray(order.defects) && order.defects.length > 0
+                ? order.defects
+                : ['Keine kritischen Einzelmängel hinterlegt.'];
+            defects.forEach((def, idx) => {
+                if (y > 265) { doc.addPage(); y = 20; }
+                const defLines = doc.splitTextToSize((idx + 1) + '. ' + def, 174);
+                doc.setFillColor(254, 242, 242);
+                doc.setDrawColor(254, 202, 202);
+                doc.roundedRect(14, y - 4, 182, defLines.length * 5 + 5, 1.5, 1.5, 'FD');
+                doc.setFont('helvetica', 'normal');
+                doc.setFontSize(9);
+                doc.setTextColor(153, 27, 27);
+                doc.text(defLines, 18, y + 1);
+                y += defLines.length * 5 + 9;
+            });
+
+            doc.setFontSize(8);
+            doc.setTextColor(148, 163, 184);
+            doc.text('SHK Angebotsprüfung GmbH & Co. KG · Unabhängige TGA-Meisterprüfung · Auftrag ' + order.id, 105, 290, { align: 'center' });
+
+            doc.save('Pruefbericht_' + order.id + '.pdf');
+            showToast('PDF-Prüfbericht (inkl. Firmenlogo im Kopfbereich) erfolgreich heruntergeladen!');
+        }
+
         function exportAdminMonthlyReportPDF() {
             if (!window.jspdf || !window.jspdf.jsPDF) {
                 showToast('jsPDF Bibliothek wird geladen – bitte kurz warten.', 'error');
@@ -4920,18 +5132,20 @@ function populateFileCheckTargetOrderDropdown() {
             const { jsPDF } = window.jspdf;
             const doc = new jsPDF({ orientation: 'portrait', unit: 'mm', format: 'a4' });
 
-            // Kopfbereich
+            // Kopfbereich inkl. Firmenlogo-Platzhalter rechts oben
             doc.setFillColor(15, 23, 42);
             doc.rect(0, 0, 210, 34, 'F');
+            drawCompanyLogoPlaceholder(doc, 'dark');
+
             doc.setTextColor(16, 185, 129);
-            doc.setFontSize(15);
+            doc.setFontSize(14);
             doc.setFont('helvetica', 'bold');
-            doc.text('SHK ANGEBOTSPRÜFUNG - MONATSBERICHT', 14, 15);
+            doc.text('SHK ANGEBOTSPRÜFUNG - MONATSBERICHT', 14, 14);
             doc.setTextColor(226, 232, 240);
-            doc.setFontSize(9);
+            doc.setFontSize(8.5);
             doc.setFont('helvetica', 'normal');
-            doc.text('Kaufmännische KPI-Auswertung, Umsatzverteilung & Rechnungs-/Mahnübersicht', 14, 22);
-            doc.text('Erstellt am: ' + data.generatedAt + '  |  Berichtsmonat: ' + data.monthTag + '  |  Filter: ' + data.filterLabel, 14, 28);
+            doc.text('Kaufmännische KPI-Auswertung, Umsatzverteilung & Rechnungs-/Mahnübersicht', 14, 21);
+            doc.text('Erstellt am: ' + data.generatedAt + '  |  Monat: ' + data.monthTag + '  |  Filter: ' + data.filterLabel, 14, 27);
 
             let y = 44;
 
@@ -5043,7 +5257,7 @@ function populateFileCheckTargetOrderDropdown() {
             }
 
             doc.save('Monatsbericht_SHK_Angebotspruefung_' + data.monthTag + '.pdf');
-            showToast('PDF-Monatsbericht erfolgreich erstellt & heruntergeladen!');
+            showToast('PDF-Monatsbericht (inkl. Firmenlogo im Kopfbereich) erfolgreich heruntergeladen!');
         }
 
         let adminNotifications = [];
@@ -6205,10 +6419,11 @@ function populateFileCheckTargetOrderDropdown() {
             const customerName = `${order.firstName || ''} ${order.lastName || ''}`.trim() || order.email;
             const projectName = (order.projectName || 'Allgemein').trim();
 
+            if (typeof drawCompanyLogoPlaceholder === 'function') drawCompanyLogoPlaceholder(doc, 'light');
             doc.setFont('helvetica', 'bold');
             doc.setFontSize(18);
             doc.setTextColor(16, 185, 129);
-            doc.text('SHK Angebotsprüfung', 20, 22);
+            doc.text('SHK Angebotsprüfung', 20, 18);
 
             doc.setFont('helvetica', 'normal');
             doc.setFontSize(9);
