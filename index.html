@@ -861,8 +861,8 @@
                         <button type="button" onclick="exportAdminMonthlyReportCSV()" class="bg-slate-800 hover:bg-slate-700 text-emerald-400 border border-emerald-500/30 px-3 py-2 rounded-xl text-xs font-bold transition flex items-center gap-1.5 whitespace-nowrap">
                             <i class="fa-solid fa-file-csv"></i><span>Monatsbericht (CSV)</span>
                         </button>
-                        <button type="button" onclick="exportAdminMonthlyReportPDF()" class="bg-emerald-500 hover:bg-emerald-600 text-slate-950 px-3 py-2 rounded-xl text-xs font-bold transition flex items-center gap-1.5 whitespace-nowrap shadow-lg shadow-emerald-500/10">
-                            <i class="fa-solid fa-file-pdf"></i><span>Monatsbericht (PDF)</span>
+                        <button type="button" onclick="exportAdminMonthlyReportPDF(true)" class="bg-emerald-500 hover:bg-emerald-600 text-slate-950 px-3 py-2 rounded-xl text-xs font-bold transition flex items-center gap-1.5 whitespace-nowrap shadow-lg shadow-emerald-500/10">
+                            <i class="fa-solid fa-eye"></i><span>Monatsbericht PDF (Live-Vorschau)</span>
                         </button>
                     </div>
                 </div>
@@ -1112,8 +1112,8 @@
                                     <button type="button" onclick="exportAdminMonthlyReportCSV()" class="bg-slate-800 hover:bg-slate-700 text-emerald-400 border border-emerald-500/30 px-3.5 py-2 rounded-xl text-xs font-bold transition whitespace-nowrap">
                                         <i class="fa-solid fa-file-csv mr-1.5"></i>CSV-Bericht
                                     </button>
-                                    <button type="button" onclick="exportAdminMonthlyReportPDF()" class="bg-emerald-500 hover:bg-emerald-600 text-slate-950 px-3.5 py-2 rounded-xl text-xs font-bold transition whitespace-nowrap">
-                                        <i class="fa-solid fa-file-pdf mr-1.5"></i>PDF-Bericht
+                                    <button type="button" onclick="exportAdminMonthlyReportPDF(true)" class="bg-emerald-500 hover:bg-emerald-600 text-slate-950 px-3.5 py-2 rounded-xl text-xs font-bold transition whitespace-nowrap">
+                                        <i class="fa-solid fa-eye mr-1.5"></i>PDF-Bericht (Live-Vorschau)
                                     </button>
                                     <button type="button" onclick="selectInvoiceCustomer('ALL')" class="bg-slate-800 hover:bg-slate-700 text-slate-200 border border-slate-700 px-3.5 py-2 rounded-xl text-xs font-semibold transition whitespace-nowrap">
                                         Alle Kunden anzeigen
@@ -1338,8 +1338,12 @@
                             <div class="flex items-center justify-between"><span class="text-xs font-semibold text-white block"><i class="fa-solid fa-file-invoice-dollar text-emerald-400 mr-2"></i>PDF-Rechnungsgenerator & Versand</span><span id="adminInvoiceSentStatusBadge" class="hidden text-[11px] text-emerald-400 font-semibold"><i class="fa-solid fa-check-double mr-1"></i>50 % Rechnung versendet</span></div>
                             <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
                                 <button type="button" onclick="sendInvoiceEmail('50', true)" class="bg-slate-900 hover:bg-slate-800 border border-emerald-500/40 text-emerald-400 text-xs font-semibold py-2.5 px-3 rounded-lg transition text-left flex items-center justify-between"><span><i class="fa-solid fa-file-pdf mr-1.5"></i>50% PDF-Rechnung</span><i class="fa-solid fa-paper-plane"></i></button>
-                                <button type="button" onclick="sendInvoiceEmail('100', false)" class="bg-slate-900 hover:bg-slate-800 border border-slate-700 text-white text-xs font-semibold py-2.5 px-3 rounded-lg transition text-left flex items-center justify-between"><span><i class="fa-solid fa-file-pdf mr-1.5 text-emerald-400"></i>100% PDF-Rechnung</span><i class="fa-solid fa-paper-plane"></i></button>
+                                <button type="button" onclick="sendInvoiceEmail('100', false)" class="bg-slate-900 hover:bg-slate-800 border border-slate-700 text-white text-xs font-semibold py-2.5 px-3 rounded-lg transition text-left flex items-center justify-between"><span><i class="fa-solid fa-file-pdf mr-1.5 text-emerald-400"></i>100% PDF-Rechnung (Live-Vorschau)</span><i class="fa-solid fa-eye"></i></button>
                             </div>
+                            <button type="button" onclick="generateOrderAuditReportPDF(selectedAdminOrderId, true)" class="w-full bg-emerald-500/15 hover:bg-emerald-500/25 border border-emerald-500/40 text-emerald-300 text-xs font-bold py-2.5 px-3 rounded-lg transition flex items-center justify-between">
+                                <span><i class="fa-solid fa-file-shield mr-1.5 text-emerald-400"></i>Technischen PDF-Prüfbericht generieren (Live-Vorschau vor Download)</span>
+                                <span class="px-2 py-0.5 rounded bg-emerald-500 text-slate-950 text-[10px] font-extrabold">LIVE-VORSCHAU</span>
+                            </button>
                         </div>
 
                         <div class="flex items-center justify-between bg-slate-950 p-4 rounded-xl border border-slate-800">
@@ -1398,6 +1402,73 @@
             </div>
         </div>
     </main>
+
+    <!-- ADMIN PDF LIVE-VORSCHAU MODAL (VOR DOWNLOAD) -->
+    <div id="adminPdfPreviewModal" class="fixed inset-0 z-50 flex items-center justify-center bg-slate-950/85 backdrop-blur-md p-4 hidden">
+        <div class="bg-slate-900 border border-slate-700 rounded-2xl max-w-5xl w-full max-h-[92vh] flex flex-col shadow-2xl overflow-hidden">
+            <!-- Modal Header -->
+            <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-3 px-6 py-4 bg-slate-950 border-b border-slate-800">
+                <div class="flex items-start gap-3">
+                    <div class="w-10 h-10 rounded-xl bg-emerald-500/15 border border-emerald-500/40 flex items-center justify-center text-emerald-400 shrink-0 mt-0.5">
+                        <i class="fa-solid fa-file-pdf text-lg"></i>
+                    </div>
+                    <div>
+                        <div class="flex flex-wrap items-center gap-2">
+                            <span class="px-2 py-0.5 rounded text-[10px] font-mono font-bold uppercase tracking-wider bg-emerald-500/20 text-emerald-300 border border-emerald-500/30">
+                                PDF Live-Vorschau
+                            </span>
+                            <span id="adminPdfPreviewMetaBadge" class="text-xs font-mono text-slate-400">
+                                Pruefbericht.pdf · 1 DIN-A4 Seite
+                            </span>
+                        </div>
+                        <h3 id="adminPdfPreviewTitle" class="text-base font-bold text-white mt-0.5">Technischer &amp; Kaufmännischer Prüfbericht</h3>
+                        <p id="adminPdfPreviewSubtitle" class="text-xs text-slate-400">Bitte prüfen Sie das generierte Dokument in der Live-Vorschau, bevor Sie den Download starten.</p>
+                    </div>
+                </div>
+
+                <div class="flex flex-wrap items-center gap-2 self-end sm:self-center">
+                    <div class="inline-flex rounded-xl bg-slate-900 p-1 border border-slate-800">
+                        <button type="button" id="btnAdminPdfModeA4" onclick="switchAdminPdfPreviewMode('a4')" class="px-3 py-1.5 rounded-lg text-xs font-bold bg-emerald-500 text-slate-950 shadow transition">
+                            DIN-A4 Live-Layout
+                        </button>
+                        <button type="button" id="btnAdminPdfModeEngine" onclick="switchAdminPdfPreviewMode('engine')" class="px-3 py-1.5 rounded-lg text-xs font-bold text-slate-300 hover:text-white transition">
+                            Original PDF-Viewer
+                        </button>
+                    </div>
+                    <button type="button" onclick="closeAdminPdfPreviewModal()" class="p-2 rounded-xl bg-slate-900 hover:bg-slate-800 text-slate-400 hover:text-white border border-slate-800 transition" title="Vorschau schließen">
+                        <i class="fa-solid fa-xmark"></i>
+                    </button>
+                </div>
+            </div>
+
+            <!-- Modal Body -->
+            <div class="flex-1 overflow-y-auto p-4 sm:p-6 bg-slate-950/90 flex justify-center">
+                <div id="adminPdfPreviewA4Container" class="w-full max-w-[790px] bg-white text-slate-900 rounded-xl shadow-2xl border border-slate-300 overflow-hidden flex flex-col justify-between min-h-[820px]">
+                    <!-- Dynamisches DIN-A4 Blatt -->
+                </div>
+                <div id="adminPdfPreviewEngineContainer" class="hidden w-full h-[68vh] min-h-[500px] bg-slate-900 rounded-xl border border-slate-800 overflow-hidden flex flex-col">
+                    <iframe id="adminPdfPreviewIframe" title="PDF Engine Live-Vorschau" class="w-full flex-1 border-0 bg-white"></iframe>
+                </div>
+            </div>
+
+            <!-- Modal Footer -->
+            <div class="px-6 py-4 bg-slate-950 border-t border-slate-800 flex flex-col sm:flex-row sm:items-center justify-between gap-3">
+                <div class="flex items-center gap-2 text-xs text-slate-400">
+                    <i class="fa-solid fa-circle-check text-emerald-400"></i>
+                    <span>Prüfen Sie Kopfbereich (Firmenlogo), Beträge und Positionen vor dem Speichern als PDF-Datei.</span>
+                </div>
+                <div class="flex items-center justify-end gap-3">
+                    <button type="button" onclick="closeAdminPdfPreviewModal()" class="px-4 py-2.5 rounded-xl bg-slate-800 hover:bg-slate-700 text-slate-200 border border-slate-700 text-xs font-bold transition">
+                        Abbrechen / Schließen
+                    </button>
+                    <button type="button" onclick="confirmAdminPdfPreviewDownload()" class="px-5 py-2.5 rounded-xl bg-emerald-500 hover:bg-emerald-400 text-slate-950 text-xs font-extrabold transition flex items-center gap-2 shadow-lg shadow-emerald-500/20">
+                        <i class="fa-solid fa-download"></i>
+                        <span id="adminPdfPreviewDownloadBtnLabel">PDF jetzt herunterladen</span>
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
 
     <!-- AUTH MODAL (Demo-Backdoor entfernt - Verbesserung 1) -->
     <div id="authModal" class="fixed inset-0 z-50 flex items-center justify-center bg-slate-950/80 backdrop-blur-sm hidden">
@@ -5456,20 +5527,99 @@ function populateFileCheckTargetOrderDropdown() {
             doc.text('SHK- & TGA-Meisterbetrieb', x + 17, y + 18);
         }
 
-        function generateOrderAuditReportPDF(orderId) {
+        let activeAdminPdfPreviewState = null;
+
+        function openAdminPdfPreviewModal(previewConfig) {
+            activeAdminPdfPreviewState = previewConfig;
+            const modal = document.getElementById('adminPdfPreviewModal');
+            if (!modal) {
+                if (previewConfig && previewConfig.docInstance) {
+                    previewConfig.docInstance.save(previewConfig.fileName || 'Dokument.pdf');
+                }
+                return;
+            }
+            const titleEl = document.getElementById('adminPdfPreviewTitle');
+            const subEl = document.getElementById('adminPdfPreviewSubtitle');
+            const metaEl = document.getElementById('adminPdfPreviewMetaBadge');
+            const dlLabelEl = document.getElementById('adminPdfPreviewDownloadBtnLabel');
+            const a4Container = document.getElementById('adminPdfPreviewA4Container');
+            const iframeEl = document.getElementById('adminPdfPreviewIframe');
+
+            if (titleEl) titleEl.textContent = previewConfig.title || 'PDF-Bericht Live-Vorschau';
+            if (subEl) subEl.textContent = previewConfig.subtitle || '';
+            if (metaEl) metaEl.textContent = (previewConfig.fileName || 'Bericht.pdf') + ' · ' + (previewConfig.pageCount || 1) + ' DIN-A4 ' + ((previewConfig.pageCount || 1) === 1 ? 'Seite' : 'Seiten');
+            if (dlLabelEl) dlLabelEl.textContent = 'PDF jetzt herunterladen (' + (previewConfig.fileName || 'Bericht.pdf') + ')';
+            if (a4Container) a4Container.innerHTML = previewConfig.a4Html || '';
+            if (iframeEl) {
+                iframeEl.src = previewConfig.dataUri || 'about:blank';
+            }
+
+            switchAdminPdfPreviewMode('a4');
+            modal.classList.remove('hidden');
+            showToast('PDF-Bericht in der Live-Vorschau geöffnet – bitte vor dem Download prüfen.', 'info');
+        }
+
+        function switchAdminPdfPreviewMode(mode) {
+            const a4Container = document.getElementById('adminPdfPreviewA4Container');
+            const engineContainer = document.getElementById('adminPdfPreviewEngineContainer');
+            const btnA4 = document.getElementById('btnAdminPdfModeA4');
+            const btnEngine = document.getElementById('btnAdminPdfModeEngine');
+            if (!a4Container || !engineContainer) return;
+
+            if (mode === 'engine') {
+                a4Container.classList.add('hidden');
+                engineContainer.classList.remove('hidden');
+                if (btnEngine) btnEngine.className = 'px-3 py-1.5 rounded-lg text-xs font-bold bg-emerald-500 text-slate-950 shadow transition';
+                if (btnA4) btnA4.className = 'px-3 py-1.5 rounded-lg text-xs font-bold text-slate-300 hover:text-white transition';
+            } else {
+                engineContainer.classList.add('hidden');
+                a4Container.classList.remove('hidden');
+                if (btnA4) btnA4.className = 'px-3 py-1.5 rounded-lg text-xs font-bold bg-emerald-500 text-slate-950 shadow transition';
+                if (btnEngine) btnEngine.className = 'px-3 py-1.5 rounded-lg text-xs font-bold text-slate-300 hover:text-white transition';
+            }
+        }
+
+        function closeAdminPdfPreviewModal() {
+            const modal = document.getElementById('adminPdfPreviewModal');
+            if (modal) modal.classList.add('hidden');
+            activeAdminPdfPreviewState = null;
+        }
+
+        function confirmAdminPdfPreviewDownload() {
+            if (!activeAdminPdfPreviewState || !activeAdminPdfPreviewState.docInstance) return;
+            const fName = activeAdminPdfPreviewState.fileName || 'Bericht.pdf';
+            activeAdminPdfPreviewState.docInstance.save(fName);
+            showToast('PDF "' + fName + '" (inkl. Firmenlogo im Kopfbereich) erfolgreich heruntergeladen!');
+            closeAdminPdfPreviewModal();
+        }
+
+        function generateOrderAuditReportPDF(orderId, openPreview = false) {
             if (!window.jspdf || !window.jspdf.jsPDF) {
                 showToast('jsPDF Bibliothek wird geladen – bitte kurz warten.', 'error');
                 return;
             }
-            const order = (userOrders && userOrders.find(o => o.id === orderId)) || (adminOrders && adminOrders.find(o => o.id === orderId));
+            const targetId = orderId || selectedAdminOrderId;
+            const order = (userOrders && userOrders.find(o => o.id === targetId)) || (adminOrders && adminOrders.find(o => o.id === targetId));
             if (!order) {
-                showToast('Auftrag für PDF-Prüfbericht nicht gefunden.', 'error');
+                showToast('Bitte wählen Sie zuerst einen Prüfauftrag aus.', 'error');
                 return;
             }
             const { jsPDF } = window.jspdf;
             const doc = new jsPDF({ orientation: 'portrait', unit: 'mm', format: 'a4' });
             const todayStr = new Date().toLocaleDateString('de-DE');
             const customerName = ((order.firstName || '') + ' ' + (order.lastName || '')).trim() || order.email;
+
+            const savInput = document.getElementById('adminSavingsInput');
+            const sumInput = document.getElementById('adminSummaryInput');
+            const defInput = document.getElementById('adminDefectsInput');
+            const isCurrentlySelectedInAdmin = openPreview && selectedAdminOrderId === order.id;
+
+            const effectiveSavings = (isCurrentlySelectedInAdmin && savInput && savInput.value.trim()) ? savInput.value.trim() : (order.savings || 'Wird ermittelt');
+            const effectiveSummary = (isCurrentlySelectedInAdmin && sumInput && sumInput.value.trim()) ? sumInput.value.trim() : (order.summary || 'Die technische und kaufmännische Plausibilitätsprüfung wurde erfolgreich abgeschlossen.');
+            const effectiveDefects = (isCurrentlySelectedInAdmin && defInput && defInput.value.trim())
+                ? defInput.value.split('
+').map(s => s.trim()).filter(Boolean)
+                : (Array.isArray(order.defects) && order.defects.length > 0 ? order.defects : ['Keine kritischen Einzelmängel hinterlegt.']);
 
             // Dunkler Kopfbereich inkl. Firmenlogo-Platzhalter
             doc.setFillColor(15, 23, 42);
@@ -5501,7 +5651,7 @@ function populateFileCheckTargetOrderDropdown() {
             doc.text('Geprüftes Paket: ' + (order.packageName || 'SHK-Angebotsprüfung') + ' (' + (order.fileName || 'Angebot.pdf') + ')', 18, y + 15);
             doc.setFont('helvetica', 'bold');
             doc.setTextColor(5, 150, 105);
-            doc.text('Ermitteltes Einsparpotenzial: ' + (order.savings || 'Wird ermittelt'), 18, y + 23);
+            doc.text('Ermitteltes Einsparpotenzial: ' + effectiveSavings, 18, y + 23);
 
             y += 38;
             doc.setTextColor(15, 23, 42);
@@ -5513,7 +5663,7 @@ function populateFileCheckTargetOrderDropdown() {
             doc.setFont('helvetica', 'normal');
             doc.setFontSize(9.5);
             doc.setTextColor(51, 65, 85);
-            const summaryLines = doc.splitTextToSize(order.summary || 'Die technische und kaufmännische Plausibilitätsprüfung wurde erfolgreich abgeschlossen.', 180);
+            const summaryLines = doc.splitTextToSize(effectiveSummary, 180);
             doc.text(summaryLines, 14, y);
             y += summaryLines.length * 5 + 10;
 
@@ -5523,10 +5673,7 @@ function populateFileCheckTargetOrderDropdown() {
             doc.text('2. Erkannte Mängel, Preisabweichungen & Nachverhandlungspunkte', 14, y);
             y += 7;
 
-            const defects = Array.isArray(order.defects) && order.defects.length > 0
-                ? order.defects
-                : ['Keine kritischen Einzelmängel hinterlegt.'];
-            defects.forEach((def, idx) => {
+            effectiveDefects.forEach((def, idx) => {
                 if (y > 265) { doc.addPage(); y = 20; }
                 const defLines = doc.splitTextToSize((idx + 1) + '. ' + def, 174);
                 doc.setFillColor(254, 242, 242);
@@ -5543,11 +5690,77 @@ function populateFileCheckTargetOrderDropdown() {
             doc.setTextColor(148, 163, 184);
             doc.text('SHK Angebotsprüfung GmbH & Co. KG · Unabhängige TGA-Meisterprüfung · Auftrag ' + order.id, 105, 290, { align: 'center' });
 
-            doc.save('Pruefbericht_' + order.id + '.pdf');
+            const fileName = 'Pruefbericht_' + order.id + '.pdf';
+            if (openPreview) {
+                let dataUri = '';
+                try { dataUri = doc.output('datauristring'); } catch (e) { dataUri = ''; }
+                const a4Html = `
+                    <div>
+                        <div class="bg-slate-900 text-white px-8 py-6 flex flex-col sm:flex-row sm:items-center justify-between gap-4 border-b-4 border-emerald-500">
+                            <div>
+                                <div class="text-emerald-400 font-extrabold text-sm tracking-wide uppercase">TECHNISCHER &amp; KAUFMÄNNISCHER PRÜFBERICHT</div>
+                                <div class="text-xs text-slate-300 mt-1">Unabhängige SHK-/TGA-Fachprüfung nach VDI/DIN-Richtlinien</div>
+                                <div class="text-[11px] font-mono text-slate-400 mt-1">Auftrag: ${escapeHtml(order.id)} &nbsp;|&nbsp; Projekt: ${escapeHtml(order.projectName || 'Allgemein')} &nbsp;|&nbsp; Datum: ${todayStr}</div>
+                            </div>
+                            <div class="border border-dashed border-emerald-500/70 bg-slate-800/90 rounded-lg px-3.5 py-2 flex items-center gap-2.5 shrink-0 self-start sm:self-center">
+                                <div class="w-8 h-8 rounded bg-emerald-500 text-slate-950 font-black text-xs flex items-center justify-center">SHK</div>
+                                <div class="leading-tight">
+                                    <div class="text-[9px] font-mono uppercase tracking-wider text-slate-300">[FIRMENLOGO-PLATZHALTER]</div>
+                                    <div class="text-xs font-bold text-emerald-400">SHK Angebotsprüfung</div>
+                                    <div class="text-[10px] text-slate-400">SHK- &amp; TGA-Meisterbetrieb</div>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="p-8 space-y-6 text-sm">
+                            <div class="bg-slate-50 border border-slate-200 rounded-xl p-4 grid grid-cols-1 sm:grid-cols-2 gap-3">
+                                <div>
+                                    <span class="text-[11px] uppercase tracking-wider text-slate-500 font-semibold block">Auftraggeber</span>
+                                    <strong class="text-slate-900">${escapeHtml(customerName)} (${escapeHtml(order.email)})</strong>
+                                    <span class="text-xs text-slate-600 block mt-0.5">Paket: ${escapeHtml(order.packageName || 'SHK-Angebotsprüfung')} (${escapeHtml(order.fileName || 'Angebot.pdf')})</span>
+                                </div>
+                                <div class="sm:text-right">
+                                    <span class="text-[11px] uppercase tracking-wider text-slate-500 font-semibold block">Ermitteltes Einsparpotenzial</span>
+                                    <span class="text-lg font-extrabold font-mono text-emerald-600">${escapeHtml(effectiveSavings)}</span>
+                                </div>
+                            </div>
+                            <div>
+                                <h4 class="text-sm font-bold text-slate-900 border-b border-slate-200 pb-1.5 mb-2">1. Zusammenfassung &amp; Prüffazit des TGA-Meisters</h4>
+                                <p class="text-xs text-slate-700 leading-relaxed whitespace-pre-line bg-slate-50 p-3.5 rounded-lg border border-slate-200">${escapeHtml(effectiveSummary)}</p>
+                            </div>
+                            <div>
+                                <h4 class="text-sm font-bold text-slate-900 border-b border-slate-200 pb-1.5 mb-2.5">2. Erkannte Mängel, Preisabweichungen &amp; Nachverhandlungspunkte</h4>
+                                <div class="space-y-2">
+                                    ${effectiveDefects.map((d, i) => `
+                                        <div class="bg-rose-50 border border-rose-200 text-rose-900 rounded-lg px-3.5 py-2.5 text-xs leading-relaxed">
+                                            <strong class="font-mono mr-1.5">${i + 1}.</strong>${escapeHtml(d)}
+                                        </div>
+                                    `).join('')}
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="px-8 py-3 bg-slate-100 border-t border-slate-200 text-center text-[11px] text-slate-500 font-mono">
+                        SHK Angebotsprüfung GmbH &amp; Co. KG · Unabhängige TGA-Meisterprüfung · Live-Vorschau vor PDF-Download
+                    </div>
+                `;
+                openAdminPdfPreviewModal({
+                    kind: 'audit_report',
+                    title: 'Technischer & Kaufmännischer Prüfbericht (' + order.id + ')',
+                    subtitle: 'Auftraggeber: ' + customerName + ' · Paket: ' + (order.packageName || 'SHK-Angebotsprüfung'),
+                    fileName: fileName,
+                    pageCount: doc.internal.getNumberOfPages(),
+                    dataUri: dataUri,
+                    docInstance: doc,
+                    a4Html: a4Html
+                });
+                return;
+            }
+
+            doc.save(fileName);
             showToast('PDF-Prüfbericht (inkl. Firmenlogo im Kopfbereich) erfolgreich heruntergeladen!');
         }
 
-        function exportAdminMonthlyReportPDF() {
+        function exportAdminMonthlyReportPDF(openPreview = true) {
             if (!window.jspdf || !window.jspdf.jsPDF) {
                 showToast('jsPDF Bibliothek wird geladen – bitte kurz warten.', 'error');
                 return;
@@ -5635,7 +5848,7 @@ function populateFileCheckTargetOrderDropdown() {
                         : (inv.reminder2At ? '2. MAHNUNG OFFEN' : (inv.reminder1At ? '1. MAHNUNG' : 'OFFEN'));
 
                     doc.setDrawColor(226, 232, 240);
-                    doc.setFillColor(idx % 2 === 0 ? 255 : 248, idx % 2 === 0 ? 255 : 250, idx % 2 === 0 ? 255 : 252);
+                    doc.setFillColor(idx % 2 === 0 ? 255 : 250, idx % 2 === 0 ? 255 : 250, idx % 2 === 0 ? 255 : 252);
                     doc.roundedRect(14, y, 182, 22, 1.5, 1.5, 'FD');
 
                     doc.setFont('helvetica', 'bold');
@@ -5681,7 +5894,93 @@ function populateFileCheckTargetOrderDropdown() {
                 );
             }
 
-            doc.save('Monatsbericht_SHK_Angebotspruefung_' + data.monthTag + '.pdf');
+            const fileName = 'Monatsbericht_SHK_Angebotspruefung_' + data.monthTag + '.pdf';
+            if (openPreview) {
+                let dataUri = '';
+                try { dataUri = doc.output('datauristring'); } catch (e) { dataUri = ''; }
+                const a4Html = `
+                    <div>
+                        <div class="bg-slate-900 text-white px-8 py-6 flex flex-col sm:flex-row sm:items-center justify-between gap-4 border-b-4 border-emerald-500">
+                            <div>
+                                <div class="text-emerald-400 font-extrabold text-sm tracking-wide uppercase">SHK ANGEBOTSPRÜFUNG - MONATSBERICHT</div>
+                                <div class="text-xs text-slate-300 mt-1">Kaufmännische KPI-Auswertung, Umsatzverteilung &amp; Rechnungs-/Mahnübersicht</div>
+                                <div class="text-[11px] font-mono text-slate-400 mt-1">Erstellt am: ${escapeHtml(data.generatedAt)} &nbsp;|&nbsp; Monat: ${escapeHtml(data.monthTag)} &nbsp;|&nbsp; Filter: ${escapeHtml(data.filterLabel)}</div>
+                            </div>
+                            <div class="border border-dashed border-emerald-500/70 bg-slate-800/90 rounded-lg px-3.5 py-2 flex items-center gap-2.5 shrink-0 self-start sm:self-center">
+                                <div class="w-8 h-8 rounded bg-emerald-500 text-slate-950 font-black text-xs flex items-center justify-center">SHK</div>
+                                <div class="leading-tight">
+                                    <div class="text-[9px] font-mono uppercase tracking-wider text-slate-300">[FIRMENLOGO-PLATZHALTER]</div>
+                                    <div class="text-xs font-bold text-emerald-400">SHK Angebotsprüfung</div>
+                                    <div class="text-[10px] text-slate-400">SHK- &amp; TGA-Meisterbetrieb</div>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="p-8 space-y-6 text-sm">
+                            <div>
+                                <h4 class="text-sm font-bold text-slate-900 border-b border-slate-200 pb-1.5 mb-3">1. Finanz-KPIs &amp; Umsatzverteilung nach Bezahlstatus</h4>
+                                <div class="grid grid-cols-2 sm:grid-cols-4 gap-3 bg-slate-50 p-4 rounded-xl border border-slate-200">
+                                    <div>
+                                        <span class="text-[10px] uppercase text-slate-500 font-semibold block">Umsatz (Ist)</span>
+                                        <strong class="text-sm font-mono text-emerald-600">${fmt(data.currentRev)}</strong>
+                                    </div>
+                                    <div>
+                                        <span class="text-[10px] uppercase text-slate-500 font-semibold block">Offen (Soll)</span>
+                                        <strong class="text-sm font-mono text-rose-600">${fmt(data.openRev)}</strong>
+                                    </div>
+                                    <div>
+                                        <span class="text-[10px] uppercase text-slate-500 font-semibold block">Gesamtvolumen</span>
+                                        <strong class="text-sm font-mono text-slate-900">${fmt(data.projected)}</strong>
+                                    </div>
+                                    <div>
+                                        <span class="text-[10px] uppercase text-slate-500 font-semibold block">Kunden-Ersparnis</span>
+                                        <strong class="text-sm font-mono text-emerald-700">${data.totalSavingsNum.toLocaleString('de-DE')} EUR</strong>
+                                    </div>
+                                </div>
+                            </div>
+                            <div>
+                                <h4 class="text-sm font-bold text-slate-900 border-b border-slate-200 pb-1.5 mb-3">2. Rechnungsübersicht &amp; Mahnwesen (${data.invoicesList.length} Rechnungen)</h4>
+                                <div class="space-y-2">
+                                    ${data.invoicesList.map(inv => {
+                                        const stText = inv.isPaid ? 'BEZAHLT' : (inv.reminder2At ? '2. MAHNUNG OFFEN' : (inv.reminder1At ? '1. MAHNUNG' : 'OFFEN'));
+                                        const stBadge = inv.isPaid
+                                            ? 'bg-emerald-100 text-emerald-800 border-emerald-300'
+                                            : (inv.reminder2At ? 'bg-rose-100 text-rose-800 border-rose-300' : 'bg-amber-100 text-amber-800 border-amber-300');
+                                        return `
+                                            <div class="p-3 rounded-lg border border-slate-200 bg-slate-50/70 flex flex-col sm:flex-row sm:items-center justify-between gap-2 text-xs">
+                                                <div>
+                                                    <div class="font-bold text-slate-900 font-mono">${escapeHtml(inv.invoiceNo)} · Auftrag ${escapeHtml(inv.orderId)} (${escapeHtml(inv.projectName)})</div>
+                                                    <div class="text-slate-600">${escapeHtml(inv.customerName)} (${escapeHtml(inv.customerEmail)}) — ${escapeHtml(inv.title)}</div>
+                                                    <div class="text-[11px] text-slate-400 font-mono mt-0.5">Gesendet: ${escapeHtml(inv.sentAt || '-')} | Bezahlt: ${escapeHtml(inv.paidAt || '-')} | Mahnung 1: ${escapeHtml(inv.reminder1At || '-')} | Mahnung 2: ${escapeHtml(inv.reminder2At || '-')}</div>
+                                                </div>
+                                                <div class="sm:text-right shrink-0">
+                                                    <div class="font-bold font-mono text-slate-900">${fmt(inv.amountGross)}</div>
+                                                    <span class="inline-block mt-0.5 px-2 py-0.5 rounded text-[10px] font-mono font-bold border ${stBadge}">${stText}</span>
+                                                </div>
+                                            </div>
+                                        `;
+                                    }).join('')}
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="px-8 py-3 bg-slate-100 border-t border-slate-200 text-center text-[11px] text-slate-500 font-mono">
+                        SHK Angebotsprüfung Monatsbericht · Archiv-Export vom ${escapeHtml(data.generatedAt)} · Live-Vorschau vor PDF-Download
+                    </div>
+                `;
+                openAdminPdfPreviewModal({
+                    kind: 'monthly_report',
+                    title: 'Kaufmännischer Monatsbericht (' + data.monthTag + ')',
+                    subtitle: 'Filter: ' + data.filterLabel + ' · ' + data.invoicesList.length + ' Rechnungen · Stand: ' + data.generatedAt,
+                    fileName: fileName,
+                    pageCount: pageCount,
+                    dataUri: dataUri,
+                    docInstance: doc,
+                    a4Html: a4Html
+                });
+                return;
+            }
+
+            doc.save(fileName);
             showToast('PDF-Monatsbericht (inkl. Firmenlogo im Kopfbereich) erfolgreich heruntergeladen!');
         }
 
@@ -6857,7 +7156,7 @@ function populateFileCheckTargetOrderDropdown() {
             window.location.href = `mailto:${order.email}?subject=${subject}&body=${body}`;
         }
 
-        function generateInvoicePDFDocument(order, type) {
+        function generateInvoicePDFDocument(order, type, openPreview = true) {
             if (!window.jspdf || !window.jspdf.jsPDF) {
                 alert('PDF-Generator (jsPDF) wird geladen oder ist nicht verfügbar.');
                 return;
@@ -6959,7 +7258,82 @@ function populateFileCheckTargetOrderDropdown() {
                 : 'Vielen Dank für Ihren Auftrag und Ihr Vertrauen!';
             doc.text(footerNote, 20, sumY + 34);
 
-            doc.save(`Rechnung_${order.id}_${type}Prozent.pdf`);
+            const invFileName = `Rechnung_${order.id}_${type}Prozent.pdf`;
+            if (openPreview && typeof openAdminPdfPreviewModal === 'function') {
+                let dataUri = '';
+                try { dataUri = doc.output('datauristring'); } catch (e) { dataUri = ''; }
+                const invA4Html = `
+                    <div>
+                        <div class="px-8 py-6 border-b border-slate-200 flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+                            <div>
+                                <div class="text-xl font-extrabold text-emerald-600">SHK Angebotsprüfung</div>
+                                <div class="text-xs text-slate-500">Technische &amp; Kaufmännische TGA-/SHK-Analyse</div>
+                            </div>
+                            <div class="border border-dashed border-emerald-500/70 bg-slate-50 rounded-lg px-3.5 py-2 flex items-center gap-2.5 shrink-0">
+                                <div class="w-8 h-8 rounded bg-emerald-500 text-slate-950 font-black text-xs flex items-center justify-center">SHK</div>
+                                <div class="leading-tight">
+                                    <div class="text-[9px] font-mono uppercase tracking-wider text-slate-500">[FIRMENLOGO-PLATZHALTER]</div>
+                                    <div class="text-xs font-bold text-emerald-700">SHK Angebotsprüfung</div>
+                                    <div class="text-[10px] text-slate-500">SHK- &amp; TGA-Meisterbetrieb</div>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="p-8 space-y-6 text-sm">
+                            <div class="grid grid-cols-1 sm:grid-cols-2 gap-4 bg-slate-50 p-4 rounded-xl border border-slate-200">
+                                <div>
+                                    <span class="text-[11px] uppercase text-slate-500 font-semibold block">Rechnungsempfänger</span>
+                                    <strong class="text-slate-900 block">${escapeHtml(customerName)}</strong>
+                                    <span class="text-xs text-slate-600">${escapeHtml(order.email)}</span>
+                                </div>
+                                <div class="sm:text-right font-mono text-xs text-slate-700 space-y-0.5">
+                                    <div class="font-bold text-slate-900">Rechnungs-Nr.: ${escapeHtml(invoiceNo)}</div>
+                                    <div>Datum: ${todayStr}</div>
+                                    <div>Auftrags-Nr.: ${escapeHtml(order.id)}</div>
+                                    <div>Projekt: ${escapeHtml(projectName)}</div>
+                                </div>
+                            </div>
+                            <h4 class="text-base font-extrabold text-slate-900">${escapeHtml(titleText)}</h4>
+                            <div class="border border-slate-200 rounded-xl overflow-hidden">
+                                <div class="bg-slate-100 px-4 py-2.5 grid grid-cols-12 text-xs font-bold text-slate-700">
+                                    <div class="col-span-1">Pos.</div>
+                                    <div class="col-span-8">Leistungsbeschreibung</div>
+                                    <div class="col-span-3 text-right">Betrag (brutto)</div>
+                                </div>
+                                <div class="p-4 grid grid-cols-12 text-xs text-slate-800 items-start">
+                                    <div class="col-span-1 font-mono font-bold">1</div>
+                                    <div class="col-span-8 space-y-1">
+                                        ${descLines.map(l => `<div>${escapeHtml(l)}</div>`).join('')}
+                                    </div>
+                                    <div class="col-span-3 text-right font-mono font-bold text-slate-900">${billedGross.toFixed(2).replace('.', ',')} €</div>
+                                </div>
+                            </div>
+                            <div class="flex justify-end">
+                                <div class="w-full sm:w-72 space-y-1.5 text-xs border-t border-slate-300 pt-3">
+                                    <div class="flex justify-between text-slate-600"><span>Nettobetrag:</span><span class="font-mono">${billedNet.toFixed(2).replace('.', ',')} €</span></div>
+                                    <div class="flex justify-between text-slate-600"><span>zzgl. 19 % MwSt.:</span><span class="font-mono">${billedVat.toFixed(2).replace('.', ',')} €</span></div>
+                                    <div class="flex justify-between text-sm font-extrabold text-slate-900 border-t border-slate-200 pt-1.5"><span>Rechnungsbetrag (Brutto):</span><span class="font-mono text-emerald-700">${billedGross.toFixed(2).replace('.', ',')} €</span></div>
+                                </div>
+                            </div>
+                            <p class="text-xs text-slate-500 pt-4">${escapeHtml(footerNote)}</p>
+                        </div>
+                    </div>
+                    <div class="px-8 py-3 bg-slate-100 border-t border-slate-200 text-center text-[11px] text-slate-500 font-mono">
+                        SHK Angebotsprüfung GmbH &amp; Co. KG · Rechnung ${escapeHtml(invoiceNo)} · Live-Vorschau vor PDF-Download
+                    </div>
+                `;
+                openAdminPdfPreviewModal({
+                    kind: 'invoice',
+                    title: (type === '50' ? '50 % Anzahlungsrechnung (' : '100 % Gesamtrechnung (') + invoiceNo + ')',
+                    subtitle: 'Rechnungsempfänger: ' + customerName + ' · Auftrag ' + order.id,
+                    fileName: invFileName,
+                    pageCount: 1,
+                    dataUri: dataUri,
+                    docInstance: doc,
+                    a4Html: invA4Html
+                });
+                return;
+            }
+            doc.save(invFileName);
         }
 
         async function sendInvoiceEmail(type, markDepositSent = false) {
