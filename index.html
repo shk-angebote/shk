@@ -26,6 +26,45 @@
     <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
     <!-- PDF.js für das direkte Auslesen von hochgeladenen PDF-Angeboten -->
     <script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.min.js"></script>
+    <style id="admin-cohesive-dark-theme">
+        :root, #adminPortalView, #adminPortalView select, #adminPortalView input, #adminPortalView textarea {
+            color-scheme: dark;
+        }
+        #adminPortalView {
+            background-color: #050811;
+            background-image: radial-gradient(ellipse 75% 35% at 50% 0%, rgba(16, 185, 129, 0.07), transparent 70%);
+            color: #f8fafc;
+        }
+        #adminPortalView .bg-slate-900 {
+            background-color: #0b1120 !important;
+            border-color: rgba(30, 41, 59, 0.9) !important;
+            box-shadow: inset 0 1px 0 0 rgba(255, 255, 255, 0.05), 0 12px 32px -12px rgba(2, 6, 23, 0.75);
+        }
+        #adminPortalView .bg-slate-950 {
+            background-color: #060a14 !important;
+            border-color: rgba(30, 41, 59, 0.85) !important;
+        }
+        #adminPortalView select, #adminPortalView input:not([type="file"]):not([type="checkbox"]), #adminPortalView textarea {
+            background-color: #060a14 !important;
+            color: #f8fafc !important;
+            border-color: #1e293b !important;
+        }
+        #adminPortalView select option {
+            background-color: #0b1120;
+            color: #f8fafc;
+        }
+        #adminPortalView select:focus, #adminPortalView input:focus, #adminPortalView textarea:focus {
+            border-color: #10b981 !important;
+            box-shadow: 0 0 0 3px rgba(16, 185, 129, 0.14);
+            outline: none;
+        }
+        #adminPortalView .text-slate-400 {
+            color: #cbd5e1 !important;
+        }
+        #adminPortalView .text-slate-500 {
+            color: #94a3b8 !important;
+        }
+    </style>
 </head>
 <body class="bg-slate-900 text-slate-100 font-sans antialiased selection:bg-emerald-500 selection:text-white">
 
@@ -548,8 +587,123 @@
                                     <h4 class="font-semibold text-white mb-2">Erkannte Mängel & Abweichungen</h4>
                                     <div id="reportDefectsList" class="space-y-2"></div>
                                 </div>
+
+                                <!-- 1-5 STERNE BEWERTUNGSFUNKTION FÜR ABGESCHLOSSENEN PRÜFBERICHT -->
+                                <div id="clientReportRatingSection" class="pt-5 mt-5 border-t border-emerald-500/20 space-y-4">
+                                    <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-2">
+                                        <div>
+                                            <h4 class="font-bold text-white flex items-center gap-2 text-sm sm:text-base">
+                                                <i class="fa-solid fa-star text-amber-400"></i>
+                                                <span>Qualität des Prüfberichts bewerten (1–5 Sterne)</span>
+                                            </h4>
+                                            <p class="text-xs text-slate-400 mt-0.5">Wie hilfreich und nachvollziehbar war dieser Prüfbericht für Ihre Entscheidung?</p>
+                                        </div>
+                                        <span id="clientRatingSavedBadge" class="hidden text-xs font-bold text-emerald-400 bg-emerald-500/15 border border-emerald-500/30 px-3 py-1 rounded-lg self-start sm:self-auto">
+                                            <i class="fa-solid fa-circle-check mr-1"></i>Bewertung gespeichert
+                                        </span>
+                                    </div>
+
+                                    <div class="bg-slate-950/90 border border-slate-800 rounded-xl p-4 space-y-4">
+                                        <div class="flex flex-wrap items-center gap-3">
+                                            <div id="clientRatingStarsBar" class="flex items-center gap-1.5">
+                                                <button type="button" onclick="selectClientReportRatingStar(1)" data-star="1" class="client-star-btn w-10 h-10 rounded-xl bg-slate-900 hover:bg-slate-800 border border-slate-700 flex items-center justify-center text-lg text-amber-400 transition transform hover:scale-105" title="1 Stern – Mangelhaft">
+                                                    <i class="fa-solid fa-star"></i>
+                                                </button>
+                                                <button type="button" onclick="selectClientReportRatingStar(2)" data-star="2" class="client-star-btn w-10 h-10 rounded-xl bg-slate-900 hover:bg-slate-800 border border-slate-700 flex items-center justify-center text-lg text-amber-400 transition transform hover:scale-105" title="2 Sterne – Ausreichend">
+                                                    <i class="fa-solid fa-star"></i>
+                                                </button>
+                                                <button type="button" onclick="selectClientReportRatingStar(3)" data-star="3" class="client-star-btn w-10 h-10 rounded-xl bg-slate-900 hover:bg-slate-800 border border-slate-700 flex items-center justify-center text-lg text-amber-400 transition transform hover:scale-105" title="3 Sterne – Befriedigend">
+                                                    <i class="fa-solid fa-star"></i>
+                                                </button>
+                                                <button type="button" onclick="selectClientReportRatingStar(4)" data-star="4" class="client-star-btn w-10 h-10 rounded-xl bg-slate-900 hover:bg-slate-800 border border-slate-700 flex items-center justify-center text-lg text-amber-400 transition transform hover:scale-105" title="4 Sterne – Gut">
+                                                    <i class="fa-solid fa-star"></i>
+                                                </button>
+                                                <button type="button" onclick="selectClientReportRatingStar(5)" data-star="5" class="client-star-btn w-10 h-10 rounded-xl bg-slate-900 hover:bg-slate-800 border border-slate-700 flex items-center justify-center text-lg text-amber-400 transition transform hover:scale-105" title="5 Sterne – Ausgezeichnet">
+                                                    <i class="fa-solid fa-star"></i>
+                                                </button>
+                                            </div>
+                                            <span id="clientRatingSelectionLabel" class="text-xs font-bold text-amber-400 bg-amber-500/10 border border-amber-500/30 px-2.5 py-1 rounded-lg">
+                                                5 von 5 Sternen – Ausgezeichnet
+                                            </span>
+                                        </div>
+
+                                        <div>
+                                            <label for="clientRatingCommentInput" class="block text-xs font-semibold text-slate-300 mb-1.5">
+                                                Kurze Rückmeldung zur Qualität des Prüfberichts (optional):
+                                            </label>
+                                            <textarea id="clientRatingCommentInput" rows="2" placeholder="z. B. Sehr detaillierte Auflistung der überhöhten Wärmepumpen-Positionen – hat mir im Nachverhandlungsgespräch direkt geholfen!" class="w-full bg-slate-900 border border-slate-800 rounded-xl px-3.5 py-2.5 text-xs sm:text-sm text-white placeholder-slate-500 focus:border-emerald-500 focus:outline-none"></textarea>
+                                        </div>
+
+                                        <div class="flex flex-wrap items-center justify-between gap-3">
+                                            <span id="clientRatingTimestampInfo" class="text-[11px] text-slate-500">Ihr Feedback hilft unserem Meister-Team bei der Qualitätssicherung.</span>
+                                            <button type="button" id="btnSubmitClientRating" onclick="submitClientOrderRating()" class="bg-emerald-500 hover:bg-emerald-600 text-slate-950 font-bold px-4 py-2 rounded-xl text-xs transition shadow-lg shadow-emerald-500/20 flex items-center gap-1.5">
+                                                <i class="fa-solid fa-paper-plane"></i>
+                                                <span>Bewertung absenden</span>
+                                            </button>
+                                        </div>
+                                    </div>
+                                </div>
                             </div>
                         </div>
+                    </div>
+                </div>
+            </div>
+            <!-- KUNDENPORTAL: GAEB-DIREKTUPLOAD & AUTOMATISCHER MARKTPREIS-ABGLEICH (NUR FÜR PREMIUM-KUNDEN) -->
+            <div id="clientPortalGaebSection" class="mt-8 bg-slate-900 border border-slate-800 rounded-2xl p-6 sm:p-8 shadow-2xl space-y-6">
+                <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-4 border-b border-slate-800 pb-4">
+                    <div>
+                        <div class="flex flex-wrap items-center gap-2 mb-1">
+                            <span class="text-xs font-bold text-amber-400 bg-amber-500/10 border border-amber-500/30 px-2.5 py-0.5 rounded-lg uppercase tracking-wider">
+                                <i class="fa-solid fa-crown mr-1.5"></i>Exklusiv für Premium-Kunden
+                            </span>
+                            <span id="clientGaebAccessStatusBadge" class="text-xs font-bold text-slate-400 bg-slate-950 border border-slate-800 px-2.5 py-0.5 rounded-lg">
+                                Status wird geprüft...
+                            </span>
+                        </div>
+                        <h3 class="text-xl font-bold text-white">Automatischer GAEB-Direktabgleich im Kundenportal</h3>
+                        <p class="text-xs text-slate-400 mt-0.5">Laden Sie eine GAEB-Datei (.x83, .x84, .xml, .d83) hoch – alle LV-Positionen werden automatisch mit den SHK-Referenzpreisen abgeglichen.</p>
+                    </div>
+                    <button type="button" id="btnClientSampleGaeb" onclick="loadClientSampleGaeb()" class="hidden bg-slate-800 hover:bg-slate-700 text-emerald-400 border border-emerald-500/30 px-3.5 py-2 rounded-xl text-xs font-bold transition whitespace-nowrap self-start sm:self-auto">
+                        <i class="fa-solid fa-wand-magic-sparkles mr-1.5"></i>Beispiel-GAEB (.x84) testen
+                    </button>
+                </div>
+
+                <!-- Gesperrte Ansicht für Standard-Kunden & Stammkunden -->
+                <div id="clientGaebLockedBanner" class="bg-slate-950/90 border border-amber-500/30 rounded-2xl p-6 text-center space-y-3">
+                    <div class="w-12 h-12 rounded-2xl bg-amber-500/10 border border-amber-500/30 flex items-center justify-center mx-auto">
+                        <i class="fa-solid fa-lock text-amber-400 text-lg"></i>
+                    </div>
+                    <h4 class="text-base font-bold text-white">Diese Funktion steht exklusiv Premium-Kunden zur Verfügung</h4>
+                    <p class="text-xs text-slate-300 max-w-xl mx-auto leading-relaxed">
+                        Der automatische GAEB-Direktabgleich mit unserer SHK-Marktpreis-Datenbank im Kundenportal ist für den Kundenrang <strong class="text-amber-400">Premiumkunde</strong> reserviert. Standard-Angebotsprüfungen durch unsere TGA-Meister stehen Ihnen weiterhin uneingeschränkt über „+ Weiteres Angebot einreichen“ zur Verfügung.
+                    </p>
+                </div>
+
+                <!-- Freigeschaltete Ansicht nur für Premium-Kunden (und Admin/Hauptadmin) -->
+                <div id="clientGaebUnlockedContent" class="hidden space-y-6">
+                    <div class="border-2 border-dashed border-slate-700 hover:border-emerald-500 rounded-2xl p-6 text-center transition bg-slate-950/60 relative cursor-pointer">
+                        <input type="file" id="clientPortalGaebInput" accept=".xml,.x81,.x82,.x83,.x84,.x85,.x86,.d83,.d84,.csv,.txt" onchange="handleClientPortalGaebUpload(event)" class="absolute inset-0 w-full h-full opacity-0 cursor-pointer">
+                        <i class="fa-solid fa-cloud-arrow-up text-2xl text-emerald-400 mb-2"></i>
+                        <p id="clientPortalGaebStatusText" class="text-xs sm:text-sm font-bold text-white">GAEB-Datei (.x83 / .x84 / .xml) hier ablegen oder klicken zum Hochladen</p>
+                        <span class="text-[11px] text-slate-500 block mt-1">Automatische Extraktion von OZ, Kurztext, Menge, Einheit & Angebotspreis</span>
+                    </div>
+
+                    <div id="clientPortalGaebResultArea" class="hidden space-y-5">
+                        <div class="grid grid-cols-1 sm:grid-cols-3 gap-4">
+                            <div class="bg-slate-950 border border-slate-800 rounded-xl p-4">
+                                <span class="text-xs text-slate-400 block">Angebotssumme (GAEB)</span>
+                                <span id="clientGaebOfferedSum" class="text-xl font-bold font-mono text-white mt-1 block">0,00 €</span>
+                            </div>
+                            <div class="bg-slate-950 border border-slate-800 rounded-xl p-4">
+                                <span class="text-xs text-slate-400 block">SHK-Marktpreis-Referenz (Ø)</span>
+                                <span id="clientGaebMarketSum" class="text-xl font-bold font-mono text-emerald-400 mt-1 block">0,00 €</span>
+                            </div>
+                            <div class="bg-slate-950 border border-slate-800 rounded-xl p-4">
+                                <span class="text-xs text-slate-400 block">Ermitteltes Einsparpotenzial</span>
+                                <span id="clientGaebSavingsSum" class="text-xl font-bold font-mono text-amber-400 mt-1 block">0,00 €</span>
+                            </div>
+                        </div>
+                        <div id="clientPortalGaebTableContainer" class="overflow-x-auto border border-slate-800 rounded-xl bg-slate-950"></div>
                     </div>
                 </div>
             </div>
@@ -564,9 +718,33 @@
                     </div>
                     <p class="text-slate-400 text-sm mt-1">Auftragsverwaltung, Freigaben, Kunden-Rangverwaltung, Marktpreise & GAEB-/PDF-Abgleich.</p>
                 </div>
-                <button type="button" onclick="switchView('clientPortal')" class="bg-slate-800 hover:bg-slate-700 text-white px-4 py-2 rounded-xl text-sm font-medium transition">
-                    Zum Kundenportal
-                </button>
+                <div class="flex flex-wrap items-center gap-3 relative">
+                    <div class="relative">
+                        <button type="button" id="adminNotificationBellBtn" onclick="toggleAdminNotificationDropdown()" class="relative bg-slate-900 hover:bg-slate-800 text-slate-200 border border-slate-700 px-3.5 py-2 rounded-xl text-xs font-bold transition flex items-center gap-2">
+                            <i id="adminNotificationBellIcon" class="fa-solid fa-bell text-amber-400"></i>
+                            <span>Alarme & Meldungen</span>
+                            <span id="adminNotificationBadge" class="px-1.5 py-0.5 rounded-full text-[10px] font-black bg-rose-500 text-white">0</span>
+                        </button>
+                        <div id="adminNotificationDropdown" class="hidden absolute right-0 mt-2 w-80 sm:w-96 bg-slate-900 border border-slate-700 rounded-2xl shadow-2xl z-50 overflow-hidden">
+                            <div class="p-3.5 bg-slate-950 border-b border-slate-800 flex items-center justify-between gap-2">
+                                <span class="text-xs font-bold text-white"><i class="fa-solid fa-bell text-amber-400 mr-1.5"></i>Prüfer-Alarme (Aufträge & Mahnungen)</span>
+                                <button type="button" onclick="markAllAdminNotificationsRead()" class="text-[11px] text-emerald-400 hover:underline font-semibold">Alle gelesen</button>
+                            </div>
+                            <div class="p-2.5 bg-slate-950/60 border-b border-slate-800 flex flex-wrap gap-1.5">
+                                <button type="button" onclick="simulateAdminNewOrderAlert()" class="flex-1 bg-emerald-500/15 hover:bg-emerald-500/25 text-emerald-300 border border-emerald-500/30 rounded-lg py-1.5 px-2 text-[11px] font-bold transition">
+                                    + Test: Neuer Auftrag
+                                </button>
+                                <button type="button" onclick="simulateAdminDunningResponseAlert()" class="flex-1 bg-amber-500/15 hover:bg-amber-500/25 text-amber-300 border border-amber-500/30 rounded-lg py-1.5 px-2 text-[11px] font-bold transition">
+                                    + Test: Mahnungs-Reaktion
+                                </button>
+                            </div>
+                            <div id="adminNotificationList" class="max-h-80 overflow-y-auto divide-y divide-slate-800/80"></div>
+                        </div>
+                    </div>
+                    <button type="button" onclick="switchView('clientPortal')" class="bg-slate-800 hover:bg-slate-700 text-white px-4 py-2 rounded-xl text-sm font-medium transition">
+                        Zum Kundenportal
+                    </button>
+                </div>
             </div>
 
             <!-- Admin KPIs -->
@@ -596,12 +774,20 @@
                         <h2 class="text-lg font-bold text-white"><i class="fa-solid fa-chart-pie text-emerald-400 mr-2"></i>Umsatz- & Rechnungsverteilung nach Bezahlstatus</h2>
                         <p class="text-xs text-slate-400 mt-0.5">Verteilung zwischen bezahlten (100 %), teilweise bezahlten (50 % Anzahlung) und offenen Rechnungen.</p>
                     </div>
-                    <div class="flex items-center gap-1 p-1 bg-slate-950 border border-slate-800 rounded-xl self-start sm:self-auto">
-                        <button type="button" id="btnChartModePie" onclick="switchAdminChartMode('pie')" class="px-3 py-1.5 rounded-lg text-xs font-bold bg-emerald-500 text-slate-950 transition">
-                            <i class="fa-solid fa-chart-pie mr-1.5"></i>Tortendiagramm
+                    <div class="flex flex-wrap items-center gap-2 self-start sm:self-auto">
+                        <div class="flex items-center gap-1 p-1 bg-slate-950 border border-slate-800 rounded-xl">
+                            <button type="button" id="btnChartModePie" onclick="switchAdminChartMode('pie')" class="px-3 py-1.5 rounded-lg text-xs font-bold bg-emerald-500 text-slate-950 transition">
+                                <i class="fa-solid fa-chart-pie mr-1.5"></i>Tortendiagramm
+                            </button>
+                            <button type="button" id="btnChartModeBar" onclick="switchAdminChartMode('bar')" class="px-3 py-1.5 rounded-lg text-xs font-semibold text-slate-400 hover:text-white transition">
+                                <i class="fa-solid fa-chart-column mr-1.5"></i>Balkendiagramm
+                            </button>
+                        </div>
+                        <button type="button" onclick="exportAdminMonthlyReportCSV()" class="bg-slate-800 hover:bg-slate-700 text-emerald-400 border border-emerald-500/30 px-3 py-2 rounded-xl text-xs font-bold transition flex items-center gap-1.5 whitespace-nowrap">
+                            <i class="fa-solid fa-file-csv"></i><span>Monatsbericht (CSV)</span>
                         </button>
-                        <button type="button" id="btnChartModeBar" onclick="switchAdminChartMode('bar')" class="px-3 py-1.5 rounded-lg text-xs font-semibold text-slate-400 hover:text-white transition">
-                            <i class="fa-solid fa-chart-column mr-1.5"></i>Balkendiagramm
+                        <button type="button" onclick="exportAdminMonthlyReportPDF()" class="bg-emerald-500 hover:bg-emerald-600 text-slate-950 px-3 py-2 rounded-xl text-xs font-bold transition flex items-center gap-1.5 whitespace-nowrap shadow-lg shadow-emerald-500/10">
+                            <i class="fa-solid fa-file-pdf"></i><span>Monatsbericht (PDF)</span>
                         </button>
                     </div>
                 </div>
@@ -844,9 +1030,17 @@
                                         Wählen Sie links einen Kunden aus, um alle zugehörigen Rechnungen inkl. Versanddatum, Bezahldatum sowie Mahnung 1 & Mahnung 2 zu verwalten.
                                     </p>
                                 </div>
-                                <button type="button" onclick="selectInvoiceCustomer('ALL')" class="bg-slate-800 hover:bg-slate-700 text-slate-200 border border-slate-700 px-3.5 py-2 rounded-xl text-xs font-semibold transition whitespace-nowrap">
-                                    Alle Kunden anzeigen
-                                </button>
+                                <div class="flex flex-wrap items-center gap-2">
+                                    <button type="button" onclick="exportAdminMonthlyReportCSV()" class="bg-slate-800 hover:bg-slate-700 text-emerald-400 border border-emerald-500/30 px-3.5 py-2 rounded-xl text-xs font-bold transition whitespace-nowrap">
+                                        <i class="fa-solid fa-file-csv mr-1.5"></i>CSV-Bericht
+                                    </button>
+                                    <button type="button" onclick="exportAdminMonthlyReportPDF()" class="bg-emerald-500 hover:bg-emerald-600 text-slate-950 px-3.5 py-2 rounded-xl text-xs font-bold transition whitespace-nowrap">
+                                        <i class="fa-solid fa-file-pdf mr-1.5"></i>PDF-Bericht
+                                    </button>
+                                    <button type="button" onclick="selectInvoiceCustomer('ALL')" class="bg-slate-800 hover:bg-slate-700 text-slate-200 border border-slate-700 px-3.5 py-2 rounded-xl text-xs font-semibold transition whitespace-nowrap">
+                                        Alle Kunden anzeigen
+                                    </button>
+                                </div>
                             </div>
 
                             <div id="adminInvoicesTableContainer" class="space-y-4">
@@ -1647,6 +1841,7 @@
                 userNav.classList.remove('flex');
                 if (clearDbBtn) clearDbBtn.classList.add('hidden');
             }
+            if (typeof updateClientGaebPremiumAccessUI === 'function') updateClientGaebPremiumAccessUI();
         }
 
         function updateStammkundenBannerUI() {
@@ -1685,6 +1880,7 @@
                     return;
                 }
                 document.getElementById('clientPortalView').classList.remove('hidden');
+                if (typeof updateClientGaebPremiumAccessUI === 'function') updateClientGaebPremiumAccessUI();
                 loadUserOrders();
             } else if (viewName === 'adminPortal') {
                 if (!currentUser || !hasAdminAccess()) {
@@ -2074,6 +2270,7 @@
             document.getElementById('reportSavingsAmount').textContent = escapeHtml(order.savings || '0 €');
             document.getElementById('reportSummaryText').textContent = escapeHtml(order.summary || '');
             document.getElementById('reportDefectsList').innerHTML = (order.defects || []).map(d => `<div class="bg-slate-950 p-3 rounded-lg border border-slate-800">${escapeHtml(d)}</div>`).join('');
+            if (typeof syncClientRatingUIFromOrder === 'function') syncClientRatingUIFromOrder(order);
         }
 
         // Sicherheitsabfrage vor Stornierung (Verbesserung 9)
@@ -4217,18 +4414,18 @@ function populateFileCheckTargetOrderDropdown() {
                     const r = 74;
                     const c = 2 * Math.PI * r;
                     let offset = 0;
-                    const circles = items.map(it => {
+                    const circles = items.map((it, idx) => {
                         const pct = it.val / totalVol;
                         const dash = pct * c;
                         const strokeHtml = it.val > 0
-                            ? `<circle r="${r}" cx="100" cy="100" fill="transparent" stroke="${it.color}" stroke-width="28" stroke-dasharray="${dash} ${c - dash}" stroke-dashoffset="${-offset}" transform="rotate(-90 100 100)"><title>${it.label}: ${fmt(it.val)} € (${it.count} Auftr.)</title></circle>`
+                            ? `<circle class="admin-pie-slice" data-dash="${dash}" data-gap="${c - dash}" data-offset="${-offset}" r="${r}" cx="100" cy="100" fill="transparent" stroke="${it.color}" stroke-width="28" stroke-dasharray="0 ${c}" stroke-dashoffset="0" transform="rotate(-90 100 100)" style="transition: stroke-dasharray 820ms cubic-bezier(0.22, 1, 0.36, 1) ${idx * 90}ms, stroke-dashoffset 820ms cubic-bezier(0.22, 1, 0.36, 1) ${idx * 90}ms;"><title>${it.label}: ${fmt(it.val)} € (${it.count} Auftr.)</title></circle>`
                             : '';
                         offset += dash;
                         return strokeHtml;
                     }).join('');
 
                     canvas.innerHTML = `
-                        <div class="flex flex-col sm:flex-row items-center gap-6">
+                        <div class="flex flex-col sm:flex-row items-center gap-6 animate-fade-in">
                             <svg width="200" height="200" viewBox="0 0 200 200" class="shrink-0">
                                 <circle r="${r}" cx="100" cy="100" fill="transparent" stroke="#1e293b" stroke-width="28"></circle>
                                 ${circles}
@@ -4246,12 +4443,23 @@ function populateFileCheckTargetOrderDropdown() {
                             </div>
                         </div>
                     `;
+                    requestAnimationFrame(() => {
+                        requestAnimationFrame(() => {
+                            canvas.querySelectorAll('.admin-pie-slice').forEach(el => {
+                                const dash = el.getAttribute('data-dash');
+                                const gap = el.getAttribute('data-gap');
+                                const off = el.getAttribute('data-offset');
+                                el.setAttribute('stroke-dasharray', `${dash} ${gap}`);
+                                el.setAttribute('stroke-dashoffset', off);
+                            });
+                        });
+                    });
                 }
             } else {
                 const maxVal = Math.max(1, ...items.map(i => i.val));
                 canvas.innerHTML = `
-                    <div class="w-full space-y-4">
-                        ${items.map(it => {
+                    <div class="w-full space-y-4 animate-fade-in">
+                        ${items.map((it, idx) => {
                             const widthPct = Math.min(100, Math.round((it.val / maxVal) * 100));
                             return `
                                 <div class="space-y-1">
@@ -4260,13 +4468,20 @@ function populateFileCheckTargetOrderDropdown() {
                                         <span class="font-bold text-slate-200">${fmt(it.val)} €</span>
                                     </div>
                                     <div class="w-full h-5 bg-slate-900 rounded-lg overflow-hidden border border-slate-800 flex">
-                                        <div style="width:${widthPct}%; background:${it.color}" class="h-full transition-all duration-500"></div>
+                                        <div class="admin-bar-fill h-full" data-width="${widthPct}%" style="width:0%; background:${it.color}; transition: width 780ms cubic-bezier(0.22, 1, 0.36, 1) ${idx * 100}ms;"></div>
                                     </div>
                                 </div>
                             `;
                         }).join('')}
                     </div>
                 `;
+                requestAnimationFrame(() => {
+                    requestAnimationFrame(() => {
+                        canvas.querySelectorAll('.admin-bar-fill').forEach(el => {
+                            el.style.width = el.getAttribute('data-width') || '0%';
+                        });
+                    });
+                });
             }
 
             legend.innerHTML = items.map(it => {
@@ -4561,6 +4776,685 @@ function populateFileCheckTargetOrderDropdown() {
             }).join('');
         }
 
+        function collectAdminReportData() {
+            let currentRev = 0, openRev = 0;
+            let paidVol = 0, partialVol = 0, unpaidVol = 0;
+            let paidCnt = 0, partialCnt = 0, unpaidCnt = 0;
+            let totalSavingsNum = 0;
+
+            adminOrders.forEach(o => {
+                if (o.status == 5 || o.status == 6) return;
+                const netPrice = Math.max(0, (o.price || 149) - (parseFloat(o.manualDiscount) || 0));
+                if (o.paymentStatus === 'paid') {
+                    currentRev += netPrice;
+                    paidVol += netPrice;
+                    paidCnt++;
+                } else if (o.paymentStatus === 'partial') {
+                    currentRev += netPrice / 2;
+                    openRev += netPrice / 2;
+                    partialVol += netPrice;
+                    partialCnt++;
+                } else {
+                    openRev += netPrice;
+                    unpaidVol += netPrice;
+                    unpaidCnt++;
+                }
+                if (o.savings) {
+                    const num = parseInt(String(o.savings).replace(/[^0-9]/g, ''), 10);
+                    if (!isNaN(num)) totalSavingsNum += num;
+                }
+            });
+
+            const filteredOrders = adminOrders.filter(o => {
+                if (!o.email || o.status == 5 || o.status == 6) return false;
+                if (selectedInvoiceCustomerEmail === 'ALL') return true;
+                return o.email.toLowerCase().trim() === selectedInvoiceCustomerEmail.toLowerCase().trim();
+            });
+
+            const invoicesList = [];
+            filteredOrders.forEach(o => {
+                getOrderInvoiceRecords(o).forEach(r => invoicesList.push(r));
+            });
+
+            return {
+                generatedAt: new Date().toLocaleString('de-DE', { dateStyle: 'medium', timeStyle: 'short' }),
+                monthTag: new Date().toISOString().slice(0, 7),
+                filterLabel: selectedInvoiceCustomerEmail === 'ALL' ? 'Alle Kunden' : selectedInvoiceCustomerEmail,
+                currentRev,
+                openRev,
+                projected: currentRev + openRev,
+                totalSavingsNum,
+                paidVol,
+                partialVol,
+                unpaidVol,
+                paidCnt,
+                partialCnt,
+                unpaidCnt,
+                invoicesList
+            };
+        }
+
+        function exportAdminMonthlyReportCSV() {
+            const data = collectAdminReportData();
+            const fmt = (n) => n.toFixed(2).replace('.', ',');
+            const escCsv = (val) => '"' + String(val ?? '').replace(/"/g, '""') + '"';
+
+            const lines = [
+                ['SHK ANGEBOTSPRÜFUNG - MONATSBERICHT (KPI & RECHNUNGSÜBERSICHT)'],
+                ['Erstellt am', data.generatedAt],
+                ['Berichtsmonat', data.monthTag],
+                ['Kundenfilter', data.filterLabel],
+                [],
+                ['1. FINANZ- & KPI-ZUSAMMENFASSUNG'],
+                ['Kennzahl', 'Betrag (EUR)', 'Anzahl Aufträge / Info'],
+                ['Eingenommener Umsatz (Ist)', fmt(data.currentRev), (data.paidCnt + data.partialCnt) + ' bezahlte/angezahlte Aufträge'],
+                ['Offene Rechnungen (Forderungen)', fmt(data.openRev), (data.unpaidCnt + data.partialCnt) + ' offene/teilbezahlte Aufträge'],
+                ['Gesamtvolumen (Soll)', fmt(data.projected), (data.paidCnt + data.partialCnt + data.unpaidCnt) + ' aktive Prüfaufträge'],
+                ['Vollständig bezahlt (100 %)', fmt(data.paidVol), data.paidCnt + ' Aufträge'],
+                ['Teilweise bezahlt (50 % Anzahlung)', fmt(data.partialVol), data.partialCnt + ' Aufträge (' + fmt(data.partialVol / 2) + ' EUR bezahlt / ' + fmt(data.partialVol / 2) + ' EUR offen)'],
+                ['Offene Rechnungen (0 %)', fmt(data.unpaidVol), data.unpaidCnt + ' Aufträge'],
+                ['Erzielte Kunden-Gesamtersparnis', data.totalSavingsNum.toLocaleString('de-DE') + ',00', 'Summe geprüfter Einsparpotenziale'],
+                [],
+                ['2. RECHNUNGSÜBERSICHT & MAHNVERLAUF'],
+                ['Rechnungs-Nr.', 'Auftrags-Nr.', 'Projekt', 'Prüfpaket', 'Kunde', 'E-Mail', 'Rechnungstyp', 'Betrag Brutto (EUR)', 'Status', 'Wann gesendet', 'Wann bezahlt', '1. Mahnung', '2. Mahnung']
+            ];
+
+            data.invoicesList.forEach(inv => {
+                const statusLabel = inv.isPaid
+                    ? 'Bezahlt'
+                    : (inv.reminder2At ? '2. Mahnstufe offen' : (inv.reminder1At ? '1. Mahnung versendet' : 'Offen'));
+                lines.push([
+                    inv.invoiceNo,
+                    inv.orderId,
+                    inv.projectName,
+                    inv.packageName,
+                    inv.customerName,
+                    inv.customerEmail,
+                    inv.title,
+                    fmt(inv.amountGross),
+                    statusLabel,
+                    inv.sentAt || 'Noch nicht gesendet',
+                    inv.paidAt || 'Noch offen',
+                    inv.reminder1At || '-',
+                    inv.reminder2At || '-'
+                ]);
+            });
+
+            const csvString = '\uFEFF' + lines.map(row => row.map(escCsv).join(';')).join('\r\n');
+            const blob = new Blob([csvString], { type: 'text/csv;charset=utf-8;' });
+            const url = URL.createObjectURL(blob);
+            const a = document.createElement('a');
+            a.href = url;
+            a.download = 'Monatsbericht_SHK_Angebotspruefung_' + data.monthTag + '.csv';
+            a.click();
+            URL.revokeObjectURL(url);
+            showToast('CSV-Monatsbericht erfolgreich exportiert!');
+        }
+
+        function exportAdminMonthlyReportPDF() {
+            if (!window.jspdf || !window.jspdf.jsPDF) {
+                showToast('jsPDF Bibliothek wird geladen – bitte kurz warten.', 'error');
+                return;
+            }
+            const data = collectAdminReportData();
+            const fmt = (n) => n.toFixed(2).replace('.', ',') + ' EUR';
+            const { jsPDF } = window.jspdf;
+            const doc = new jsPDF({ orientation: 'portrait', unit: 'mm', format: 'a4' });
+
+            // Kopfbereich
+            doc.setFillColor(15, 23, 42);
+            doc.rect(0, 0, 210, 34, 'F');
+            doc.setTextColor(16, 185, 129);
+            doc.setFontSize(15);
+            doc.setFont('helvetica', 'bold');
+            doc.text('SHK ANGEBOTSPRÜFUNG - MONATSBERICHT', 14, 15);
+            doc.setTextColor(226, 232, 240);
+            doc.setFontSize(9);
+            doc.setFont('helvetica', 'normal');
+            doc.text('Kaufmännische KPI-Auswertung, Umsatzverteilung & Rechnungs-/Mahnübersicht', 14, 22);
+            doc.text('Erstellt am: ' + data.generatedAt + '  |  Berichtsmonat: ' + data.monthTag + '  |  Filter: ' + data.filterLabel, 14, 28);
+
+            let y = 44;
+
+            // 1. KPI-Zusammenfassung
+            doc.setTextColor(15, 23, 42);
+            doc.setFontSize(12);
+            doc.setFont('helvetica', 'bold');
+            doc.text('1. Finanz-KPIs & Umsatzverteilung nach Bezahlstatus', 14, y);
+            y += 6;
+
+            doc.setDrawColor(203, 213, 225);
+            doc.setFillColor(248, 250, 252);
+            doc.roundedRect(14, y, 182, 42, 2, 2, 'FD');
+
+            doc.setFontSize(9.5);
+            doc.setFont('helvetica', 'bold');
+            doc.setTextColor(15, 23, 42);
+            doc.text('Eingenommener Umsatz (Ist):', 18, y + 8);
+            doc.setTextColor(5, 150, 105);
+            doc.text(fmt(data.currentRev), 78, y + 8);
+
+            doc.setTextColor(15, 23, 42);
+            doc.text('Offene Rechnungen (Soll):', 115, y + 8);
+            doc.setTextColor(225, 29, 72);
+            doc.text(fmt(data.openRev), 165, y + 8);
+
+            doc.setTextColor(15, 23, 42);
+            doc.text('Gesamtvolumen (Aktiv):', 18, y + 16);
+            doc.text(fmt(data.projected), 78, y + 16);
+
+            doc.text('Kunden-Gesamtersparnis:', 115, y + 16);
+            doc.text(data.totalSavingsNum.toLocaleString('de-DE') + ' EUR', 165, y + 16);
+
+            doc.setFont('helvetica', 'normal');
+            doc.setFontSize(8.5);
+            doc.setTextColor(71, 85, 105);
+            doc.text('• Vollständig bezahlt (100 %): ' + fmt(data.paidVol) + ' (' + data.paidCnt + ' Aufträge)', 18, y + 25);
+            doc.text('• Teilweise bezahlt (50 % Anzahlung): ' + fmt(data.partialVol) + ' (' + data.partialCnt + ' Aufträge | ' + fmt(data.partialVol / 2) + ' bezahlt / ' + fmt(data.partialVol / 2) + ' offen)', 18, y + 31);
+            doc.text('• Offene Rechnungen (0 %): ' + fmt(data.unpaidVol) + ' (' + data.unpaidCnt + ' Aufträge)', 18, y + 37);
+
+            y += 52;
+
+            // 2. Rechnungsübersicht
+            doc.setTextColor(15, 23, 42);
+            doc.setFontSize(12);
+            doc.setFont('helvetica', 'bold');
+            doc.text('2. Rechnungsübersicht & Mahnwesen (' + data.invoicesList.length + ' Rechnungen)', 14, y);
+            y += 6;
+
+            if (data.invoicesList.length === 0) {
+                doc.setFont('helvetica', 'normal');
+                doc.setFontSize(9);
+                doc.text('Keine Rechnungen für den gewählten Filter vorhanden.', 14, y + 6);
+            } else {
+                data.invoicesList.forEach((inv, idx) => {
+                    if (y > 258) {
+                        doc.addPage();
+                        y = 20;
+                    }
+                    const statusText = inv.isPaid
+                        ? 'BEZAHLT'
+                        : (inv.reminder2At ? '2. MAHNUNG OFFEN' : (inv.reminder1At ? '1. MAHNUNG' : 'OFFEN'));
+
+                    doc.setDrawColor(226, 232, 240);
+                    doc.setFillColor(idx % 2 === 0 ? 255 : 248, idx % 2 === 0 ? 255 : 250, idx % 2 === 0 ? 255 : 252);
+                    doc.roundedRect(14, y, 182, 22, 1.5, 1.5, 'FD');
+
+                    doc.setFont('helvetica', 'bold');
+                    doc.setFontSize(9);
+                    doc.setTextColor(15, 23, 42);
+                    doc.text(inv.invoiceNo + '  |  Auftrag ' + inv.orderId + ' (' + inv.projectName + ')', 17, y + 6);
+
+                    doc.setFont('helvetica', 'bold');
+                    if (inv.isPaid) doc.setTextColor(5, 150, 105);
+                    else if (inv.reminder2At) doc.setTextColor(225, 29, 72);
+                    else doc.setTextColor(217, 119, 6);
+                    doc.text(fmt(inv.amountGross) + '  [' + statusText + ']', 193, y + 6, { align: 'right' });
+
+                    doc.setFont('helvetica', 'normal');
+                    doc.setFontSize(8);
+                    doc.setTextColor(51, 65, 85);
+                    doc.text('Kunde: ' + inv.customerName + ' (' + inv.customerEmail + ')  —  ' + inv.title, 17, y + 12);
+
+                    doc.setTextColor(100, 116, 139);
+                    doc.text(
+                        'Gesendet: ' + (inv.sentAt || '-') +
+                        '   |   Bezahlt: ' + (inv.paidAt || '-') +
+                        '   |   Mahnung 1: ' + (inv.reminder1At || '-') +
+                        '   |   Mahnung 2: ' + (inv.reminder2At || '-'),
+                        17,
+                        y + 18
+                    );
+
+                    y += 25;
+                });
+            }
+
+            const pageCount = doc.internal.getNumberOfPages();
+            for (let i = 1; i <= pageCount; i++) {
+                doc.setPage(i);
+                doc.setFontSize(8);
+                doc.setTextColor(148, 163, 184);
+                doc.text(
+                    'SHK Angebotsprüfung Monatsbericht · Archiv-Export vom ' + data.generatedAt + ' · Seite ' + i + ' von ' + pageCount,
+                    105,
+                    290,
+                    { align: 'center' }
+                );
+            }
+
+            doc.save('Monatsbericht_SHK_Angebotspruefung_' + data.monthTag + '.pdf');
+            showToast('PDF-Monatsbericht erfolgreich erstellt & heruntergeladen!');
+        }
+
+        let adminNotifications = [];
+        let adminNotificationsInitialized = false;
+
+        function syncAdminNotificationsFromOrders() {
+            if (!adminNotificationsInitialized) {
+                adminNotificationsInitialized = true;
+                const nowStr = new Date().toLocaleString('de-DE', { dateStyle: 'short', timeStyle: 'short' });
+                adminOrders.slice(0, 2).forEach(o => {
+                    if (o.status == 1) {
+                        adminNotifications.push({
+                            id: 'notif-order-' + o.id,
+                            type: 'new_order',
+                            title: 'Neuer Prüfauftrag eingegangen (' + o.id + ')',
+                            message: ((o.firstName || '') + ' ' + (o.lastName || '')).trim() + ' (' + o.email + ') hat ein ' + (o.packageName || 'SHK-Angebot') + ' eingereicht.',
+                            timestamp: o.createdAt ? new Date(o.createdAt).toLocaleString('de-DE', { dateStyle: 'short', timeStyle: 'short' }) : nowStr,
+                            read: false,
+                            orderId: o.id,
+                            customerEmail: o.email
+                        });
+                    }
+                });
+                adminOrders.forEach(o => {
+                    const meta = o.invoiceMeta || {};
+                    if (meta.rem1_100At || meta.rem2_100At || meta.rem1_50At || meta.rem2_50At) {
+                        adminNotifications.push({
+                            id: 'notif-dunning-' + o.id,
+                            type: 'dunning_response',
+                            title: 'Mahnstufe aktiv / Kunden-Rückmeldung prüfen (' + o.id + ')',
+                            message: 'Zu Auftrag ' + o.id + ' (' + o.email + ') liegt eine aktive Mahnung vor.',
+                            timestamp: meta.rem2_100At || meta.rem1_100At || nowStr,
+                            read: false,
+                            orderId: o.id,
+                            customerEmail: o.email
+                        });
+                    }
+                });
+                if (adminNotifications.length === 0) {
+                    adminNotifications.push({
+                        id: 'notif-welcome-1',
+                        type: 'new_order',
+                        title: 'Echtzeit-Alarmierung aktiv',
+                        message: 'Neue Prüfaufträge sowie Kunden-Reaktionen auf 1./2. Mahnungen werden hier sofort gemeldet.',
+                        timestamp: nowStr,
+                        read: false,
+                        orderId: adminOrders[0] ? adminOrders[0].id : null,
+                        customerEmail: adminOrders[0] ? adminOrders[0].email : 'ALL'
+                    });
+                }
+            }
+            renderAdminNotificationsUI();
+        }
+
+        function pushAdminNotification(type, title, message, orderId = null, customerEmail = 'ALL') {
+            const nowStr = new Date().toLocaleString('de-DE', { dateStyle: 'short', timeStyle: 'short' });
+            adminNotifications.unshift({
+                id: 'notif-' + Date.now() + '-' + Math.floor(Math.random() * 1000),
+                type,
+                title,
+                message,
+                timestamp: nowStr,
+                read: false,
+                orderId,
+                customerEmail
+            });
+            renderAdminNotificationsUI();
+            showToast('🔔 ' + title + ': ' + message, type === 'dunning_response' ? 'info' : 'success');
+        }
+
+        function toggleAdminNotificationDropdown() {
+            const dd = document.getElementById('adminNotificationDropdown');
+            if (!dd) return;
+            dd.classList.toggle('hidden');
+            renderAdminNotificationsUI();
+        }
+
+        function markAllAdminNotificationsRead() {
+            adminNotifications.forEach(n => { n.read = true; });
+            renderAdminNotificationsUI();
+            showToast('Alle Prüfer-Benachrichtigungen als gelesen markiert.');
+        }
+
+        function openAdminNotificationTarget(notifId) {
+            const item = adminNotifications.find(n => n.id === notifId);
+            if (!item) return;
+            item.read = true;
+            const dd = document.getElementById('adminNotificationDropdown');
+            if (dd) dd.classList.add('hidden');
+            if (item.type === 'dunning_response') {
+                switchAdminTab('invoices');
+                if (item.customerEmail) selectInvoiceCustomer(item.customerEmail);
+            } else {
+                switchAdminTab('active');
+                if (item.orderId) selectAdminOrder(item.orderId);
+            }
+            renderAdminNotificationsUI();
+        }
+
+        function simulateAdminNewOrderAlert() {
+            const demoId = 'SHK-' + Math.floor(100000 + Math.random() * 900000);
+            pushAdminNotification(
+                'new_order',
+                'Neuer Auftrag ' + demoId + ' eingegangen',
+                'Neuer Prüfauftrag (Komplett-Check Wärmepumpe, 149,00 €) wartet in der Warteschlange.',
+                adminOrders[0] ? adminOrders[0].id : null,
+                adminOrders[0] ? adminOrders[0].email : 'ALL'
+            );
+        }
+
+        function simulateAdminDunningResponseAlert() {
+            const targetOrder = adminOrders[0] || { id: 'SHK-519304', email: 'sandra.hoffmann@beispiel.de' };
+            pushAdminNotification(
+                'dunning_response',
+                'Kunden-Reaktion auf Mahnung (' + targetOrder.id + ')',
+                'Kunde (' + targetOrder.email + ') hat auf die Mahnung geantwortet und den Überweisungsbeleg angekündigt.',
+                targetOrder.id,
+                targetOrder.email
+            );
+        }
+
+        function renderAdminNotificationsUI() {
+            const badge = document.getElementById('adminNotificationBadge');
+            const listEl = document.getElementById('adminNotificationList');
+            const bellIcon = document.getElementById('adminNotificationBellIcon');
+            if (!badge || !listEl) return;
+
+            const unreadCount = adminNotifications.filter(n => !n.read).length;
+            badge.textContent = String(unreadCount);
+            badge.className = unreadCount > 0
+                ? 'px-1.5 py-0.5 rounded-full text-[10px] font-black bg-rose-500 text-white'
+                : 'px-1.5 py-0.5 rounded-full text-[10px] font-bold bg-slate-800 text-slate-400';
+
+            if (bellIcon) {
+                bellIcon.className = unreadCount > 0
+                    ? 'fa-solid fa-bell text-amber-400 animate-bounce'
+                    : 'fa-solid fa-bell text-slate-400';
+            }
+
+            if (adminNotifications.length === 0) {
+                listEl.innerHTML = '<div class="p-4 text-xs text-slate-500 text-center">Keine Meldungen vorhanden.</div>';
+                return;
+            }
+
+            listEl.innerHTML = adminNotifications.map(n => {
+                const isDunning = n.type === 'dunning_response';
+                return `
+                    <div onclick="openAdminNotificationTarget('${n.id}')" class="p-3.5 hover:bg-slate-800/70 cursor-pointer transition ${n.read ? 'opacity-65' : 'bg-slate-900'}">
+                        <div class="flex items-center justify-between gap-2 mb-1">
+                            <span class="text-xs font-bold ${isDunning ? 'text-amber-400' : 'text-emerald-400'}">
+                                <i class="fa-solid ${isDunning ? 'fa-envelope-open-text' : 'fa-file-circle-plus'} mr-1"></i>${escapeHtml(n.title)}
+                            </span>
+                            ${!n.read ? '<span class="w-2 h-2 rounded-full bg-rose-500 shrink-0"></span>' : ''}
+                        </div>
+                        <p class="text-[11px] text-slate-300 leading-snug">${escapeHtml(n.message)}</p>
+                        <span class="text-[10px] text-slate-500 font-mono block mt-1.5">${escapeHtml(n.timestamp)}</span>
+                    </div>
+                `;
+            }).join('');
+        }
+
+        function hasPremiumGaebAccess(role = currentUserRole) {
+            return ['Premiumkunde', 'Admin', 'Hauptadmin'].includes(role);
+        }
+
+        function updateClientGaebPremiumAccessUI() {
+            const lockedBanner = document.getElementById('clientGaebLockedBanner');
+            const unlockedContent = document.getElementById('clientGaebUnlockedContent');
+            const sampleBtn = document.getElementById('btnClientSampleGaeb');
+            const statusBadge = document.getElementById('clientGaebAccessStatusBadge');
+            const allowed = hasPremiumGaebAccess();
+
+            if (lockedBanner && unlockedContent) {
+                if (allowed) {
+                    lockedBanner.classList.add('hidden');
+                    unlockedContent.classList.remove('hidden');
+                } else {
+                    lockedBanner.classList.remove('hidden');
+                    unlockedContent.classList.add('hidden');
+                }
+            }
+            if (sampleBtn) {
+                if (allowed) sampleBtn.classList.remove('hidden');
+                else sampleBtn.classList.add('hidden');
+            }
+            if (statusBadge) {
+                if (allowed) {
+                    statusBadge.innerHTML = '<i class="fa-solid fa-unlock mr-1 text-emerald-400"></i>Freigeschaltet (' + escapeHtml(currentUserRole) + ')';
+                    statusBadge.className = 'text-xs font-bold text-emerald-400 bg-emerald-500/10 border border-emerald-500/30 px-2.5 py-0.5 rounded-lg';
+                } else {
+                    statusBadge.innerHTML = '<i class="fa-solid fa-lock mr-1 text-slate-400"></i>Gesperrt (Ihr Rang: ' + escapeHtml(currentUserRole || 'Kunde') + ')';
+                    statusBadge.className = 'text-xs font-bold text-slate-400 bg-slate-950 border border-slate-800 px-2.5 py-0.5 rounded-lg';
+                }
+            }
+        }
+
+        async function ensureClientMarketPricesLoaded() {
+            if (!marketPrices || marketPrices.length === 0) {
+                try {
+                    await loadMarketPrices();
+                } catch (e) { console.warn(e); }
+            }
+        }
+
+        async function handleClientPortalGaebUpload(event) {
+            if (!hasPremiumGaebAccess()) {
+                showToast('Exklusiv-Funktion: Der automatische GAEB-Direktabgleich steht nur Premium-Kunden zur Verfügung.', 'error');
+                if (event && event.target) event.target.value = '';
+                return;
+            }
+            const file = event.target.files && event.target.files[0];
+            if (!file) return;
+            await ensureClientMarketPricesLoaded();
+            const reader = new FileReader();
+            reader.onload = function(ev) {
+                const text = String(ev.target.result || '');
+                renderClientPortalGaebComparison(text, file.name);
+            };
+            reader.readAsText(file);
+        }
+
+        async function loadClientSampleGaeb() {
+            if (!hasPremiumGaebAccess()) {
+                showToast('Exklusiv-Funktion: Der automatische GAEB-Direktabgleich steht nur Premium-Kunden zur Verfügung.', 'error');
+                return;
+            }
+            await ensureClientMarketPricesLoaded();
+            const sampleXml = `<?xml version="1.0" encoding="UTF-8"?>
+<GAEB><Award><BoQ><BoQBody><Itemlist>
+  <Item RNoPart="01.0010"><Qty>1</Qty><QU>Stk</QU><UP>11450.00</UP><Description><CompleteText><OutlineText><OutlTxt><TextOutlTxt><span>Luft-Wasser-Wärmepumpe Monoblock 8 bis 10 kW Außeneinheit</span></TextOutlTxt></OutlTxt></OutlineText></CompleteText></Description></Item>
+  <Item RNoPart="01.0020"><Qty>1</Qty><QU>Stk</QU><UP>1790.00</UP><Description><CompleteText><OutlineText><OutlTxt><TextOutlTxt><span>Pufferspeicher / Trennspeicher 200 Liter inkl. Isolierung</span></TextOutlTxt></OutlTxt></OutlineText></CompleteText></Description></Item>
+  <Item RNoPart="01.0030"><Qty>12</Qty><QU>Stk</QU><UP>92.50</UP><Description><CompleteText><OutlineText><OutlTxt><TextOutlTxt><span>Hydraulischer Abgleich inkl. voreinstellbarer Thermostatventile</span></TextOutlTxt></OutlTxt></OutlineText></CompleteText></Description></Item>
+  <Item RNoPart="02.0010"><Qty>45</Qty><QU>m²</QU><UP>78.00</UP><Description><CompleteText><OutlineText><OutlTxt><TextOutlTxt><span>Fußbodenheizung Tackersystem inkl. Dämmrolle und Verbundrohr</span></TextOutlTxt></OutlTxt></OutlineText></CompleteText></Description></Item>
+</Itemlist></BoQBody></BoQ></Award></GAEB>`;
+            renderClientPortalGaebComparison(sampleXml, 'Beispiel_Waermepumpe_Angebot.x84');
+        }
+
+        function renderClientPortalGaebComparison(rawContent, fileName) {
+            const parsedItems = typeof parseGAEBContentToPositions === 'function'
+                ? parseGAEBContentToPositions(rawContent, fileName)
+                : [];
+            const statusText = document.getElementById('clientPortalGaebStatusText');
+            const resultArea = document.getElementById('clientPortalGaebResultArea');
+            const tableContainer = document.getElementById('clientPortalGaebTableContainer');
+            if (!resultArea || !tableContainer) return;
+
+            if (!parsedItems || parsedItems.length === 0) {
+                showToast('Keine GAEB-Positionen in der Datei erkannt.', 'error');
+                return;
+            }
+
+            if (statusText) {
+                statusText.textContent = 'Geladen: ' + fileName + ' (' + parsedItems.length + ' Positionen abgeglichen)';
+            }
+            resultArea.classList.remove('hidden');
+
+            let offeredSum = 0;
+            let marketSum = 0;
+            const fmt = (n) => n.toLocaleString('de-DE', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+
+            const rowsHtml = parsedItems.map((it, i) => {
+                const match = typeof findBestMarketPriceMatch === 'function'
+                    ? findBestMarketPriceMatch(it.title, it.unit)
+                    : (marketPrices[0] || null);
+                const dbEp = match ? Number(match.average || 0) : Number(it.offeredUnitPrice || 0);
+                const offEp = Number(it.offeredUnitPrice || dbEp);
+                const qty = Number(it.qty || 1);
+                offeredSum += offEp * qty;
+                marketSum += dbEp * qty;
+                const diffEp = offEp - dbEp;
+                const diffPct = dbEp > 0 ? ((offEp - dbEp) / dbEp) * 100 : 0;
+                const statusBadge = diffPct <= 5
+                    ? '<span class="text-emerald-400 font-bold">✓ Marktgerecht</span>'
+                    : (diffPct <= 20 ? '<span class="text-amber-400 font-bold">⚠ Leicht erhöht</span>' : '<span class="text-rose-400 font-bold">❗ Überhöht (&gt;20%)</span>');
+
+                return `
+                    <tr class="hover:bg-slate-900/50">
+                        <td class="p-3 font-semibold text-white">${escapeHtml(it.title)}</td>
+                        <td class="p-3 text-slate-300">${match ? escapeHtml(match.title) : 'Standard-Referenz'}</td>
+                        <td class="p-3 text-right font-mono">${qty} ${escapeHtml(it.unit || 'Stk')}</td>
+                        <td class="p-3 text-right font-mono text-white font-bold">${fmt(offEp)} €</td>
+                        <td class="p-3 text-right font-mono text-emerald-400 font-bold">${fmt(dbEp)} €</td>
+                        <td class="p-3 text-right font-mono ${diffEp > 0 ? 'text-rose-400' : 'text-emerald-400'}">${diffEp > 0 ? '+' : ''}${fmt(diffEp * qty)} € (${diffPct.toFixed(1).replace('.', ',')} %)</td>
+                        <td class="p-3">${statusBadge}</td>
+                    </tr>
+                `;
+            }).join('');
+
+            const savings = Math.max(0, offeredSum - marketSum);
+            document.getElementById('clientGaebOfferedSum').textContent = fmt(offeredSum) + ' €';
+            document.getElementById('clientGaebMarketSum').textContent = fmt(marketSum) + ' €';
+            document.getElementById('clientGaebSavingsSum').textContent = fmt(savings) + ' €';
+
+            tableContainer.innerHTML = `
+                <table class="w-full text-left text-xs text-slate-300">
+                    <thead class="bg-slate-900 text-slate-400 uppercase border-b border-slate-800">
+                        <tr>
+                            <th class="p-3">GAEB-Position</th>
+                            <th class="p-3">Zugeordneter DB-Marktpreis</th>
+                            <th class="p-3 text-right">Menge</th>
+                            <th class="p-3 text-right">Angebot EP</th>
+                            <th class="p-3 text-right">Markt-Ø EP</th>
+                            <th class="p-3 text-right">Differenz</th>
+                            <th class="p-3">Bewertung</th>
+                        </tr>
+                    </thead>
+                    <tbody class="divide-y divide-slate-800">${rowsHtml}</tbody>
+                </table>
+            `;
+            showToast(parsedItems.length + ' GAEB-Positionen erfolgreich mit der Marktpreis-DB abgeglichen!');
+        }
+
+        // --- 1-5 STERNE BEWERTUNGSFUNKTION IM KUNDENPORTAL ---
+        let currentClientRatingSelection = 5;
+
+        function getStarRatingLabelText(stars) {
+            const labels = {
+                1: '1 von 5 Sternen – Mangelhaft',
+                2: '2 von 5 Sternen – Ausreichend',
+                3: '3 von 5 Sternen – Befriedigend',
+                4: '4 von 5 Sternen – Gut',
+                5: '5 von 5 Sternen – Ausgezeichnet'
+            };
+            return labels[stars] || '5 von 5 Sternen – Ausgezeichnet';
+        }
+
+        function selectClientReportRatingStar(stars) {
+            const s = Math.max(1, Math.min(5, Number(stars) || 5));
+            currentClientRatingSelection = s;
+            const buttons = document.querySelectorAll('#clientRatingStarsBar .client-star-btn');
+            buttons.forEach(btn => {
+                const btnStar = Number(btn.getAttribute('data-star') || 0);
+                if (btnStar <= s) {
+                    btn.className = 'client-star-btn w-10 h-10 rounded-xl bg-amber-500/20 border border-amber-500/50 flex items-center justify-center text-lg text-amber-400 transition transform hover:scale-105 shadow-sm';
+                } else {
+                    btn.className = 'client-star-btn w-10 h-10 rounded-xl bg-slate-900 hover:bg-slate-800 border border-slate-800 flex items-center justify-center text-lg text-slate-600 transition transform hover:scale-105';
+                }
+            });
+            const labelEl = document.getElementById('clientRatingSelectionLabel');
+            if (labelEl) {
+                labelEl.textContent = getStarRatingLabelText(s);
+            }
+        }
+
+        function syncClientRatingUIFromOrder(order) {
+            if (!order) return;
+            const savedStars = Number(order.ratingStars || (order.invoiceMeta && order.invoiceMeta.ratingStars) || 0);
+            const savedComment = order.ratingComment || (order.invoiceMeta && order.invoiceMeta.ratingComment) || '';
+            const savedAt = order.ratedAt || (order.invoiceMeta && order.invoiceMeta.ratedAt) || '';
+
+            const commentInput = document.getElementById('clientRatingCommentInput');
+            const savedBadge = document.getElementById('clientRatingSavedBadge');
+            const tsInfo = document.getElementById('clientRatingTimestampInfo');
+            const submitBtn = document.getElementById('btnSubmitClientRating');
+
+            if (savedStars >= 1 && savedStars <= 5) {
+                selectClientReportRatingStar(savedStars);
+                if (commentInput) commentInput.value = savedComment;
+                if (savedBadge) savedBadge.classList.remove('hidden');
+                if (tsInfo) tsInfo.textContent = 'Bewertet am ' + savedAt + ' (' + savedStars + '/5 Sterne). Sie können Ihre Bewertung jederzeit anpassen.';
+                if (submitBtn) submitBtn.innerHTML = '<i class="fa-solid fa-pen-to-square"></i><span>Bewertung aktualisieren</span>';
+            } else {
+                selectClientReportRatingStar(5);
+                if (commentInput) commentInput.value = '';
+                if (savedBadge) savedBadge.classList.add('hidden');
+                if (tsInfo) tsInfo.textContent = 'Ihr Feedback hilft unserem Meister-Team bei der Qualitätssicherung.';
+                if (submitBtn) submitBtn.innerHTML = '<i class="fa-solid fa-paper-plane"></i><span>Bewertung absenden</span>';
+            }
+        }
+
+        async function submitClientOrderRating() {
+            const order = clientOrders.find(o => o.id === selectedClientOrderId);
+            if (!order) {
+                showToast('Kein Prüfauftrag ausgewählt.', 'error');
+                return;
+            }
+            if (Number(order.status) !== 4) {
+                showToast('Eine Bewertung ist erst nach Abschluss des Prüfberichts möglich.', 'error');
+                return;
+            }
+
+            const stars = currentClientRatingSelection || 5;
+            const commentEl = document.getElementById('clientRatingCommentInput');
+            const comment = commentEl ? commentEl.value.trim() : '';
+            const nowStr = new Date().toLocaleString('de-DE', { dateStyle: 'short', timeStyle: 'short' });
+
+            order.ratingStars = stars;
+            order.ratingComment = comment;
+            order.ratedAt = nowStr;
+            order.invoiceMeta = Object.assign({}, order.invoiceMeta || {}, {
+                ratingStars: stars,
+                ratingComment: comment,
+                ratedAt: nowStr
+            });
+
+            const adminOrderMatch = adminOrders.find(o => o.id === order.id);
+            if (adminOrderMatch) {
+                adminOrderMatch.ratingStars = stars;
+                adminOrderMatch.ratingComment = comment;
+                adminOrderMatch.ratedAt = nowStr;
+                adminOrderMatch.invoiceMeta = Object.assign({}, adminOrderMatch.invoiceMeta || {}, {
+                    ratingStars: stars,
+                    ratingComment: comment,
+                    ratedAt: nowStr
+                });
+            }
+
+            if (supabaseClient) {
+                try {
+                    await supabaseClient.from('orders').update({
+                        invoiceMeta: order.invoiceMeta
+                    }).eq('id', order.id);
+                } catch (err) {
+                    console.warn('Supabase Rating-Update Hinweis:', err);
+                }
+            }
+
+            syncClientRatingUIFromOrder(order);
+            if (typeof pushAdminNotification === 'function') {
+                pushAdminNotification(
+                    'new_order',
+                    'Neue Kundenbewertung (' + stars + '/5 ★) für ' + order.id,
+                    (order.email || 'Kunde') + ' hat den Prüfbericht mit ' + stars + ' Sternen bewertet' + (comment ? ': „' + comment + '“' : '.'),
+                    order.id,
+                    order.email || 'ALL'
+                );
+            }
+            showToast('Vielen Dank! Ihre ' + stars + '-Sterne-Bewertung für Auftrag ' + order.id + ' wurde gespeichert.');
+        }
+
         function switchAdminTab(tabName, year = null) {
             const tabBtnInvoicesEl = document.getElementById('tabBtnInvoices');
             if (tabBtnInvoicesEl) tabBtnInvoicesEl.className = "px-5 py-3 text-sm font-bold border-b-2 " + (tabName === 'invoices' ? "border-emerald-500 text-emerald-400" : "border-transparent text-slate-400 hover:text-white") + " transition";
@@ -4666,6 +5560,7 @@ function populateFileCheckTargetOrderDropdown() {
             });
             document.getElementById('adminStatSavings').textContent = totalSavingsNum.toLocaleString('de-DE') + ' €';
             renderAdminRevenueChart();
+            syncAdminNotificationsFromOrders();
 
             const pendingApprovalOrders = adminOrders.filter(o => !o.isArchived && (o.pendingAction === 'reject' || o.pendingAction === 'cancel'));
             const approvalsBadge = document.getElementById('approvalsCountBadge');
