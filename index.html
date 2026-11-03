@@ -589,6 +589,28 @@
                 </div>
             </div>
 
+            <!-- Umsatz- & Rechnungsstatus-Diagramm (Tortendiagramm / Balkendiagramm) -->
+            <div class="bg-slate-900 border border-slate-800 rounded-2xl p-6 mb-8 space-y-5 shadow-xl">
+                <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-4 border-b border-slate-800 pb-4">
+                    <div>
+                        <h2 class="text-lg font-bold text-white"><i class="fa-solid fa-chart-pie text-emerald-400 mr-2"></i>Umsatz- & Rechnungsverteilung nach Bezahlstatus</h2>
+                        <p class="text-xs text-slate-400 mt-0.5">Verteilung zwischen bezahlten (100 %), teilweise bezahlten (50 % Anzahlung) und offenen Rechnungen.</p>
+                    </div>
+                    <div class="flex items-center gap-1 p-1 bg-slate-950 border border-slate-800 rounded-xl self-start sm:self-auto">
+                        <button type="button" id="btnChartModePie" onclick="switchAdminChartMode('pie')" class="px-3 py-1.5 rounded-lg text-xs font-bold bg-emerald-500 text-slate-950 transition">
+                            <i class="fa-solid fa-chart-pie mr-1.5"></i>Tortendiagramm
+                        </button>
+                        <button type="button" id="btnChartModeBar" onclick="switchAdminChartMode('bar')" class="px-3 py-1.5 rounded-lg text-xs font-semibold text-slate-400 hover:text-white transition">
+                            <i class="fa-solid fa-chart-column mr-1.5"></i>Balkendiagramm
+                        </button>
+                    </div>
+                </div>
+                <div class="grid grid-cols-1 lg:grid-cols-12 gap-6 items-center">
+                    <div id="adminRevenueChartCanvas" class="lg:col-span-7 bg-slate-950/70 border border-slate-800 rounded-xl p-5 flex items-center justify-center min-h-[240px]"></div>
+                    <div id="adminRevenueChartLegend" class="lg:col-span-5 space-y-3"></div>
+                </div>
+            </div>
+
             <!-- Admin Reiter Navigation -->
             <div class="flex flex-wrap gap-2 border-b border-slate-800 mb-6">
                 <button type="button" onclick="switchAdminTab('active')" id="tabBtnActive" class="px-5 py-3 text-sm font-bold border-b-2 border-emerald-500 text-emerald-400 transition">
@@ -609,6 +631,9 @@
                 </button>
                 <button type="button" onclick="switchAdminTab('customers')" id="tabBtnCustomers" class="px-5 py-3 text-sm font-bold border-b-2 border-transparent text-slate-400 hover:text-white transition">
                     <i class="fa-solid fa-users mr-2"></i>Kunden & Ränge
+                </button>
+                <button type="button" onclick="switchAdminTab('invoices')" id="tabBtnInvoices" class="px-5 py-3 text-sm font-bold border-b-2 border-transparent text-slate-400 hover:text-white transition">
+                    <i class="fa-solid fa-file-invoice-dollar mr-2 text-emerald-400"></i>Rechnungen & Mahnwesen
                 </button>
                 <button type="button" onclick="switchAdminTab('marketprices')" id="tabBtnMarketPrices" class="px-5 py-3 text-sm font-bold border-b-2 border-transparent text-slate-400 hover:text-white transition">
                     <i class="fa-solid fa-database mr-2"></i>Marktpreise-DB
@@ -807,7 +832,30 @@
                             </div>
                         </div>
                     </div>
-<!-- Kunden- & Rangverwaltungs-Panel -->
+                    <!-- RECHNUNGEN & MAHNWESEN PRO KUNDE PANEL -->
+                    <div id="adminInvoicesPanel" class="hidden space-y-6">
+                        <div class="bg-slate-900 border border-slate-800 rounded-2xl p-6 shadow-xl space-y-5">
+                            <div class="flex flex-col sm:flex-row sm:items-center justify-between border-b border-slate-800 pb-4 gap-3">
+                                <div>
+                                    <h3 class="text-lg font-bold text-white">
+                                        <i class="fa-solid fa-file-invoice-dollar text-emerald-400 mr-2"></i>Rechnungen & Mahnwesen (<span id="invoicesSelectedCustomerTitle" class="text-emerald-400">Alle Kunden</span>)
+                                    </h3>
+                                    <p class="text-xs text-slate-400 mt-0.5">
+                                        Wählen Sie links einen Kunden aus, um alle zugehörigen Rechnungen inkl. Versanddatum, Bezahldatum sowie Mahnung 1 & Mahnung 2 zu verwalten.
+                                    </p>
+                                </div>
+                                <button type="button" onclick="selectInvoiceCustomer('ALL')" class="bg-slate-800 hover:bg-slate-700 text-slate-200 border border-slate-700 px-3.5 py-2 rounded-xl text-xs font-semibold transition whitespace-nowrap">
+                                    Alle Kunden anzeigen
+                                </button>
+                            </div>
+
+                            <div id="adminInvoicesTableContainer" class="space-y-4">
+                                <!-- Dynamisch befüllt -->
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Kunden- & Rangverwaltungs-Panel -->
                     <div id="adminCustomersPanel" class="hidden bg-slate-900 border border-slate-800 rounded-2xl p-6 shadow-xl space-y-6">
                         <div class="flex flex-col sm:flex-row sm:items-center justify-between border-b border-slate-800 pb-4 gap-2">
                             <div>
@@ -2073,6 +2121,8 @@
                     snap.forEach(doc => { adminOrders.push({ idDoc: doc.id, ...doc.data() }); });
                 } catch(e) { console.warn(e); }
             }
+            populateReconstructTargetOrderDropdown();
+            populateFileCheckTargetOrderDropdown();
             renderAdminDashboard();
         }
 
@@ -4109,7 +4159,413 @@ function populateFileCheckTargetOrderDropdown() {
             showToast(`GAEB-/PDF-Abgleich wurde in Auftrag ${order.id} übernommen! Klicken Sie unten im Auftrag auf „Speichern“, um die Änderungen in Firestore zu sichern.`);
         }
 
+        
+        let adminRevenueChartMode = 'pie';
+        let selectedInvoiceCustomerEmail = 'ALL';
+
+        function switchAdminChartMode(mode) {
+            adminRevenueChartMode = mode === 'bar' ? 'bar' : 'pie';
+            const btnPie = document.getElementById('btnChartModePie');
+            const btnBar = document.getElementById('btnChartModeBar');
+            if (btnPie && btnBar) {
+                btnPie.className = adminRevenueChartMode === 'pie'
+                    ? 'px-3 py-1.5 rounded-lg text-xs font-bold bg-emerald-500 text-slate-950 transition'
+                    : 'px-3 py-1.5 rounded-lg text-xs font-semibold text-slate-400 hover:text-white transition';
+                btnBar.className = adminRevenueChartMode === 'bar'
+                    ? 'px-3 py-1.5 rounded-lg text-xs font-bold bg-emerald-500 text-slate-950 transition'
+                    : 'px-3 py-1.5 rounded-lg text-xs font-semibold text-slate-400 hover:text-white transition';
+            }
+            renderAdminRevenueChart();
+        }
+
+        function renderAdminRevenueChart() {
+            const canvas = document.getElementById('adminRevenueChartCanvas');
+            const legend = document.getElementById('adminRevenueChartLegend');
+            if (!canvas || !legend) return;
+
+            let paidVol = 0, partialVol = 0, unpaidVol = 0;
+            let paidCnt = 0, partialCnt = 0, unpaidCnt = 0;
+
+            adminOrders.forEach(o => {
+                if (o.status == 5 || o.status == 6) return;
+                const netPrice = Math.max(0, (o.price || 149) - (parseFloat(o.manualDiscount) || 0));
+                if (o.paymentStatus === 'paid') {
+                    paidVol += netPrice;
+                    paidCnt++;
+                } else if (o.paymentStatus === 'partial') {
+                    partialVol += netPrice;
+                    partialCnt++;
+                } else {
+                    unpaidVol += netPrice;
+                    unpaidCnt++;
+                }
+            });
+
+            const totalVol = paidVol + partialVol + unpaidVol;
+            const fmt = (n) => n.toLocaleString('de-DE', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+
+            const items = [
+                { label: 'Bezahlt (100 %)', short: 'Bezahlt', val: paidVol, paidPart: paidVol, openPart: 0, count: paidCnt, color: '#10b981' },
+                { label: 'Teilweise bezahlt (50 %)', short: 'Angezahlt (50%)', val: partialVol, paidPart: partialVol / 2, openPart: partialVol / 2, count: partialCnt, color: '#f59e0b' },
+                { label: 'Offene Rechnungen (0 %)', short: 'Offen', val: unpaidVol, paidPart: 0, openPart: unpaidVol, count: unpaidCnt, color: '#f43f5e' }
+            ];
+
+            if (adminRevenueChartMode === 'pie') {
+                if (totalVol <= 0) {
+                    canvas.innerHTML = '<div class="text-xs text-slate-500">Noch keine Umsatzdaten für das Diagramm vorhanden.</div>';
+                } else {
+                    const r = 74;
+                    const c = 2 * Math.PI * r;
+                    let offset = 0;
+                    const circles = items.map(it => {
+                        const pct = it.val / totalVol;
+                        const dash = pct * c;
+                        const strokeHtml = it.val > 0
+                            ? `<circle r="${r}" cx="100" cy="100" fill="transparent" stroke="${it.color}" stroke-width="28" stroke-dasharray="${dash} ${c - dash}" stroke-dashoffset="${-offset}" transform="rotate(-90 100 100)"><title>${it.label}: ${fmt(it.val)} € (${it.count} Auftr.)</title></circle>`
+                            : '';
+                        offset += dash;
+                        return strokeHtml;
+                    }).join('');
+
+                    canvas.innerHTML = `
+                        <div class="flex flex-col sm:flex-row items-center gap-6">
+                            <svg width="200" height="200" viewBox="0 0 200 200" class="shrink-0">
+                                <circle r="${r}" cx="100" cy="100" fill="transparent" stroke="#1e293b" stroke-width="28"></circle>
+                                ${circles}
+                                <text x="100" y="95" text-anchor="middle" fill="#94a3b8" font-size="10" font-weight="bold">GESAMT</text>
+                                <text x="100" y="114" text-anchor="middle" fill="#ffffff" font-size="14" font-weight="bold">${fmt(totalVol)} €</text>
+                            </svg>
+                            <div class="space-y-2 text-xs">
+                                ${items.map(it => `
+                                    <div class="flex items-center gap-2">
+                                        <span class="w-3 h-3 rounded-sm inline-block" style="background:${it.color}"></span>
+                                        <span class="text-slate-300 font-medium">${it.label}:</span>
+                                        <strong class="text-white">${fmt(it.val)} €</strong>
+                                    </div>
+                                `).join('')}
+                            </div>
+                        </div>
+                    `;
+                }
+            } else {
+                const maxVal = Math.max(1, ...items.map(i => i.val));
+                canvas.innerHTML = `
+                    <div class="w-full space-y-4">
+                        ${items.map(it => {
+                            const widthPct = Math.min(100, Math.round((it.val / maxVal) * 100));
+                            return `
+                                <div class="space-y-1">
+                                    <div class="flex justify-between text-xs">
+                                        <span class="font-semibold text-white">${it.label} (${it.count} Auftr.)</span>
+                                        <span class="font-bold text-slate-200">${fmt(it.val)} €</span>
+                                    </div>
+                                    <div class="w-full h-5 bg-slate-900 rounded-lg overflow-hidden border border-slate-800 flex">
+                                        <div style="width:${widthPct}%; background:${it.color}" class="h-full transition-all duration-500"></div>
+                                    </div>
+                                </div>
+                            `;
+                        }).join('')}
+                    </div>
+                `;
+            }
+
+            legend.innerHTML = items.map(it => {
+                const pct = totalVol > 0 ? ((it.val / totalVol) * 100).toFixed(1) : '0.0';
+                return `
+                    <div class="bg-slate-950 border border-slate-800 rounded-xl p-3.5 flex items-center justify-between gap-3">
+                        <div>
+                            <div class="flex items-center gap-2">
+                                <span class="w-2.5 h-2.5 rounded-sm shrink-0" style="background:${it.color}"></span>
+                                <span class="text-xs font-bold text-white">${it.label}</span>
+                            </div>
+                            <span class="text-[11px] text-slate-400 block mt-0.5">${it.count} Rechnung(en) · ${pct} % Anteil</span>
+                            ${it.short === 'Angezahlt (50%)' && it.val > 0 ? `<span class="text-[11px] text-amber-400 block mt-0.5">${fmt(it.paidPart)} € bezahlt · ${fmt(it.openPart)} € offen</span>` : ''}
+                        </div>
+                        <span class="text-sm font-black text-white whitespace-nowrap">${fmt(it.val)} €</span>
+                    </div>
+                `;
+            }).join('');
+        }
+
+        function selectInvoiceCustomer(email) {
+            selectedInvoiceCustomerEmail = email || 'ALL';
+            renderInvoiceCustomersSidebar();
+            renderCustomerInvoicesPanel();
+        }
+
+        function getOrderInvoiceRecords(order) {
+            const basePrice = order.price || 149;
+            const manualDiscount = parseFloat(order.manualDiscount) || 0;
+            const totalGross = Math.max(0, basePrice - manualDiscount);
+            const meta = order.invoiceMeta || {};
+            const createdDateStr = order.createdAt ? new Date(order.createdAt).toLocaleDateString('de-DE') : '-';
+            const customerName = ((order.firstName || '') + ' ' + (order.lastName || '')).trim() || order.email;
+
+            const list = [];
+            if (order.isFirstInquiry || order.depositInvoiceSent || order.paymentStatus === 'partial' || meta.sent50At) {
+                const isPaid50 = order.paymentStatus === 'partial' || order.paymentStatus === 'paid' || Boolean(meta.paid50At);
+                list.push({
+                    key: order.id + '_50',
+                    orderId: order.id,
+                    idDoc: order.idDoc,
+                    type: '50',
+                    invoiceNo: 'RE-' + order.id.replace('SHK-', '') + '-50',
+                    title: '50 % Anzahlungsrechnung',
+                    amountGross: Number((totalGross / 2).toFixed(2)),
+                    customerEmail: order.email,
+                    customerName: customerName,
+                    projectName: order.projectName || 'Allgemein',
+                    packageName: order.packageName || 'Heizungs-Angebot',
+                    sentAt: meta.sent50At || (order.depositInvoiceSent ? createdDateStr : null),
+                    paidAt: meta.paid50At || (isPaid50 ? (meta.paid50At || createdDateStr) : null),
+                    reminder1At: meta.rem1_50At || null,
+                    reminder2At: meta.rem2_50At || null,
+                    isPaid: isPaid50
+                });
+            }
+
+            const isPaid100 = order.paymentStatus === 'paid' || Boolean(meta.paid100At);
+            const remainingOrFullAmount = (order.paymentStatus === 'partial' || meta.sent50At || order.depositInvoiceSent)
+                ? Number((totalGross / 2).toFixed(2))
+                : Number(totalGross.toFixed(2));
+            list.push({
+                key: order.id + '_100',
+                orderId: order.id,
+                idDoc: order.idDoc,
+                type: '100',
+                invoiceNo: 'RE-' + order.id.replace('SHK-', '') + '-100',
+                title: (order.paymentStatus === 'partial' || meta.sent50At || order.depositInvoiceSent) ? 'Rest-/Schlussrechnung (50 %)' : '100 % Gesamtrechnung',
+                amountGross: remainingOrFullAmount,
+                customerEmail: order.email,
+                customerName: customerName,
+                projectName: order.projectName || 'Allgemein',
+                packageName: order.packageName || 'Heizungs-Angebot',
+                sentAt: meta.sent100At || (order.status == 4 ? createdDateStr : null),
+                paidAt: meta.paid100At || (isPaid100 ? createdDateStr : null),
+                reminder1At: meta.rem1_100At || null,
+                reminder2At: meta.rem2_100At || null,
+                isPaid: isPaid100
+            });
+
+            return list;
+        }
+
+        function renderInvoiceCustomersSidebar() {
+            const container = document.getElementById('adminOrdersList');
+            const listTitle = document.getElementById('adminListTitle');
+            if (!container) return;
+            if (listTitle) listTitle.textContent = 'Kunden (Rechnungs-Auswahl)';
+
+            const customerMap = new Map();
+            adminOrders.forEach(o => {
+                if (!o.email || o.status == 5 || o.status == 6) return;
+                const mailKey = o.email.toLowerCase().trim();
+                const recs = getOrderInvoiceRecords(o);
+                if (!customerMap.has(mailKey)) {
+                    customerMap.set(mailKey, {
+                        email: o.email,
+                        name: ((o.firstName || '') + ' ' + (o.lastName || '')).trim() || o.email,
+                        totalInvoices: 0,
+                        unpaidInvoices: 0
+                    });
+                }
+                const entry = customerMap.get(mailKey);
+                entry.totalInvoices += recs.length;
+                entry.unpaidInvoices += recs.filter(r => !r.isPaid).length;
+            });
+
+            const custArray = Array.from(customerMap.values());
+            if (custArray.length === 0) {
+                container.innerHTML = '<p class="text-xs text-slate-500">Noch keine Kunden mit Rechnungen vorhanden.</p>';
+                return;
+            }
+
+            let html = `
+                <div onclick="selectInvoiceCustomer('ALL')" class="bg-slate-900 border ${selectedInvoiceCustomerEmail === 'ALL' ? 'border-emerald-500' : 'border-slate-800'} hover:border-slate-700 rounded-xl p-3.5 cursor-pointer transition mb-2">
+                    <div class="flex justify-between items-center">
+                        <span class="text-xs font-bold text-white"><i class="fa-solid fa-users text-emerald-400 mr-2"></i>Alle Kunden anzeigen</span>
+                        <span class="text-[11px] text-slate-400">${custArray.length} Kunden</span>
+                    </div>
+                </div>
+            `;
+
+            html += custArray.map(c => {
+                const isSel = selectedInvoiceCustomerEmail.toLowerCase() === c.email.toLowerCase();
+                const safeMail = c.email.replace(/'/g, "\\'");
+                return `
+                    <div onclick="selectInvoiceCustomer('${safeMail}')" class="bg-slate-900 border ${isSel ? 'border-emerald-500 bg-emerald-950/10' : 'border-slate-800'} hover:border-slate-700 rounded-xl p-4 cursor-pointer transition mb-2">
+                        <div class="flex justify-between items-center mb-1">
+                            <span class="text-xs font-bold text-white">${escapeHtml(c.name)}</span>
+                            <span class="text-[10px] px-2 py-0.5 rounded-full font-bold ${c.unpaidInvoices > 0 ? 'bg-rose-500/20 text-rose-400 border border-rose-500/30' : 'bg-emerald-500/20 text-emerald-400'}">
+                                ${c.unpaidInvoices > 0 ? c.unpaidInvoices + ' offen' : 'Alle bezahlt'}
+                            </span>
+                        </div>
+                        <div class="text-xs text-emerald-400 truncate">${escapeHtml(c.email)}</div>
+                        <div class="text-[11px] text-slate-400 mt-1.5">${c.totalInvoices} Rechnung(en) hinterlegt</div>
+                    </div>
+                `;
+            }).join('');
+
+            container.innerHTML = html;
+        }
+
+        async function updateInvoiceMilestone(orderId, invType, fieldKey, sendMailType = null) {
+            const order = adminOrders.find(o => o.id === orderId);
+            if (!order) return;
+            if (!order.invoiceMeta) order.invoiceMeta = {};
+
+            const nowStr = new Date().toLocaleString('de-DE', { dateStyle: 'medium', timeStyle: 'short' });
+            order.invoiceMeta[fieldKey] = nowStr;
+
+            if (fieldKey === 'paid50At' && order.paymentStatus === 'unpaid') {
+                order.paymentStatus = 'partial';
+            }
+            if (fieldKey === 'paid100At') {
+                order.paymentStatus = 'paid';
+            }
+
+            if (db && order.idDoc) {
+                try {
+                    await db.collection('orders').doc(order.idDoc).update({
+                        invoiceMeta: order.invoiceMeta,
+                        paymentStatus: order.paymentStatus
+                    });
+                    showToast('Rechnungs-Vermerk aktualisiert!');
+                } catch (e) {
+                    showToast('Fehler beim Speichern: ' + e.message, 'error');
+                }
+            }
+
+            if (sendMailType === 'mahnung1' || sendMailType === 'mahnung2') {
+                const invNo = 'RE-' + order.id.replace('SHK-', '') + '-' + invType;
+                const mahnStufe = sendMailType === 'mahnung1' ? '1. Zahlungserinnerung / Mahnung' : '2. Mahnung (Letzte Zahlungsaufforderung)';
+                const subject = encodeURIComponent(mahnStufe + ' zur Rechnung ' + invNo + ' (Auftrag ' + order.id + ')');
+                const body = encodeURIComponent(
+                    'Hallo,\n\nleider konnten wir zu unserer Rechnung ' + invNo + ' für das Projekt "' + (order.projectName || 'Allgemein') + '" noch keinen Zahlungseingang feststellen.\n\nBitte überweisen Sie den offenen Rechnungsbetrag innerhalb der nächsten 7 Tage auf das in der Rechnung angegebene Konto.\n\nSollte sich Ihre Zahlung mit dieser E-Mail überschnitten haben, betrachten Sie dieses Schreiben bitte als gegenstandslos.\n\nMit freundlichen Grüßen\nSHK Angebotsprüfung'
+                );
+                window.location.href = 'mailto:' + order.email + '?subject=' + subject + '&body=' + body;
+            } else if (sendMailType === 'sendInvoice') {
+                selectedAdminOrderId = order.id;
+                sendInvoiceEmail(invType, invType === '50');
+            }
+
+            renderInvoiceCustomersSidebar();
+            renderCustomerInvoicesPanel();
+            renderAdminDashboard();
+        }
+
+        function renderCustomerInvoicesPanel() {
+            const container = document.getElementById('adminInvoicesTableContainer');
+            const titleSpan = document.getElementById('invoicesSelectedCustomerTitle');
+            if (!container) return;
+
+            if (titleSpan) {
+                titleSpan.textContent = selectedInvoiceCustomerEmail === 'ALL' ? 'Alle Kunden' : selectedInvoiceCustomerEmail;
+            }
+
+            const filteredOrders = adminOrders.filter(o => {
+                if (!o.email || o.status == 5 || o.status == 6) return false;
+                if (selectedInvoiceCustomerEmail === 'ALL') return true;
+                return o.email.toLowerCase().trim() === selectedInvoiceCustomerEmail.toLowerCase().trim();
+            });
+
+            const allInvoices = [];
+            filteredOrders.forEach(o => {
+                getOrderInvoiceRecords(o).forEach(r => allInvoices.push(r));
+            });
+
+            if (allInvoices.length === 0) {
+                container.innerHTML = '<div class="p-8 text-center text-xs text-slate-400 bg-slate-950 rounded-xl border border-slate-800">Keine Rechnungen für diese Auswahl gefunden.</div>';
+                return;
+            }
+
+            container.innerHTML = allInvoices.map(inv => {
+                const sentKey = 'sent' + inv.type + 'At';
+                const paidKey = 'paid' + inv.type + 'At';
+                const rem1Key = 'rem1_' + inv.type + 'At';
+                const rem2Key = 'rem2_' + inv.type + 'At';
+
+                return `
+                    <div class="bg-slate-950 border ${inv.isPaid ? 'border-emerald-500/30' : (inv.reminder2At ? 'border-rose-500/60' : 'border-slate-800')} rounded-2xl p-5 space-y-4">
+                        <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-2 border-b border-slate-800 pb-3">
+                            <div>
+                                <div class="flex flex-wrap items-center gap-2">
+                                    <span class="text-sm font-black text-white font-mono">${escapeHtml(inv.invoiceNo)}</span>
+                                    <span class="text-xs px-2.5 py-0.5 rounded-full font-bold ${inv.isPaid ? 'bg-emerald-500/20 text-emerald-400' : 'bg-rose-500/20 text-rose-400'}">
+                                        ${inv.isPaid ? '✓ Bezahlt' : 'Offen'}
+                                    </span>
+                                    <span class="text-xs text-sky-400 bg-sky-500/10 px-2.5 py-0.5 rounded-full">Auftrag ${escapeHtml(inv.orderId)} · ${escapeHtml(inv.projectName)}</span>
+                                </div>
+                                <div class="text-xs text-slate-400 mt-1">
+                                    Kunde: <strong class="text-slate-200">${escapeHtml(inv.customerName)}</strong> (${escapeHtml(inv.customerEmail)}) — ${escapeHtml(inv.title)}
+                                </div>
+                            </div>
+                            <div class="text-right">
+                                <span class="text-xl font-black text-emerald-400">${inv.amountGross.toFixed(2).replace('.', ',')} €</span>
+                                <span class="block text-[10px] text-slate-500">inkl. 19 % MwSt.</span>
+                            </div>
+                        </div>
+
+                        <!-- 4 Status-Spalten: Wann gesendet | Wann bezahlt | Mahnung 1 | Mahnung 2 -->
+                        <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3 text-xs">
+                            <div class="bg-slate-900 border border-slate-800 rounded-xl p-3 flex flex-col justify-between space-y-2">
+                                <div>
+                                    <span class="text-[10px] uppercase tracking-wider text-slate-400 font-bold block">1. Wann gesendet</span>
+                                    <span class="font-semibold ${inv.sentAt ? 'text-emerald-400' : 'text-slate-500'} mt-1 block">
+                                        ${inv.sentAt ? '<i class="fa-solid fa-paper-plane mr-1"></i>' + escapeHtml(inv.sentAt) : 'Noch nicht versendet'}
+                                    </span>
+                                </div>
+                                <button type="button" onclick="updateInvoiceMilestone('${inv.orderId}', '${inv.type}', '${sentKey}', 'sendInvoice')" class="w-full bg-slate-800 hover:bg-emerald-500 hover:text-slate-950 text-emerald-400 border border-emerald-500/30 font-bold py-1.5 px-2.5 rounded-lg text-[11px] transition">
+                                    <i class="fa-solid fa-file-pdf mr-1"></i>${inv.sentAt ? 'Erneut senden' : 'Rechnung senden'}
+                                </button>
+                            </div>
+
+                            <div class="bg-slate-900 border border-slate-800 rounded-xl p-3 flex flex-col justify-between space-y-2">
+                                <div>
+                                    <span class="text-[10px] uppercase tracking-wider text-slate-400 font-bold block">2. Wann bezahlt</span>
+                                    <span class="font-semibold ${inv.paidAt ? 'text-emerald-400' : 'text-rose-400'} mt-1 block">
+                                        ${inv.paidAt ? '<i class="fa-solid fa-circle-check mr-1"></i>Bezahlt am ' + escapeHtml(inv.paidAt) : 'Noch unbezahlt'}
+                                    </span>
+                                </div>
+                                <button type="button" onclick="updateInvoiceMilestone('${inv.orderId}', '${inv.type}', '${paidKey}')" class="w-full bg-emerald-500/15 hover:bg-emerald-500 hover:text-slate-950 text-emerald-400 border border-emerald-500/30 font-bold py-1.5 px-2.5 rounded-lg text-[11px] transition">
+                                    <i class="fa-solid fa-check mr-1"></i>Als bezahlt vermerken
+                                </button>
+                            </div>
+
+                            <div class="bg-slate-900 border border-slate-800 rounded-xl p-3 flex flex-col justify-between space-y-2">
+                                <div>
+                                    <span class="text-[10px] uppercase tracking-wider text-amber-400 font-bold block">3. Mahnung 1</span>
+                                    <span class="font-semibold ${inv.reminder1At ? 'text-amber-300' : 'text-slate-500'} mt-1 block">
+                                        ${inv.reminder1At ? '<i class="fa-solid fa-bell mr-1"></i>Gesendet: ' + escapeHtml(inv.reminder1At) : 'Keine 1. Mahnung'}
+                                    </span>
+                                </div>
+                                <button type="button" onclick="updateInvoiceMilestone('${inv.orderId}', '${inv.type}', '${rem1Key}', 'mahnung1')" class="w-full bg-amber-500/15 hover:bg-amber-500 hover:text-slate-950 text-amber-300 border border-amber-500/30 font-bold py-1.5 px-2.5 rounded-lg text-[11px] transition">
+                                    <i class="fa-solid fa-envelope-open-text mr-1"></i>1. Mahnung senden
+                                </button>
+                            </div>
+
+                            <div class="bg-slate-900 border border-slate-800 rounded-xl p-3 flex flex-col justify-between space-y-2">
+                                <div>
+                                    <span class="text-[10px] uppercase tracking-wider text-rose-400 font-bold block">4. Mahnung 2</span>
+                                    <span class="font-semibold ${inv.reminder2At ? 'text-rose-400' : 'text-slate-500'} mt-1 block">
+                                        ${inv.reminder2At ? '<i class="fa-solid fa-triangle-exclamation mr-1"></i>Gesendet: ' + escapeHtml(inv.reminder2At) : 'Keine 2. Mahnung'}
+                                    </span>
+                                </div>
+                                <button type="button" onclick="updateInvoiceMilestone('${inv.orderId}', '${inv.type}', '${rem2Key}', 'mahnung2')" class="w-full bg-rose-500/15 hover:bg-rose-500 hover:text-white text-rose-400 border border-rose-500/30 font-bold py-1.5 px-2.5 rounded-lg text-[11px] transition">
+                                    <i class="fa-solid fa-circle-exclamation mr-1"></i>2. Mahnung senden
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                `;
+            }).join('');
+        }
+
         function switchAdminTab(tabName, year = null) {
+            const tabBtnInvoicesEl = document.getElementById('tabBtnInvoices');
+            if (tabBtnInvoicesEl) tabBtnInvoicesEl.className = "px-5 py-3 text-sm font-bold border-b-2 " + (tabName === 'invoices' ? "border-emerald-500 text-emerald-400" : "border-transparent text-slate-400 hover:text-white") + " transition";
+            const invoicesPanelEl = document.getElementById('adminInvoicesPanel');
+            if (invoicesPanelEl) invoicesPanelEl.classList.add('hidden');
             currentAdminTab = tabName;
             activeArchiveYear = year;
 
@@ -4159,6 +4615,11 @@ function populateFileCheckTargetOrderDropdown() {
             } else if (tabName === 'customers') {
                 customersPanel.classList.remove('hidden');
                 loadCustomers();
+            } else if (tabName === 'invoices') {
+                const invPanel = document.getElementById('adminInvoicesPanel');
+                if (invPanel) invPanel.classList.remove('hidden');
+                renderInvoiceCustomersSidebar();
+                renderCustomerInvoicesPanel();
             } else {
                 if (!selectedAdminOrderId) {
                     selectPrompt.classList.remove('hidden');
@@ -4204,6 +4665,7 @@ function populateFileCheckTargetOrderDropdown() {
                 }
             });
             document.getElementById('adminStatSavings').textContent = totalSavingsNum.toLocaleString('de-DE') + ' €';
+            renderAdminRevenueChart();
 
             const pendingApprovalOrders = adminOrders.filter(o => !o.isArchived && (o.pendingAction === 'reject' || o.pendingAction === 'cancel'));
             const approvalsBadge = document.getElementById('approvalsCountBadge');
@@ -4284,6 +4746,9 @@ function populateFileCheckTargetOrderDropdown() {
                 const ordersInYear = yearsMap[activeArchiveYear] || [];
                 html += ordersInYear.length === 0 ? `<p class="text-xs text-slate-500 mt-2">Keine Aufträge in diesem Jahr.</p>` : ordersInYear.map(o => renderOrderCard(o)).join('');
                 container.innerHTML = html;
+            } else if (currentAdminTab === 'invoices') {
+                renderInvoiceCustomersSidebar();
+                renderCustomerInvoicesPanel();
             } else if (currentAdminTab === 'customers') {
                 listTitle.textContent = "Kunden & Ränge";
                 container.innerHTML = `
@@ -4463,7 +4928,7 @@ function populateFileCheckTargetOrderDropdown() {
         }
 
         function selectAdminOrder(orderId) {
-            if (currentAdminTab === 'marketprices' || currentAdminTab === 'customers' || currentAdminTab === 'reconstruct' || currentAdminTab === 'filecheck') return;
+            if (currentAdminTab === 'marketprices' || currentAdminTab === 'customers' || currentAdminTab === 'invoices' || currentAdminTab === 'reconstruct' || currentAdminTab === 'filecheck') return;
             selectedAdminOrderId = orderId;
             const order = adminOrders.find(o => o.id === orderId);
             if (!order) return;
@@ -4700,6 +5165,18 @@ function populateFileCheckTargetOrderDropdown() {
             const manualDiscount = parseFloat(order.manualDiscount) || 0;
             const finalPrice = Math.max(0, basePrice - manualDiscount);
 
+            const nowStamp = new Date().toLocaleString('de-DE', { dateStyle: 'medium', timeStyle: 'short' });
+            if (!order.invoiceMeta) order.invoiceMeta = {};
+            if (type === '50') {
+                order.invoiceMeta.sent50At = nowStamp;
+            } else {
+                order.invoiceMeta.sent100At = nowStamp;
+            }
+            if (db && order.idDoc) {
+                try {
+                    await db.collection('orders').doc(order.idDoc).update({ invoiceMeta: order.invoiceMeta });
+                } catch (errMeta) { console.warn(errMeta); }
+            }
             if (type === '50' && markDepositSent) {
                 order.depositInvoiceSent = true;
                 if (db && order.idDoc) {
